@@ -1,8 +1,135 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import logoGrau from '../assets/img/login-logo-grau.png'
+
+const email = ref('')
+const password = ref('')
+const remember = ref(false)
+const showPassword = ref(false)
 </script>
 
 <template>
-  <div>
-    <h1>Login</h1>
+  <div class="flex h-screen w-full">
+    <!-- Branding -->
+    <div class="flex w-1/2 items-center justify-center bg-[#092D4D]">
+      <div class="flex max-w-md flex-col items-center px-8 text-center">
+        <img :src="logoGrau" alt="Grau System" class="w-56" />
+        <p class="mt-4 text-sm font-light leading-5 tracking-wide text-white">
+          Ecossistema de gestão avançado<br />
+          para performance do seu negócio
+        </p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="relative flex w-1/2 flex-col bg-white">
+      <div class="flex flex-1 items-center justify-center px-16">
+        <div class="w-full max-w-md">
+          <div class="mb-10">
+            <h1 class="text-4xl font-bold tracking-tight text-[#092D4D]">
+              Acessa a tua conta!
+            </h1>
+            <p class="mt-2 text-sm font-light text-gray-500">
+              Insira suas credenciais para acessar o Grau System
+            </p>
+          </div>
+
+          <form class="flex flex-col gap-5" @submit.prevent>
+            <div class="flex flex-col gap-1.5">
+              <label for="email" class="text-sm text-gray-500">E-mail</label>
+              <input
+                id="email"
+                v-model="email"
+                type="email"
+                placeholder="email@dominio.com"
+                autofocus
+                class="w-full rounded-lg border border-transparent bg-gray-100 px-4 py-3 text-sm text-[#092D4D] outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <label for="password" class="text-sm text-gray-500">Palavra-passe</label>
+                <a href="#" class="text-sm text-[#3B82F6] hover:underline">
+                  Esqueci-me da palavra-passe
+                </a>
+              </div>
+              <div class="relative">
+                <input
+                  id="password"
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  placeholder="********"
+                  class="w-full rounded-lg border border-transparent bg-gray-100 px-4 py-3 pr-11 text-sm text-[#092D4D] outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
+                />
+                <button
+                  type="button"
+                  class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 transition-colors hover:text-[#092D4D]"
+                  :aria-label="showPassword ? 'Ocultar palavra-passe' : 'Revelar palavra-passe'"
+                  @click="showPassword = !showPassword"
+                >
+                  <svg
+                    v-if="!showPassword"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="size-5"
+                  >
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <svg
+                    v-else
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="size-5"
+                  >
+                    <path d="M3 3l18 18" />
+                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                    <path d="M9.4 5.5A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2" />
+                    <path d="M6.7 6.7C3.9 8.6 2 12 2 12s3.5 7 10 7a10.5 10.5 0 0 0 4.4-1" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <label class="flex cursor-pointer items-center gap-2.5">
+              <input
+                v-model="remember"
+                type="checkbox"
+                class="size-4 shrink-0 appearance-none rounded-full border border-gray-400 checked:border-[#3B82F6] checked:bg-[#3B82F6] checked:shadow-[inset_0_0_0_3px_white]"
+              />
+              <span class="text-sm text-gray-500">
+                Lembrar deste dispositivo por 15 dias
+              </span>
+            </label>
+
+            <button
+              type="submit"
+              class="mt-2 w-full rounded-lg bg-[#F5A623] py-3.5 text-sm font-semibold text-[#092D4D] transition-colors hover:bg-[#e0981f]"
+            >
+              Entrar no Grau System
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <footer class="border-t border-gray-100 px-16 py-6">
+        <nav class="flex items-center justify-between text-xs font-medium tracking-wide text-[#3B82F6]">
+          <a href="#" class="hover:underline">PRIVACIDADE</a>
+          <a href="#" class="hover:underline">TERMO</a>
+          <a href="#" class="hover:underline">FALAR AO SUPORTE</a>
+        </nav>
+      </footer>
+    </div>
   </div>
 </template>
