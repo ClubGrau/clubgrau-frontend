@@ -2,13 +2,14 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import logoGrau from '../../assets/img/login-logo-grau.png'
+import { useLogin } from '../../composables/useLogin'
+import { httpAuthApi } from '../../services/api/auth/http-auth-api'
 
 const { t } = useI18n()
 
-const email = ref('')
-const password = ref('')
-const remember = ref(false)
+const { userCredentials, handleSubmit } = useLogin(httpAuthApi)
 const showPassword = ref(false)
+
 </script>
 
 <template>
@@ -36,12 +37,12 @@ const showPassword = ref(false)
             </p>
           </div>
 
-          <form class="flex flex-col gap-5" @submit.prevent>
+          <form class="flex flex-col gap-5" @submit.prevent="handleSubmit">
             <div class="flex flex-col gap-1.5">
               <label for="email" class="text-sm text-gray-500">{{ t('Login.email') }}</label>
               <input
                 id="email"
-                v-model="email"
+                v-model="userCredentials.email"
                 type="email"
                 :placeholder="t('Login.emailPlaceholder')"
                 autofocus
@@ -59,14 +60,14 @@ const showPassword = ref(false)
               <div class="relative">
                 <input
                   id="password"
-                  v-model="password"
+                  v-model="userCredentials.password"
                   :type="showPassword ? 'text' : 'password'"
                   :placeholder="t('Login.passwordPlaceholder')"
                   class="w-full rounded-lg border border-transparent bg-gray-100 px-4 py-3 pr-11 text-sm text-[#092D4D] outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
                 />
                 <button
                   type="button"
-                  class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 transition-colors hover:text-[#092D4D]"
+                  class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 transition-colors hover:text-[#092D4D] cursor-pointer"
                   :aria-label="showPassword ? t('Login.hidePassword') : t('Login.showPassword')"
                   @click="showPassword = !showPassword"
                 >
@@ -106,7 +107,7 @@ const showPassword = ref(false)
 
             <label class="flex cursor-pointer items-center gap-2.5">
               <input
-                v-model="remember"
+                v-model="userCredentials.remember"
                 type="checkbox"
                 class="size-4 shrink-0 appearance-none rounded-full border border-gray-400 checked:border-[#3B82F6] checked:bg-[#3B82F6] checked:shadow-[inset_0_0_0_3px_white]"
               />
@@ -117,7 +118,7 @@ const showPassword = ref(false)
 
             <button
               type="submit"
-              class="mt-2 w-full rounded-lg bg-[#F5A623] py-3.5 text-sm font-semibold text-[#092D4D] transition-colors hover:bg-[#e0981f]"
+              class="mt-2 w-full rounded-lg bg-[#F5A623] py-3.5 text-sm font-semibold text-[#092D4D] transition-colors hover:bg-[#e0981f] cursor-pointer"
             >
               {{ t('Login.submit') }}
             </button>
