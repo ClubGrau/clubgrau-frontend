@@ -1,0 +1,18 @@
+{
+  "tagline": "Ecossistema de gestão avançado\npara performance do seu negócio",
+  "title": "Acessa a tua conta!",
+  "subtitle": "Insira suas credenciais para acessar o Grau System",
+  "email": "E-mail",
+  "emailPlaceholder": "email{'@'}dominio.com",
+  "password": "Palavra-passe",
+  "forgotPassword": "Esqueci-me da palavra-passe",
+  "passwordPlaceholder": "********",
+  "showPassword": "Revelar palavra-passe",
+  "hidePassword": "Ocultar palavra-passe",
+  "rememberDevice": "Lembrar deste dispositivo por 15 dias",
+  "submit": "Entrar no Grau System",
+  "privacy": "PRIVACIDADE",
+  "terms": "TERMO",
+  "support": "FALAR AO SUPORTE",
+  "logoAlt": "Grau System"
+}

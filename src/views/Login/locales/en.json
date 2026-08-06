@@ -1,0 +1,18 @@
+{
+  "tagline": "Advanced management ecosystem\nfor your business performance",
+  "title": "Access your account!",
+  "subtitle": "Enter your credentials to access Grau System",
+  "email": "E-mail",
+  "emailPlaceholder": "email{'@'}domain.com",
+  "password": "Password",
+  "forgotPassword": "Forgot my password",
+  "passwordPlaceholder": "********",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "rememberDevice": "Remember this device for 15 days",
+  "submit": "Sign in to Grau System",
+  "privacy": "PRIVACY",
+  "terms": "TERMS",
+  "support": "CONTACT SUPPORT",
+  "logoAlt": "Grau System"
+}
