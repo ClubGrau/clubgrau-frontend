@@ -3,7 +3,9 @@ import { computed, ref } from 'vue';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
+import StatCard from '../../components/StatCard/StatCard.vue';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
+import type { StatCardItem } from '../../types/stat-card';
 
 type EmployeeStatus = 'ativo' | 'ferias' | 'inativo';
 type StatusFilter = 'todos' | EmployeeStatus;
@@ -273,6 +275,34 @@ const stats = computed(() => {
   return { total, ativos, ferias, inativos };
 });
 
+const statCards = computed<StatCardItem[]>(() => [
+  {
+    id: 'total',
+    label: 'Total da equipe',
+    value: stats.value.total,
+    description: 'Cadastrados ativos no sistema',
+  },
+  {
+    id: 'active',
+    label: 'Em atividade',
+    value: stats.value.ativos,
+    description: 'Disponível para alocação',
+  },
+  {
+    id: 'vacation',
+    label: 'Em férias',
+    value: stats.value.ferias,
+    description: 'Cadastrados ativos no sistema',
+  },
+  {
+    id: 'inactive',
+    label: 'Inativos',
+    value: stats.value.inativos,
+    description: 'Sem acesso ao sistema',
+    variant: 'danger',
+  },
+]);
+
 const filteredEmployees = computed(() => {
   return employees.filter((employee) => {
     const matchesStatus =
@@ -387,39 +417,12 @@ const goToPage = (page: number) => {
       </template>
     </PageHeader>
 
-    <!-- Stats -->
     <div class="mb-6 grid grid-cols-4 gap-4">
-      <div class="rounded-xl bg-[#ececf0] px-5 py-4">
-        <p class="text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
-          Total da equipe
-        </p>
-        <p class="mt-1 text-3xl font-bold text-gray-900">{{ stats.total }}</p>
-        <p class="mt-1 text-xs text-gray-400">Cadastrados ativos no sistema</p>
-      </div>
-
-      <div class="rounded-xl bg-[#ececf0] px-5 py-4">
-        <p class="text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
-          Em atividade
-        </p>
-        <p class="mt-1 text-3xl font-bold text-gray-900">{{ stats.ativos }}</p>
-        <p class="mt-1 text-xs text-gray-400">Disponível para alocação</p>
-      </div>
-
-      <div class="rounded-xl bg-[#ececf0] px-5 py-4">
-        <p class="text-[11px] font-semibold tracking-wide text-gray-500 uppercase">
-          Em férias
-        </p>
-        <p class="mt-1 text-3xl font-bold text-gray-900">{{ stats.ferias }}</p>
-        <p class="mt-1 text-xs text-gray-400">Cadastrados ativos no sistema</p>
-      </div>
-
-      <div class="rounded-xl bg-[#f8eaea] px-5 py-4">
-        <p class="text-[11px] font-semibold tracking-wide text-[#d64545] uppercase">
-          Inativos
-        </p>
-        <p class="mt-1 text-3xl font-bold text-[#d64545]">{{ stats.inativos }}</p>
-        <p class="mt-1 text-xs text-[#d64545]">Sem acesso ao sistema</p>
-      </div>
+      <StatCard
+        v-for="card in statCards"
+        :key="card.id"
+        v-bind="card"
+      />
     </div>
 
     <!-- Table card -->
