@@ -4,12 +4,12 @@ import { useI18n } from 'vue-i18n'
 import logoGrau from '../../assets/img/login-logo-grau.png'
 import { useLogin } from '../../composables/useLogin'
 import { httpAuthApi } from '../../services/api/auth/http-auth-api'
+import PasswordRevealler from '../../components/PasswordRevealler.vue'
 
 const { t } = useI18n()
 
 const { userCredentials, handleSubmit } = useLogin(httpAuthApi)
 const showPassword = ref(false)
-
 </script>
 
 <template>
@@ -46,7 +46,7 @@ const showPassword = ref(false)
                 type="email"
                 :placeholder="t('Login.emailPlaceholder')"
                 autofocus
-                class="w-full rounded-lg border border-transparent bg-gray-100 px-4 py-3 text-sm text-[#092D4D] outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
+                class="styled-input"
               />
             </div>
 
@@ -63,45 +63,13 @@ const showPassword = ref(false)
                   v-model="userCredentials.password"
                   :type="showPassword ? 'text' : 'password'"
                   :placeholder="t('Login.passwordPlaceholder')"
-                  class="w-full rounded-lg border border-transparent bg-gray-100 px-4 py-3 pr-11 text-sm text-[#092D4D] outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
+                  class="styled-input"
                 />
-                <button
-                  type="button"
-                  class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 transition-colors hover:text-[#092D4D] cursor-pointer"
-                  :aria-label="showPassword ? t('Login.hidePassword') : t('Login.showPassword')"
-                  @click="showPassword = !showPassword"
-                >
-                  <svg
-                    v-if="!showPassword"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="size-5"
-                  >
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                  <svg
-                    v-else
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="size-5"
-                  >
-                    <path d="M3 3l18 18" />
-                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
-                    <path d="M9.4 5.5A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2" />
-                    <path d="M6.7 6.7C3.9 8.6 2 12 2 12s3.5 7 10 7a10.5 10.5 0 0 0 4.4-1" />
-                  </svg>
-                </button>
+                <PasswordRevealler
+                  v-model="showPassword"
+                  :show-label="t('Login.showPassword')"
+                  :hide-label="t('Login.hidePassword')"
+                />
               </div>
             </div>
 
@@ -136,3 +104,18 @@ const showPassword = ref(false)
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.styled-input {
+  @apply w-full 
+    rounded-lg border border-transparent 
+    bg-gray-100 
+    px-4 py-3 pr-11 
+    text-sm text-[#092D4D] 
+    outline-none 
+    placeholder:text-gray-400 
+    focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30;
+}
+</style>
