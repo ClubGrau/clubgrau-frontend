@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Icon } from '@iconify/vue';
+import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
+import PageHeader from '../../components/PageHeader/PageHeader.vue';
+import type { BreadcrumbItem } from '../../types/breadcrumb';
 
 type EmployeeStatus = 'ativo' | 'ferias' | 'inativo';
 type StatusFilter = 'todos' | EmployeeStatus;
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  { id: 'dashboard', label: 'Dashboard', to: '/app/dashboard' },
+  { id: 'employees', label: 'Colaboradores' },
+];
 
 interface Employee {
   id: number;
@@ -128,124 +136,129 @@ const employees: Employee[] = [
     status: 'ativo',
     initials: 'SC',
   },
-  {
-    id: 11,
-    name: 'Miguel Santos',
-    username: 'miguelsantos',
-    email: 'miguel.santos@grausystem.pt',
-    phone: '+351 912-778-341',
-    nif: '201234567',
-    permission: 'Operador',
-    status: 'ativo',
-    initials: 'MS',
-  },
-  {
-    id: 12,
-    name: 'Inês Oliveira',
-    username: 'inesoliveira',
-    email: 'ines.oliveira@grausystem.pt',
-    phone: '+351 936-552-890',
-    nif: '212987654',
-    permission: 'Manager',
-    status: 'ativo',
-    initials: 'IO',
-  },
-  {
-    id: 13,
-    name: 'André Pereira',
-    username: 'andrepereira',
-    email: 'andre.pereira@grausystem.pt',
-    phone: '+351 968-441-203',
-    nif: '223876541',
-    permission: 'Admin',
-    status: 'ferias',
-    initials: 'AP',
-  },
-  {
-    id: 14,
-    name: 'Catarina Sousa',
-    username: 'catarinasousa',
-    email: 'catarina.sousa@grausystem.pt',
-    phone: '+351 925-119-674',
-    nif: '234765432',
-    permission: 'Financeiro',
-    status: 'ativo',
-    initials: 'CS',
-  },
-  {
-    id: 15,
-    name: 'Bruno Fernandes',
-    username: 'brunofernandes',
-    email: 'bruno.fernandes@grausystem.pt',
-    phone: '+351 917-883-025',
-    nif: '245654321',
-    permission: 'Operador',
-    status: 'ativo',
-    initials: 'BF',
-  },
-  {
-    id: 16,
-    name: 'Diana Rocha',
-    username: 'dianarocha',
-    email: 'diana.rocha@grausystem.pt',
-    phone: '+351 934-667-812',
-    nif: '256543210',
-    permission: 'Manager',
-    status: 'inativo',
-    initials: 'DR',
-  },
-  {
-    id: 17,
-    name: 'Gonçalo Pinto',
-    username: 'goncalopinto',
-    email: 'goncalo.pinto@grausystem.pt',
-    phone: '+351 961-334-509',
-    nif: '267432109',
-    permission: 'Operador',
-    status: 'ativo',
-    initials: 'GP',
-  },
-  {
-    id: 18,
-    name: 'Helena Dias',
-    username: 'helenadias',
-    email: 'helena.dias@grausystem.pt',
-    phone: '+351 929-220-746',
-    nif: '278321098',
-    permission: 'Financeiro',
-    status: 'ativo',
-    initials: 'HD',
-  },
-  {
-    id: 19,
-    name: 'Fábio Correia',
-    username: 'fabiocorreia',
-    email: 'fabio.correia@grausystem.pt',
-    phone: '+351 913-998-157',
-    nif: '289210987',
-    permission: 'Admin',
-    status: 'ativo',
-    initials: 'FC',
-  },
-  {
-    id: 20,
-    name: 'Laura Gomes',
-    username: 'lauragomes',
-    email: 'laura.gomes@grausystem.pt',
-    phone: '+351 947-665-430',
-    nif: '290109876',
-    permission: 'Manager',
-    status: 'ativo',
-    initials: 'LG',
-  },
+  // {
+  //   id: 11,
+  //   name: 'Miguel Santos',
+  //   username: 'miguelsantos',
+  //   email: 'miguel.santos@grausystem.pt',
+  //   phone: '+351 912-778-341',
+  //   nif: '201234567',
+  //   permission: 'Operador',
+  //   status: 'ativo',
+  //   initials: 'MS',
+  // },
+  // {
+  //   id: 12,
+  //   name: 'Inês Oliveira',
+  //   username: 'inesoliveira',
+  //   email: 'ines.oliveira@grausystem.pt',
+  //   phone: '+351 936-552-890',
+  //   nif: '212987654',
+  //   permission: 'Manager',
+  //   status: 'ativo',
+  //   initials: 'IO',
+  // },
+  // {
+  //   id: 13,
+  //   name: 'André Pereira',
+  //   username: 'andrepereira',
+  //   email: 'andre.pereira@grausystem.pt',
+  //   phone: '+351 968-441-203',
+  //   nif: '223876541',
+  //   permission: 'Admin',
+  //   status: 'ferias',
+  //   initials: 'AP',
+  // },
+  // {
+  //   id: 14,
+  //   name: 'Catarina Sousa',
+  //   username: 'catarinasousa',
+  //   email: 'catarina.sousa@grausystem.pt',
+  //   phone: '+351 925-119-674',
+  //   nif: '234765432',
+  //   permission: 'Financeiro',
+  //   status: 'ativo',
+  //   initials: 'CS',
+  // },
+  // {
+  //   id: 15,
+  //   name: 'Bruno Fernandes',
+  //   username: 'brunofernandes',
+  //   email: 'bruno.fernandes@grausystem.pt',
+  //   phone: '+351 917-883-025',
+  //   nif: '245654321',
+  //   permission: 'Operador',
+  //   status: 'ativo',
+  //   initials: 'BF',
+  // },
+  // {
+  //   id: 16,
+  //   name: 'Diana Rocha',
+  //   username: 'dianarocha',
+  //   email: 'diana.rocha@grausystem.pt',
+  //   phone: '+351 934-667-812',
+  //   nif: '256543210',
+  //   permission: 'Manager',
+  //   status: 'inativo',
+  //   initials: 'DR',
+  // },
+  // {
+  //   id: 17,
+  //   name: 'Gonçalo Pinto',
+  //   username: 'goncalopinto',
+  //   email: 'goncalo.pinto@grausystem.pt',
+  //   phone: '+351 961-334-509',
+  //   nif: '267432109',
+  //   permission: 'Operador',
+  //   status: 'ativo',
+  //   initials: 'GP',
+  // },
+  // {
+  //   id: 18,
+  //   name: 'Helena Dias',
+  //   username: 'helenadias',
+  //   email: 'helena.dias@grausystem.pt',
+  //   phone: '+351 929-220-746',
+  //   nif: '278321098',
+  //   permission: 'Financeiro',
+  //   status: 'ativo',
+  //   initials: 'HD',
+  // },
+  // {
+  //   id: 19,
+  //   name: 'Fábio Correia',
+  //   username: 'fabiocorreia',
+  //   email: 'fabio.correia@grausystem.pt',
+  //   phone: '+351 913-998-157',
+  //   nif: '289210987',
+  //   permission: 'Admin',
+  //   status: 'ativo',
+  //   initials: 'FC',
+  // },
+  // {
+  //   id: 20,
+  //   name: 'Laura Gomes',
+  //   username: 'lauragomes',
+  //   email: 'laura.gomes@grausystem.pt',
+  //   phone: '+351 947-665-430',
+  //   nif: '290109876',
+  //   permission: 'Manager',
+  //   status: 'ativo',
+  //   initials: 'LG',
+  // },
 ];
 
 const statusFilter = ref<StatusFilter>('todos');
 const searchQuery = ref('');
 const permissionFilter = ref('');
 const selectedIds = ref<number[]>([]);
+const selectedEmployeeId = ref<number | null>(null);
 const pageSize = ref(10);
 const currentPage = ref(1);
+
+const informationSubtitle = computed(() => {
+  return `${stats.value.total} pessoas cadastradas · ${stats.value.ativos} ativas · ${stats.value.ferias} em férias`;
+});
 
 const permissions = computed(() =>
   [...new Set(employees.map((employee) => employee.permission))],
@@ -324,6 +337,18 @@ const statusClasses: Record<EmployeeStatus, string> = {
 
 const isSelected = (id: number) => selectedIds.value.includes(id);
 
+const handleEmployeeClick = (id: number) => {
+  selectedEmployeeId.value = id;
+  console.log('Employee id:', id);
+  alert('Employee:' + id)
+};
+
+const onEmployeeRowClick = (event: MouseEvent, id: number) => {
+  const target = event.target as HTMLElement | null;
+  if (target?.closest('[data-row-action]')) return;
+  handleEmployeeClick(id);
+};
+
 const toggleSelect = (id: number) => {
   if (isSelected(id)) {
     selectedIds.value = selectedIds.value.filter((selectedId) => selectedId !== id);
@@ -345,30 +370,22 @@ const goToPage = (page: number) => {
 
 <template>
   <div class="min-h-full bg-[#f5f5f7] px-8 pb-8 pt-5">
-    <nav class="mb-4 text-sm text-gray-400">
-      <span>Dashboard</span>
-      <span class="mx-1.5">&gt;</span>
-      <span class="text-gray-600">Colaboradores</span>
-    </nav>
+    <Breadcrumb :items="breadcrumbItems" />
 
-    <!-- Title + CTA -->
-    <div class="mb-6 flex items-end justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight text-gray-900">Colaboradores</h1>
-        <p class="mt-1 text-sm text-gray-400">
-          {{ stats.total }} pessoas cadastradas · {{ stats.ativos }} ativas ·
-          {{ stats.ferias }} em férias
-        </p>
-      </div>
-
-      <button
-        type="button"
-        class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
-      >
-        Novo colaborador
-        <span class="text-lg leading-none">+</span>
-      </button>
-    </div>
+    <PageHeader
+      title="Colaboradores"
+      :subtitle="informationSubtitle"
+    >
+      <template #actions>
+        <button
+          type="button"
+          class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
+        >
+          Novo colaborador
+          <span class="text-lg leading-none">+</span>
+        </button>
+      </template>
+    </PageHeader>
 
     <!-- Stats -->
     <div class="mb-6 grid grid-cols-4 gap-4">
@@ -425,7 +442,7 @@ const goToPage = (page: number) => {
           </button>
         </div>
 
-        <div class="relative min-w-[280px] flex-1">
+        <div class="relative min-w-70 flex-1">
           <Icon
             icon="carbon:search"
             class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400"
@@ -458,7 +475,7 @@ const goToPage = (page: number) => {
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[900px] border-collapse text-left">
+        <table class="w-full min-w-225 border-collapse text-left">
           <thead>
             <tr class="border-b border-gray-100 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
               <th class="w-10 py-3 pr-2 font-semibold"></th>
@@ -474,9 +491,10 @@ const goToPage = (page: number) => {
             <tr
               v-for="employee in paginatedEmployees"
               :key="employee.id"
-              class="border-b border-gray-50 last:border-b-0"
+              class="cursor-pointer border-b border-gray-50 last:border-b-0 hover:bg-gray-50/80"
+              @click="onEmployeeRowClick($event, employee.id)"
             >
-              <td class="py-4 pr-2 align-middle">
+              <td class="py-4 pr-2 align-middle" data-row-action>
                 <button
                   type="button"
                   class="flex size-4 cursor-pointer items-center justify-center rounded-full border transition-colors"
@@ -540,7 +558,7 @@ const goToPage = (page: number) => {
                 </span>
               </td>
 
-              <td class="py-4 pl-2 text-right align-middle">
+              <td class="py-4 pl-2 text-right align-middle" data-row-action>
                 <button
                   type="button"
                   class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
