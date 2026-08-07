@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
+import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
-import type { Employee, EmployeeStatus } from '../../types/employee';
+import { employeeStatusBadge } from '../../constants/employee-status';
+import type { Employee } from '../../types/employee';
 
 const props = defineProps<{
   employee: Employee;
@@ -30,18 +32,6 @@ watch(
   },
 );
 
-const statusLabel: Record<EmployeeStatus, string> = {
-  ativo: 'Ativo',
-  ferias: 'Férias',
-  inativo: 'Inativo',
-};
-
-const statusClasses: Record<EmployeeStatus, string> = {
-  ativo: 'bg-[#e8f8ef] text-[#1f9d55]',
-  ferias: 'bg-[#fff4e5] text-[#c47a12]',
-  inativo: 'bg-[#fde8e8] text-[#d64545]',
-};
-
 const tabs: { id: DetailTab; label: string }[] = [
   { id: 'details', label: 'Detalhes' },
   { id: 'payroll', label: 'Folha' },
@@ -67,7 +57,7 @@ const professionalFields = computed(() => [
   { label: 'Tipo de contrato', value: props.employee.employmentType },
   { label: 'Departamento', value: props.employee.department },
   { label: 'Data de admissão', value: props.employee.dateHired },
-  { label: 'Status', value: statusLabel[props.employee.status] },
+  { label: 'Status', value: employeeStatusBadge[props.employee.status].label },
 ]);
 </script>
 
@@ -144,12 +134,11 @@ const professionalFields = computed(() => [
             <h2 class="truncate text-xl font-semibold text-gray-900">
               {{ employee.name }}
             </h2>
-            <span
-              class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
-              :class="statusClasses[employee.status]"
-            >
-              {{ statusLabel[employee.status] }}
-            </span>
+            <StatusBadge
+              :label="employeeStatusBadge[employee.status].label"
+              :variant="employeeStatusBadge[employee.status].variant"
+              size="sm"
+            />
             <span class="text-sm text-gray-500">{{ employee.jobTitle }}</span>
           </div>
 

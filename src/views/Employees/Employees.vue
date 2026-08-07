@@ -6,9 +6,11 @@ import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
+import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import EmployeeFormPanel from './EmployeeFormPanel.vue';
 import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
+import { employeeStatusBadge } from '../../constants/employee-status';
 import { employeesMock } from './employees-mock';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
 import type { EmployeeDrawerState } from '../../types/drawer';
@@ -154,18 +156,6 @@ const tabs: { label: string; value: StatusFilter }[] = [
   { label: 'Férias', value: 'ferias' },
   { label: 'Inativos', value: 'inativo' },
 ];
-
-const statusLabel: Record<EmployeeStatus, string> = {
-  ativo: 'Ativo',
-  ferias: 'Férias',
-  inativo: 'Inativo',
-};
-
-const statusClasses: Record<EmployeeStatus, string> = {
-  ativo: 'bg-[#e8f8ef] text-[#1f9d55]',
-  ferias: 'bg-[#fff4e5] text-[#c47a12]',
-  inativo: 'bg-[#fde8e8] text-[#d64545]',
-};
 
 const isCreateDrawerOpen = computed(
   () => drawer.value.open && drawer.value.mode === 'create',
@@ -505,12 +495,10 @@ const goToPage = (page: number) => {
               </td>
 
               <td class="py-4 pr-4 align-middle">
-                <span
-                  class="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
-                  :class="statusClasses[employee.status]"
-                >
-                  {{ statusLabel[employee.status] }}
-                </span>
+                <StatusBadge
+                  :label="employeeStatusBadge[employee.status].label"
+                  :variant="employeeStatusBadge[employee.status].variant"
+                />
               </td>
 
               <td
