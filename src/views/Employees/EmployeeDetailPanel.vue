@@ -1,0 +1,263 @@
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import { Icon } from '@iconify/vue';
+import type { Employee, EmployeeStatus } from '../../types/employee';
+
+const props = defineProps<{
+  employee: Employee;
+  canGoPrevious?: boolean;
+  canGoNext?: boolean;
+}>();
+
+const emit = defineEmits<{
+  close: [];
+  previous: [];
+  next: [];
+  edit: [];
+  message: [];
+  delete: [];
+}>();
+
+type DetailTab = 'details' | 'payroll';
+
+const activeTab = ref<DetailTab>('details');
+
+watch(
+  () => props.employee.id,
+  () => {
+    activeTab.value = 'details';
+  },
+);
+
+const statusLabel: Record<EmployeeStatus, string> = {
+  ativo: 'Ativo',
+  ferias: 'Férias',
+  inativo: 'Inativo',
+};
+
+const statusClasses: Record<EmployeeStatus, string> = {
+  ativo: 'bg-[#e8f8ef] text-[#1f9d55]',
+  ferias: 'bg-[#fff4e5] text-[#c47a12]',
+  inativo: 'bg-[#fde8e8] text-[#d64545]',
+};
+
+const tabs: { id: DetailTab; label: string }[] = [
+  { id: 'details', label: 'Detalhes' },
+  { id: 'payroll', label: 'Folha' },
+];
+
+const personalFields = computed(() => [
+  { label: 'Nome completo', value: props.employee.name },
+  { label: 'Idiomas', value: props.employee.languages },
+  { label: 'Gênero', value: props.employee.gender },
+  { label: 'Formação', value: props.employee.education },
+  { label: 'Estado civil', value: props.employee.maritalStatus },
+  {
+    label: 'Contato de emergência',
+    value: `${props.employee.emergencyContact} (${props.employee.emergencyContactRelation})`,
+    icon: 'carbon:phone',
+  },
+  { label: 'Morada', value: props.employee.address, fullWidth: true },
+]);
+
+const professionalFields = computed(() => [
+  { label: 'ID do colaborador', value: props.employee.employmentId },
+  { label: 'Cargo', value: props.employee.jobTitle },
+  { label: 'Tipo de contrato', value: props.employee.employmentType },
+  { label: 'Departamento', value: props.employee.department },
+  { label: 'Data de admissão', value: props.employee.dateHired },
+  { label: 'Status', value: statusLabel[props.employee.status] },
+]);
+</script>
+
+<template>
+  <div class="flex h-full flex-col bg-[#f7f7f8]">
+    <header class="shrink-0 border-b border-gray-100 bg-white px-5 pt-4 pb-5">
+      <div class="mb-5 flex items-center justify-between">
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
+            :disabled="!canGoPrevious"
+            aria-label="Colaborador anterior"
+            @click="emit('previous')"
+          >
+            <Icon icon="carbon:chevron-left" class="size-5" />
+          </button>
+          <button
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
+            :disabled="!canGoNext"
+            aria-label="Próximo colaborador"
+            @click="emit('next')"
+          >
+            <Icon icon="carbon:chevron-right" class="size-5" />
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Editar"
+            @click="emit('edit')"
+          >
+            <Icon icon="carbon:edit" class="size-4" />
+          </button>
+          <button
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Mensagem"
+            @click="emit('message')"
+          >
+            <Icon icon="carbon:send" class="size-4" />
+          </button>
+          <button
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+            aria-label="Eliminar"
+            @click="emit('delete')"
+          >
+            <Icon icon="carbon:trash-can" class="size-4" />
+          </button>
+          <button
+            type="button"
+            class="ml-1 inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Fechar"
+            @click="emit('close')"
+          >
+            <Icon icon="carbon:close" class="size-5" />
+          </button>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <div
+          class="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#1a2332] text-lg font-semibold text-white"
+        >
+          {{ employee.initials }}
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <div class="mb-1 flex flex-wrap items-center gap-2">
+            <h2 class="truncate text-xl font-semibold text-gray-900">
+              {{ employee.name }}
+            </h2>
+            <span
+              class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
+              :class="statusClasses[employee.status]"
+            >
+              {{ statusLabel[employee.status] }}
+            </span>
+            <span class="text-sm text-gray-500">{{ employee.jobTitle }}</span>
+          </div>
+
+          <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+            <div class="text-sm">
+              <span class="text-gray-400">Departamento: </span>
+              <span class="font-medium text-gray-800">{{ employee.department }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-700">
+              <Icon icon="carbon:email" class="size-4 shrink-0 text-gray-400" />
+              <span class="truncate">{{ employee.email }}</span>
+            </div>
+            <div class="text-sm">
+              <span class="text-gray-400">Data de admissão: </span>
+              <span class="font-medium text-gray-800">{{ employee.dateHired }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-700">
+              <Icon icon="carbon:phone" class="size-4 shrink-0 text-gray-400" />
+              <span>{{ employee.phone }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="shrink-0 border-b border-gray-200 bg-white px-5">
+      <div class="flex gap-6">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          type="button"
+          class="relative cursor-pointer py-3 text-xs font-semibold tracking-wide uppercase transition-colors"
+          :class="
+            activeTab === tab.id
+              ? 'text-gray-900'
+              : 'text-gray-400 hover:text-gray-600'
+          "
+          @click="activeTab = tab.id"
+        >
+          {{ tab.label }}
+          <span
+            v-if="activeTab === tab.id"
+            class="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-[#e69138]"
+          />
+        </button>
+      </div>
+    </nav>
+
+    <div class="flex-1 overflow-y-auto px-5 py-5">
+      <template v-if="activeTab === 'details'">
+        <section class="mb-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <h3 class="mb-4 text-base font-semibold text-gray-900">
+            Informações pessoais
+          </h3>
+
+          <div class="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+            <div
+              v-for="field in personalFields"
+              :key="field.label"
+              :class="field.fullWidth ? 'sm:col-span-2' : ''"
+            >
+              <p class="mb-1 text-xs text-gray-400">{{ field.label }}</p>
+              <p class="flex items-start gap-2 text-sm font-semibold text-gray-900">
+                <Icon
+                  v-if="field.icon"
+                  :icon="field.icon"
+                  class="mt-0.5 size-4 shrink-0 text-gray-400"
+                />
+                <span>{{ field.value }}</span>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <h3 class="mb-4 text-base font-semibold text-gray-900">
+            Informações profissionais
+          </h3>
+
+          <div class="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+            <div
+              v-for="field in professionalFields"
+              :key="field.label"
+            >
+              <p class="mb-1 text-xs text-gray-400">{{ field.label }}</p>
+              <p class="text-sm font-semibold text-gray-900">{{ field.value }}</p>
+            </div>
+
+            <div class="sm:col-span-2">
+              <p class="mb-2 text-xs text-gray-400">Competências</p>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="skill in employee.skills"
+                  :key="skill"
+                  class="rounded-full bg-[#e8f2ff] px-3 py-1 text-xs font-medium text-[#3b6ea5]"
+                >
+                  {{ skill }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </template>
+
+      <template v-else>
+        <section class="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+          <p class="text-sm text-gray-400">Folha de pagamento em breve.</p>
+        </section>
+      </template>
+    </div>
+  </div>
+</template>

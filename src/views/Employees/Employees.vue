@@ -2,12 +2,23 @@
 import { computed, ref } from 'vue';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
+import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
+import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
+import EmployeeCreatePanel from './EmployeeCreatePanel.vue';
+import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
+import { employeesMock } from './employees-mock';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
+import type { EmployeeDrawerState } from '../../types/drawer';
+import type {
+  Employee,
+  EmployeeCreatePayload,
+  EmployeeStatus,
+} from '../../types/employee';
+import type { SelectFilterOption } from '../../types/select-filter';
 import type { StatCardItem } from '../../types/stat-card';
 
-type EmployeeStatus = 'ativo' | 'ferias' | 'inativo';
 type StatusFilter = 'todos' | EmployeeStatus;
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -15,246 +26,13 @@ const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'employees', label: 'Colaboradores' },
 ];
 
-interface Employee {
-  id: number;
-  name: string;
-  username: string;
-  email: string;
-  phone: string;
-  nif: string;
-  permission: string;
-  status: EmployeeStatus;
-  initials: string;
-}
-
-const employees: Employee[] = [
-  {
-    id: 1,
-    name: 'Lucas Ferreira',
-    username: 'lucasferreira',
-    email: 'lucasferreia@gmail.com',
-    phone: '+351 233-906-250',
-    nif: '271216182',
-    permission: 'Manager',
-    status: 'ativo',
-    initials: 'LF',
-  },
-  {
-    id: 2,
-    name: 'Ana Sofia Mendes',
-    username: 'anasmendes',
-    email: 'ana.mendes@grausystem.pt',
-    phone: '+351 912-445-780',
-    nif: '234567891',
-    permission: 'Operador',
-    status: 'ativo',
-    initials: 'AM',
-  },
-  {
-    id: 3,
-    name: 'Pedro Costa',
-    username: 'pedrocosta',
-    email: 'pedro.costa@grausystem.pt',
-    phone: '+351 933-120-445',
-    nif: '198765432',
-    permission: 'Admin',
-    status: 'ativo',
-    initials: 'PC',
-  },
-  {
-    id: 4,
-    name: 'Mariana Lopes',
-    username: 'marianaslopes',
-    email: 'mariana.lopes@grausystem.pt',
-    phone: '+351 967-881-203',
-    nif: '256789123',
-    permission: 'Manager',
-    status: 'ferias',
-    initials: 'ML',
-  },
-  {
-    id: 5,
-    name: 'João Ribeiro',
-    username: 'joaoribeiro',
-    email: 'joao.ribeiro@grausystem.pt',
-    phone: '+351 924-556-019',
-    nif: '212345678',
-    permission: 'Operador',
-    status: 'ativo',
-    initials: 'JR',
-  },
-  {
-    id: 6,
-    name: 'Beatriz Nunes',
-    username: 'beatriznunes',
-    email: 'beatriz.nunes@grausystem.pt',
-    phone: '+351 918-334-672',
-    nif: '267891234',
-    permission: 'Financeiro',
-    status: 'ativo',
-    initials: 'BN',
-  },
-  {
-    id: 7,
-    name: 'Ricardo Almeida',
-    username: 'ricardoalmeida',
-    email: 'ricardo.almeida@grausystem.pt',
-    phone: '+351 961-772-408',
-    nif: '245678912',
-    permission: 'Manager',
-    status: 'ativo',
-    initials: 'RA',
-  },
-  {
-    id: 8,
-    name: 'Carla Teixeira',
-    username: 'carlateixeira',
-    email: 'carla.teixeira@grausystem.pt',
-    phone: '+351 935-209-881',
-    nif: '223456789',
-    permission: 'Operador',
-    status: 'inativo',
-    initials: 'CT',
-  },
-  {
-    id: 9,
-    name: 'Tiago Martins',
-    username: 'tiagomartins',
-    email: 'tiago.martins@grausystem.pt',
-    phone: '+351 929-640-115',
-    nif: '278901234',
-    permission: 'Admin',
-    status: 'ativo',
-    initials: 'TM',
-  },
-  {
-    id: 10,
-    name: 'Sofia Carvalho',
-    username: 'sofiacarvalho',
-    email: 'sofia.carvalho@grausystem.pt',
-    phone: '+351 914-883-560',
-    nif: '289012345',
-    permission: 'Financeiro',
-    status: 'ativo',
-    initials: 'SC',
-  },
-  // {
-  //   id: 11,
-  //   name: 'Miguel Santos',
-  //   username: 'miguelsantos',
-  //   email: 'miguel.santos@grausystem.pt',
-  //   phone: '+351 912-778-341',
-  //   nif: '201234567',
-  //   permission: 'Operador',
-  //   status: 'ativo',
-  //   initials: 'MS',
-  // },
-  // {
-  //   id: 12,
-  //   name: 'Inês Oliveira',
-  //   username: 'inesoliveira',
-  //   email: 'ines.oliveira@grausystem.pt',
-  //   phone: '+351 936-552-890',
-  //   nif: '212987654',
-  //   permission: 'Manager',
-  //   status: 'ativo',
-  //   initials: 'IO',
-  // },
-  // {
-  //   id: 13,
-  //   name: 'André Pereira',
-  //   username: 'andrepereira',
-  //   email: 'andre.pereira@grausystem.pt',
-  //   phone: '+351 968-441-203',
-  //   nif: '223876541',
-  //   permission: 'Admin',
-  //   status: 'ferias',
-  //   initials: 'AP',
-  // },
-  // {
-  //   id: 14,
-  //   name: 'Catarina Sousa',
-  //   username: 'catarinasousa',
-  //   email: 'catarina.sousa@grausystem.pt',
-  //   phone: '+351 925-119-674',
-  //   nif: '234765432',
-  //   permission: 'Financeiro',
-  //   status: 'ativo',
-  //   initials: 'CS',
-  // },
-  // {
-  //   id: 15,
-  //   name: 'Bruno Fernandes',
-  //   username: 'brunofernandes',
-  //   email: 'bruno.fernandes@grausystem.pt',
-  //   phone: '+351 917-883-025',
-  //   nif: '245654321',
-  //   permission: 'Operador',
-  //   status: 'ativo',
-  //   initials: 'BF',
-  // },
-  // {
-  //   id: 16,
-  //   name: 'Diana Rocha',
-  //   username: 'dianarocha',
-  //   email: 'diana.rocha@grausystem.pt',
-  //   phone: '+351 934-667-812',
-  //   nif: '256543210',
-  //   permission: 'Manager',
-  //   status: 'inativo',
-  //   initials: 'DR',
-  // },
-  // {
-  //   id: 17,
-  //   name: 'Gonçalo Pinto',
-  //   username: 'goncalopinto',
-  //   email: 'goncalo.pinto@grausystem.pt',
-  //   phone: '+351 961-334-509',
-  //   nif: '267432109',
-  //   permission: 'Operador',
-  //   status: 'ativo',
-  //   initials: 'GP',
-  // },
-  // {
-  //   id: 18,
-  //   name: 'Helena Dias',
-  //   username: 'helenadias',
-  //   email: 'helena.dias@grausystem.pt',
-  //   phone: '+351 929-220-746',
-  //   nif: '278321098',
-  //   permission: 'Financeiro',
-  //   status: 'ativo',
-  //   initials: 'HD',
-  // },
-  // {
-  //   id: 19,
-  //   name: 'Fábio Correia',
-  //   username: 'fabiocorreia',
-  //   email: 'fabio.correia@grausystem.pt',
-  //   phone: '+351 913-998-157',
-  //   nif: '289210987',
-  //   permission: 'Admin',
-  //   status: 'ativo',
-  //   initials: 'FC',
-  // },
-  // {
-  //   id: 20,
-  //   name: 'Laura Gomes',
-  //   username: 'lauragomes',
-  //   email: 'laura.gomes@grausystem.pt',
-  //   phone: '+351 947-665-430',
-  //   nif: '290109876',
-  //   permission: 'Manager',
-  //   status: 'ativo',
-  //   initials: 'LG',
-  // },
-];
+const employees = ref<Employee[]>([...employeesMock]);
 
 const statusFilter = ref<StatusFilter>('todos');
 const searchQuery = ref('');
 const permissionFilter = ref('');
 const selectedIds = ref<number[]>([]);
-const selectedEmployeeId = ref<number | null>(null);
+const drawer = ref<EmployeeDrawerState>({ open: false });
 const pageSize = ref(10);
 const currentPage = ref(1);
 
@@ -262,15 +40,36 @@ const informationSubtitle = computed(() => {
   return `${stats.value.total} pessoas cadastradas · ${stats.value.ativos} ativas · ${stats.value.ferias} em férias`;
 });
 
-const permissions = computed(() =>
-  [...new Set(employees.map((employee) => employee.permission))],
-);
+const permissionOptions = computed<SelectFilterOption[]>(() => [
+  { id: 'all', label: 'Filtrar por permissão', value: '' },
+  ...[...new Set(employees.value.map((employee) => employee.permission))].map(
+    (permission) => ({
+      id: permission,
+      label: permission,
+      value: permission,
+    }),
+  ),
+]);
+
+const pageSizeOptions: SelectFilterOption[] = [
+  { id: 5, label: '5', value: 5 },
+  { id: 10, label: '10', value: 10 },
+  { id: 20, label: '20', value: 20 },
+];
+
+const onPermissionFilterChange = () => {
+  currentPage.value = 1;
+};
+
+const onPageSizeChange = () => {
+  currentPage.value = 1;
+};
 
 const stats = computed(() => {
-  const total = employees.length;
-  const ativos = employees.filter((e) => e.status === 'ativo').length;
-  const ferias = employees.filter((e) => e.status === 'ferias').length;
-  const inativos = employees.filter((e) => e.status === 'inativo').length;
+  const total = employees.value.length;
+  const ativos = employees.value.filter((e) => e.status === 'ativo').length;
+  const ferias = employees.value.filter((e) => e.status === 'ferias').length;
+  const inativos = employees.value.filter((e) => e.status === 'inativo').length;
 
   return { total, ativos, ferias, inativos };
 });
@@ -304,7 +103,7 @@ const statCards = computed<StatCardItem[]>(() => [
 ]);
 
 const filteredEmployees = computed(() => {
-  return employees.filter((employee) => {
+  return employees.value.filter((employee) => {
     const matchesStatus =
       statusFilter.value === 'todos' || employee.status === statusFilter.value;
 
@@ -365,18 +164,89 @@ const statusClasses: Record<EmployeeStatus, string> = {
   inativo: 'bg-[#fde8e8] text-[#d64545]',
 };
 
+const isCreateDrawerOpen = computed(
+  () => drawer.value.open && drawer.value.mode === 'create',
+);
+
+const selectedEmployee = computed(() => {
+  const state = drawer.value;
+  if (!state.open || state.mode !== 'detail') return null;
+  return employees.value.find((employee) => employee.id === state.employeeId) ?? null;
+});
+
+const detailIndex = computed(() => {
+  const state = drawer.value;
+  if (!state.open || state.mode !== 'detail') return -1;
+  return filteredEmployees.value.findIndex(
+    (employee) => employee.id === state.employeeId,
+  );
+});
+
+const canGoPreviousEmployee = computed(() => detailIndex.value > 0);
+
+const canGoNextEmployee = computed(
+  () =>
+    detailIndex.value >= 0 &&
+    detailIndex.value < filteredEmployees.value.length - 1,
+);
+
+const drawerWidthClass = computed(() =>
+  drawer.value.open ? 'w-full max-w-3xl' : 'w-full max-w-md',
+);
+
+const buildInitials = (name: string) => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '??';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+};
+
+const handleCreateEmployee = (payload: EmployeeCreatePayload) => {
+  const nextId =
+    employees.value.reduce((max, employee) => Math.max(max, employee.id), 0) + 1;
+
+  const created: Employee = {
+    ...payload,
+    id: nextId,
+    initials: buildInitials(payload.name),
+    employmentId: `EMP-${String(nextId).padStart(4, '0')}`,
+  };
+
+  employees.value = [created, ...employees.value];
+  currentPage.value = 1;
+  openDetailDrawer(created.id);
+};
+
 const isSelected = (id: number) => selectedIds.value.includes(id);
 
-const handleEmployeeClick = (id: number) => {
-  selectedEmployeeId.value = id;
-  console.log('Employee id:', id);
-  alert('Employee:' + id)
+const openCreateDrawer = () => {
+  drawer.value = { open: true, mode: 'create' };
+};
+
+const openDetailDrawer = (employeeId: number) => {
+  drawer.value = { open: true, mode: 'detail', employeeId };
+};
+
+const closeDrawer = () => {
+  drawer.value = { open: false };
+};
+
+const goToPreviousEmployee = () => {
+  if (!canGoPreviousEmployee.value) return;
+  const previous = filteredEmployees.value[detailIndex.value - 1];
+  openDetailDrawer(previous.id);
+};
+
+const goToNextEmployee = () => {
+  if (!canGoNextEmployee.value) return;
+  const next = filteredEmployees.value[detailIndex.value + 1];
+  openDetailDrawer(next.id);
 };
 
 const onEmployeeRowClick = (event: MouseEvent, id: number) => {
   const target = event.target as HTMLElement | null;
   if (target?.closest('[data-row-action]')) return;
-  handleEmployeeClick(id);
+  openDetailDrawer(id);
 };
 
 const toggleSelect = (id: number) => {
@@ -410,6 +280,7 @@ const goToPage = (page: number) => {
         <button
           type="button"
           class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
+          @click="openCreateDrawer"
         >
           Novo colaborador
           <span class="text-lg leading-none">+</span>
@@ -459,22 +330,13 @@ const goToPage = (page: number) => {
           />
         </div>
 
-        <div class="relative">
-          <select
-            v-model="permissionFilter"
-            class="cursor-pointer appearance-none rounded-full border border-gray-200 bg-white py-2.5 pr-9 pl-4 text-sm text-gray-500 outline-none focus:border-gray-300"
-            @change="currentPage = 1"
-          >
-            <option value="">Filtrar por permissão</option>
-            <option v-for="permission in permissions" :key="permission" :value="permission">
-              {{ permission }}
-            </option>
-          </select>
-          <Icon
-            icon="carbon:chevron-down"
-            class="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-gray-400"
-          />
-        </div>
+        <SelectFilter
+          v-model="permissionFilter"
+          :options="permissionOptions"
+          placeholder="Filtrar por permissão"
+          variant="pill"
+          @change="onPermissionFilterChange"
+        />
       </div>
 
       <div class="overflow-x-auto">
@@ -584,21 +446,13 @@ const goToPage = (page: number) => {
       <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <span>Exibindo</span>
-          <div class="relative">
-            <select
-              v-model.number="pageSize"
-              class="cursor-pointer appearance-none rounded-md border border-gray-200 bg-white py-1 pr-7 pl-2.5 text-sm text-gray-700 outline-none"
-              @change="currentPage = 1"
-            >
-              <option :value="5">5</option>
-              <option :value="10">10</option>
-              <option :value="20">20</option>
-            </select>
-            <Icon
-              icon="carbon:chevron-down"
-              class="pointer-events-none absolute top-1/2 right-1.5 size-3.5 -translate-y-1/2 text-gray-400"
-            />
-          </div>
+          <SelectFilter
+            v-model="pageSize"
+            :options="pageSizeOptions"
+            variant="compact"
+            placement="top"
+            @change="onPageSizeChange"
+          />
           <span>de {{ filteredEmployees.length }} resultados</span>
         </div>
 
@@ -640,5 +494,26 @@ const goToPage = (page: number) => {
         </div>
       </div>
     </section>
+
+    <Drawer
+      :open="drawer.open"
+      :width-class="drawerWidthClass"
+      @close="closeDrawer"
+    >
+      <EmployeeCreatePanel
+        v-if="isCreateDrawerOpen"
+        @close="closeDrawer"
+        @submit="handleCreateEmployee"
+      />
+      <EmployeeDetailPanel
+        v-else-if="selectedEmployee"
+        :employee="selectedEmployee"
+        :can-go-previous="canGoPreviousEmployee"
+        :can-go-next="canGoNextEmployee"
+        @close="closeDrawer"
+        @previous="goToPreviousEmployee"
+        @next="goToNextEmployee"
+      />
+    </Drawer>
   </div>
 </template>
