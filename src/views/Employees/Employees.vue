@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
-import EmployeeCreatePanel from './EmployeeCreatePanel.vue';
+import EmployeeFormPanel from './EmployeeFormPanel.vue';
 import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
 import { employeesMock } from './employees-mock';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
@@ -15,6 +15,7 @@ import type {
   Employee,
   EmployeeCreatePayload,
   EmployeeStatus,
+  EmployeeUpdatePayload,
 } from '../../types/employee';
 import type { SelectFilterOption } from '../../types/select-filter';
 import type { StatCardItem } from '../../types/stat-card';
@@ -32,6 +33,7 @@ const statusFilter = ref<StatusFilter>('todos');
 const searchQuery = ref('');
 const permissionFilter = ref('');
 const selectedIds = ref<number[]>([]);
+const openActionsId = ref<number | null>(null);
 const drawer = ref<EmployeeDrawerState>({ open: false });
 const pageSize = ref(10);
 const currentPage = ref(1);
@@ -168,17 +170,41 @@ const isCreateDrawerOpen = computed(
   () => drawer.value.open && drawer.value.mode === 'create',
 );
 
+const isEditDrawerOpen = computed(
+  () => drawer.value.open && drawer.value.mode === 'edit',
+);
+
+const activeEmployeeId = computed(() => {
+  const state = drawer.value;
+  if (!state.open) return null;
+  if (state.mode === 'detail' || state.mode === 'edit') return state.employeeId;
+  return null;
+});
+
 const selectedEmployee = computed(() => {
+  if (activeEmployeeId.value === null) return null;
+  return (
+    employees.value.find((employee) => employee.id === activeEmployeeId.value) ??
+    null
+  );
+});
+
+const detailEmployee = computed(() => {
   const state = drawer.value;
   if (!state.open || state.mode !== 'detail') return null;
-  return employees.value.find((employee) => employee.id === state.employeeId) ?? null;
+  return selectedEmployee.value;
+});
+
+const editEmployee = computed(() => {
+  const state = drawer.value;
+  if (!state.open || state.mode !== 'edit') return null;
+  return selectedEmployee.value;
 });
 
 const detailIndex = computed(() => {
-  const state = drawer.value;
-  if (!state.open || state.mode !== 'detail') return -1;
+  if (activeEmployeeId.value === null) return -1;
   return filteredEmployees.value.findIndex(
-    (employee) => employee.id === state.employeeId,
+    (employee) => employee.id === activeEmployeeId.value,
   );
 });
 
@@ -217,6 +243,23 @@ const handleCreateEmployee = (payload: EmployeeCreatePayload) => {
   openDetailDrawer(created.id);
 };
 
+const handleUpdateEmployee = (payload: EmployeeUpdatePayload) => {
+  const employeeId = activeEmployeeId.value;
+  if (employeeId === null) return;
+
+  employees.value = employees.value.map((employee) => {
+    if (employee.id !== employeeId) return employee;
+
+    return {
+      ...employee,
+      ...payload,
+      initials: buildInitials(payload.name),
+    };
+  });
+
+  openDetailDrawer(employeeId);
+};
+
 const isSelected = (id: number) => selectedIds.value.includes(id);
 
 const openCreateDrawer = () => {
@@ -227,8 +270,20 @@ const openDetailDrawer = (employeeId: number) => {
   drawer.value = { open: true, mode: 'detail', employeeId };
 };
 
+const openEditDrawer = (employeeId: number) => {
+  drawer.value = { open: true, mode: 'edit', employeeId };
+};
+
 const closeDrawer = () => {
   drawer.value = { open: false };
+};
+
+const closeFormDrawer = () => {
+  if (isEditDrawerOpen.value && activeEmployeeId.value !== null) {
+    openDetailDrawer(activeEmployeeId.value);
+    return;
+  }
+  closeDrawer();
 };
 
 const goToPreviousEmployee = () => {
@@ -248,6 +303,40 @@ const onEmployeeRowClick = (event: MouseEvent, id: number) => {
   if (target?.closest('[data-row-action]')) return;
   openDetailDrawer(id);
 };
+
+const closeActionsMenu = () => {
+  openActionsId.value = null;
+};
+
+const toggleActionsMenu = (employeeId: number) => {
+  openActionsId.value =
+    openActionsId.value === employeeId ? null : employeeId;
+};
+
+const onEditAction = (employeeId: number) => {
+  closeActionsMenu();
+  openEditDrawer(employeeId);
+};
+
+const onRemoveAction = (employeeId: number) => {
+  closeActionsMenu();
+  console.log('Remove employee:', employeeId);
+};
+
+const onDocumentClick = (event: MouseEvent) => {
+  const target = event.target as HTMLElement | null;
+  if (!target?.closest('[data-actions-menu]')) {
+    closeActionsMenu();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', onDocumentClick);
+});
 
 const toggleSelect = (id: number) => {
   if (isSelected(id)) {
@@ -423,13 +512,45 @@ const goToPage = (page: number) => {
                 </span>
               </td>
 
-              <td class="py-4 pl-2 text-right align-middle" data-row-action>
+              <td
+                class="relative py-4 pl-2 text-right align-middle"
+                data-row-action
+                data-actions-menu
+              >
                 <button
                   type="button"
                   class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                  :aria-expanded="openActionsId === employee.id"
+                  aria-haspopup="menu"
+                  @click.stop="toggleActionsMenu(employee.id)"
                 >
                   <Icon icon="carbon:overflow-menu-vertical" class="size-5" />
                 </button>
+
+                <div
+                  v-if="openActionsId === employee.id"
+                  role="menu"
+                  class="absolute top-[calc(100%-0.5rem)] right-0 z-20 min-w-40 rounded-xl border border-gray-100 bg-white p-1.5 shadow-[0_12px_32px_rgba(16,22,37,0.12)]"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5]"
+                    @click.stop="onEditAction(employee.id)"
+                  >
+                    <Icon icon="carbon:edit" class="size-4 text-gray-400" />
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+                    @click.stop="onRemoveAction(employee.id)"
+                  >
+                    <Icon icon="carbon:trash-can" class="size-4" />
+                    Remover
+                  </button>
+                </div>
               </td>
             </tr>
 
@@ -500,19 +621,26 @@ const goToPage = (page: number) => {
       :width-class="drawerWidthClass"
       @close="closeDrawer"
     >
-      <EmployeeCreatePanel
+      <EmployeeFormPanel
         v-if="isCreateDrawerOpen"
-        @close="closeDrawer"
+        @close="closeFormDrawer"
         @submit="handleCreateEmployee"
       />
+      <EmployeeFormPanel
+        v-else-if="isEditDrawerOpen && editEmployee"
+        :employee="editEmployee"
+        @close="closeFormDrawer"
+        @submit="handleUpdateEmployee"
+      />
       <EmployeeDetailPanel
-        v-else-if="selectedEmployee"
-        :employee="selectedEmployee"
+        v-else-if="detailEmployee"
+        :employee="detailEmployee"
         :can-go-previous="canGoPreviousEmployee"
         :can-go-next="canGoNextEmployee"
         @close="closeDrawer"
         @previous="goToPreviousEmployee"
         @next="goToNextEmployee"
+        @edit="openEditDrawer(detailEmployee.id)"
       />
     </Drawer>
   </div>

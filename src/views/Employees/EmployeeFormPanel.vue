@@ -1,15 +1,25 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
-import type { EmployeeCreatePayload, EmployeeStatus } from '../../types/employee';
+import type {
+  Employee,
+  EmployeeCreatePayload,
+  EmployeeStatus,
+} from '../../types/employee';
 import type { SelectFilterOption } from '../../types/select-filter';
+
+const props = defineProps<{
+  employee?: Employee;
+}>();
 
 const emit = defineEmits<{
   close: [];
   submit: [payload: EmployeeCreatePayload];
 }>();
+
+const isEditMode = computed(() => Boolean(props.employee));
 
 const permissionOptions: SelectFilterOption[] = [
   { id: 'manager', label: 'Manager', value: 'Manager' },
@@ -71,6 +81,39 @@ const submitted = ref(false);
 const isPhoneValid = ref(false);
 const isEmergencyPhoneValid = ref(true);
 
+const fillForm = (employee: Employee) => {
+  form.name = employee.name;
+  form.username = employee.username;
+  form.email = employee.email;
+  form.phone = employee.phone;
+  form.nif = employee.nif;
+  form.permission = employee.permission;
+  form.status = employee.status;
+  form.department = employee.department;
+  form.dateHired = employee.dateHired;
+  form.gender = employee.gender;
+  form.maritalStatus = employee.maritalStatus;
+  form.address = employee.address === '—' ? '' : employee.address;
+  form.languages = employee.languages;
+  form.education = employee.education === '—' ? '' : employee.education;
+  form.emergencyContact = employee.emergencyContact;
+  form.emergencyContactRelation = employee.emergencyContactRelation;
+  form.employmentType = employee.employmentType;
+  form.jobTitle = employee.jobTitle;
+  form.skillsInput = employee.skills.join(', ');
+  isPhoneValid.value = Boolean(employee.phone);
+  isEmergencyPhoneValid.value = true;
+  submitted.value = false;
+};
+
+watch(
+  () => props.employee,
+  (employee) => {
+    if (employee) fillForm(employee);
+  },
+  { immediate: true },
+);
+
 const skills = computed(() =>
   form.skillsInput
     .split(',')
@@ -82,11 +125,15 @@ const isValid = computed(() => {
   const emergencyOk =
     !form.emergencyContact.trim() || isEmergencyPhoneValid.value;
 
+  const phoneOk =
+    isPhoneValid.value ||
+    (isEditMode.value && form.phone.trim().length >= 8);
+
   return (
     form.name.trim().length > 1 &&
     form.username.trim().length > 1 &&
     form.email.trim().includes('@') &&
-    isPhoneValid.value &&
+    phoneOk &&
     form.nif.trim().length >= 5 &&
     form.permission.trim().length > 0 &&
     form.department.trim().length > 0 &&
@@ -94,6 +141,20 @@ const isValid = computed(() => {
     emergencyOk
   );
 });
+
+const title = computed(() =>
+  isEditMode.value ? 'Editar colaborador' : 'Novo colaborador',
+);
+
+const subtitle = computed(() =>
+  isEditMode.value
+    ? 'Atualize os dados do membro da equipe'
+    : 'Preencha os dados para cadastrar um novo membro da equipe',
+);
+
+const submitLabel = computed(() =>
+  isEditMode.value ? 'Salvar alterações' : 'Criar colaborador',
+);
 
 const onSubmit = () => {
   submitted.value = true;
@@ -149,10 +210,8 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
     <header class="shrink-0 border-b border-gray-100 bg-white px-5 py-4">
       <div class="flex items-center justify-between gap-3">
         <div>
-          <h2 class="text-lg font-semibold text-gray-900">Novo colaborador</h2>
-          <p class="mt-0.5 text-sm text-gray-400">
-            Preencha os dados para cadastrar um novo membro da equipe
-          </p>
+          <h2 class="text-lg font-semibold text-gray-900">{{ title }}</h2>
+          <p class="mt-0.5 text-sm text-gray-400">{{ subtitle }}</p>
         </div>
         <button
           type="button"
@@ -225,7 +284,13 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
                 id="create-phone"
                 v-model="form.phone"
                 placeholder="900 000 000"
-                :invalid="submitted && !isPhoneValid"
+                :invalid="
+                  submitted &&
+                  !(
+                    isPhoneValid ||
+                    (isEditMode && form.phone.trim().length >= 8)
+                  )
+                "
                 @validate="onPhoneValidate"
               />
             </div>
@@ -431,7 +496,7 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
           type="submit"
           class="cursor-pointer rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
         >
-          Criar colaborador
+          {{ submitLabel }}
         </button>
       </footer>
     </form>

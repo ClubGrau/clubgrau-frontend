@@ -26,3 +26,5 @@ export interface Employee {
 }
 
 export type EmployeeCreatePayload = Omit<Employee, 'id' | 'initials' | 'employmentId'>;
+
+export type EmployeeUpdatePayload = EmployeeCreatePayload;
