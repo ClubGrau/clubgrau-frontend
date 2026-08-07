@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
+import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import type { Employee, EmployeeStatus } from '../../types/employee';
 
 const props = defineProps<{
@@ -132,11 +133,11 @@ const professionalFields = computed(() => [
       </div>
 
       <div class="flex gap-4">
-        <div
-          class="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#1a2332] text-lg font-semibold text-white"
-        >
-          {{ employee.initials }}
-        </div>
+        <UserAvatar
+          :initials="employee.initials"
+          size="lg"
+          :alt="employee.name"
+        />
 
         <div class="min-w-0 flex-1">
           <div class="mb-1 flex flex-wrap items-center gap-2">

@@ -6,6 +6,7 @@ import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
+import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import EmployeeFormPanel from './EmployeeFormPanel.vue';
 import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
 import { employeesMock } from './employees-mock';
@@ -468,11 +469,11 @@ const goToPage = (page: number) => {
 
               <td class="py-4 pr-4 align-middle">
                 <div class="flex items-center gap-3">
-                  <div
-                    class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#1a2332] text-xs font-semibold text-white"
-                  >
-                    {{ employee.initials }}
-                  </div>
+                  <UserAvatar
+                    :initials="employee.initials"
+                    size="sm"
+                    :alt="employee.name"
+                  />
                   <div class="min-w-0 leading-tight">
                     <p class="truncate text-sm font-semibold text-gray-900">
                       {{ employee.name }}
