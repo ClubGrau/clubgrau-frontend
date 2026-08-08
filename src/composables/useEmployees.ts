@@ -50,13 +50,21 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     }),
   )
 
-  const setStatusFilter = (value: StatusFilter) => {
-    statusFilter.value = value
+  const resetToFirstPage = () => {
     currentPage.value = 1
   }
 
+  const setStatusFilter = (value: StatusFilter) => {
+    statusFilter.value = value
+    resetToFirstPage()
+  }
+
+  const onSearchQueryChange = () => {
+    resetToFirstPage()
+  }
+
   const onPermissionFilterChange = () => {
-    currentPage.value = 1
+    resetToFirstPage()
   }
 
   return {
@@ -67,6 +75,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     statusFilter,
     setStatusFilter,
     searchQuery,
+    onSearchQueryChange,
     permissionFilter,
     onPermissionFilterChange,
     total,

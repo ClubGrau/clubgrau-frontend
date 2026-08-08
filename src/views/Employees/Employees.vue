@@ -35,6 +35,7 @@ const {
   statusFilter,
   setStatusFilter,
   searchQuery,
+  onSearchQueryChange,
   permissionFilter,
   onPermissionFilterChange,
   total,
@@ -322,7 +323,7 @@ const toggleSelect = (id: string) => {
             type="search"
             placeholder="Busque por Nome, Contatos..."
             class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-gray-300"
-            @input="currentPage = 1"
+            @input="onSearchQueryChange"
           />
         </div>
 
