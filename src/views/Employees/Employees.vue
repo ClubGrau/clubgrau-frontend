@@ -33,6 +33,7 @@ const {
   currentPage,
   statusFilter,
   setStatusFilter,
+  searchQuery,
   total,
   isLoading,
   refetch,
@@ -43,7 +44,6 @@ const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'employees', label: 'Colaboradores' },
 ];
 
-const searchQuery = ref('');
 const permissionFilter = ref('');
 const selectedIds = ref<string[]>([]);
 const openActionsId = ref<string | null>(null);
