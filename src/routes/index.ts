@@ -1,5 +1,14 @@
 import { createWebHistory, createRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
+const authGuard = () => {
+  const authStore = useAuthStore()
+  if (authStore.token) {
+    return true
+  }
+  return '/login'
+}
+  
 const routes = [
   {
     path: '/',
@@ -12,9 +21,15 @@ const routes = [
   {
     path: "/app",
     name: "template",
-    redirect: "/app/employees",
+    redirect: "/app/dashboard",
+    beforeEnter: authGuard,
     component: () => import('../Layout/AppContainer.vue'),
     children: [
+      {
+        path: "dashboard",
+        name: "dashboard",
+        component: () => import('../views/Dashboard/Dashboard.vue'),
+      },
       {
         path: "employees",
         name: "employees",
