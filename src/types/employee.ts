@@ -1,5 +1,18 @@
 export type EmployeeStatus = 'ativo' | 'ferias' | 'inativo';
 
+export namespace Employee {
+  export interface Entity {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    nif?: string;
+    isActive: boolean;
+    createdAt: string;
+    deactivateAt?: string;
+  }
+}
+
 export interface EmployeeShapped {
   id: string;
   name: string;

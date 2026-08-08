@@ -1,5 +1,5 @@
 import type { EmployeeShapped } from '../../../types/employee'
-import type { Employee as ApiEmployee } from './types'
+import type { Employee } from '../../../types/employee'
 
 function buildInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -9,7 +9,7 @@ function buildInitials(name: string): string {
 }
 
 /** Maps backend employee payload to the UI `Employee` shape. */
-export function mapApiEmployeeToEmployee(apiEmployee: ApiEmployee): EmployeeShapped {
+export function mapApiEmployeeToEmployee(apiEmployee: Employee.Entity): EmployeeShapped {
   return {
     id: apiEmployee.id,
     name: apiEmployee.name,
@@ -36,6 +36,6 @@ export function mapApiEmployeeToEmployee(apiEmployee: ApiEmployee): EmployeeShap
   }
 }
 
-export function mapApiEmployeesToEmployees(apiEmployees: ApiEmployee[]): EmployeeShapped[] {
+export function mapApiEmployeesToEmployees(apiEmployees: Employee.Entity[]): EmployeeShapped[] {
   return apiEmployees.map(mapApiEmployeeToEmployee)
 }
