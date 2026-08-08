@@ -29,6 +29,7 @@ import { httpEmployeesApi } from '../../services/api/employees/http-employees-ap
 
 const {
   employees,
+  filteredEmployees,
   pageSize,
   currentPage,
   statusFilter,
@@ -100,27 +101,6 @@ const statCards = computed<StatCardItem[]>(() => [
     variant: 'danger',
   },
 ]);
-
-const filteredEmployees = computed(() => {
-  return employees.value.filter((employee) => {
-    const matchesStatus =
-      statusFilter.value === 'todos' || employee.status === statusFilter.value;
-
-    const query = searchQuery.value.trim().toLowerCase();
-    const matchesSearch =
-      !query ||
-      employee.name.toLowerCase().includes(query) ||
-      employee.username.toLowerCase().includes(query) ||
-      employee.email.toLowerCase().includes(query) ||
-      employee.phone.toLowerCase().includes(query) ||
-      employee.nif.includes(query);
-
-    const matchesPermission =
-      !permissionFilter.value || employee.permission === permissionFilter.value;
-
-    return matchesStatus && matchesSearch && matchesPermission;
-  });
-});
 
 const tabs: { label: string; value: StatusFilter }[] = [
   { label: 'Todos', value: 'todos' },
