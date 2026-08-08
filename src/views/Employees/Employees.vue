@@ -13,13 +13,12 @@ import EmployeeFormPanel from './EmployeeFormPanel.vue';
 import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
 import { employeeStatusBadge } from '../../constants/employee-status';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
-import type { EmployeeDrawerState } from '../../types/drawer';
 import type {
-  Employee,
   EmployeeCreatePayload,
   EmployeeUpdatePayload,
 } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
+import { useEmployeeDrawer } from '../../composables/useEmployeeDrawer';
 import {
   useEmployees,
   type StatusFilter,
@@ -44,6 +43,25 @@ const {
   refetch,
 } = useEmployees(httpEmployeesApi);
 
+const {
+  drawer,
+  isCreateDrawerOpen,
+  isEditDrawerOpen,
+  activeEmployeeId,
+  detailEmployee,
+  editEmployee,
+  canGoPreviousEmployee,
+  canGoNextEmployee,
+  drawerWidthClass,
+  openCreateDrawer,
+  openDetailDrawer,
+  openEditDrawer,
+  closeDrawer,
+  closeFormDrawer,
+  goToPreviousEmployee,
+  goToNextEmployee,
+} = useEmployeeDrawer(employees, filteredEmployees);
+
 const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/app/dashboard' },
   { id: 'employees', label: 'Colaboradores' },
@@ -51,7 +69,6 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 const selectedIds = ref<string[]>([]);
 const openActionsId = ref<string | null>(null);
-const drawer = ref<EmployeeDrawerState>({ open: false });
 
 const informationSubtitle = computed(() => {
   return `${stats.value.total} pessoas cadastradas · ${stats.value.ativos} ativas · ${stats.value.ferias} em férias`;
@@ -92,60 +109,6 @@ const tabs: { label: string; value: StatusFilter }[] = [
   { label: 'Inativos', value: 'inativo' },
 ];
 
-const isCreateDrawerOpen = computed(
-  () => drawer.value.open && drawer.value.mode === 'create',
-);
-
-const isEditDrawerOpen = computed(
-  () => drawer.value.open && drawer.value.mode === 'edit',
-);
-
-const activeEmployeeId = computed(() => {
-  const state = drawer.value;
-  if (!state.open) return null;
-  if (state.mode === 'detail' || state.mode === 'edit') return state.employeeId;
-  return null;
-});
-
-const selectedEmployee = computed(() => {
-  if (activeEmployeeId.value === null) return null;
-  return (
-    employees.value.find((employee) => employee.id === activeEmployeeId.value) ??
-    null
-  );
-});
-
-const detailEmployee = computed(() => {
-  const state = drawer.value;
-  if (!state.open || state.mode !== 'detail') return null;
-  return selectedEmployee.value;
-});
-
-const editEmployee = computed(() => {
-  const state = drawer.value;
-  if (!state.open || state.mode !== 'edit') return null;
-  return selectedEmployee.value;
-});
-
-const detailIndex = computed(() => {
-  if (activeEmployeeId.value === null) return -1;
-  return filteredEmployees.value.findIndex(
-    (employee) => employee.id === activeEmployeeId.value,
-  );
-});
-
-const canGoPreviousEmployee = computed(() => detailIndex.value > 0);
-
-const canGoNextEmployee = computed(
-  () =>
-    detailIndex.value >= 0 &&
-    detailIndex.value < filteredEmployees.value.length - 1,
-);
-
-const drawerWidthClass = computed(() =>
-  drawer.value.open ? 'w-full max-w-3xl' : 'w-full max-w-md',
-);
-
 const handleCreateEmployee = (_payload: EmployeeCreatePayload) => {
   currentPage.value = 1;
   closeDrawer();
@@ -161,42 +124,6 @@ const handleUpdateEmployee = (_payload: EmployeeUpdatePayload) => {
 };
 
 const isSelected = (id: string) => selectedIds.value.includes(id);
-
-const openCreateDrawer = () => {
-  drawer.value = { open: true, mode: 'create' };
-};
-
-const openDetailDrawer = (employeeId: string) => {
-  drawer.value = { open: true, mode: 'detail', employeeId };
-};
-
-const openEditDrawer = (employeeId: string) => {
-  drawer.value = { open: true, mode: 'edit', employeeId };
-};
-
-const closeDrawer = () => {
-  drawer.value = { open: false };
-};
-
-const closeFormDrawer = () => {
-  if (isEditDrawerOpen.value && activeEmployeeId.value !== null) {
-    openDetailDrawer(activeEmployeeId.value);
-    return;
-  }
-  closeDrawer();
-};
-
-const goToPreviousEmployee = () => {
-  if (!canGoPreviousEmployee.value) return;
-  const previous = filteredEmployees.value[detailIndex.value - 1];
-  openDetailDrawer(previous.id);
-};
-
-const goToNextEmployee = () => {
-  if (!canGoNextEmployee.value) return;
-  const next = filteredEmployees.value[detailIndex.value + 1];
-  openDetailDrawer(next.id);
-};
 
 const onEmployeeRowClick = (event: MouseEvent, id: string) => {
   const target = event.target as HTMLElement | null;
