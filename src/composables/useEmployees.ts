@@ -11,6 +11,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
   const currentPage = ref(1)
   const statusFilter = ref<StatusFilter>('todos')
   const searchQuery = ref('')
+  const permissionFilter = ref('')
 
   const query = useQuery({
     queryKey: ['employees', currentPage, pageSize],
@@ -32,6 +33,10 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     currentPage.value = 1
   }
 
+  const onPermissionFilterChange = () => {
+    currentPage.value = 1
+  }
+
   return {
     employees,
     pageSize,
@@ -39,6 +44,8 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     statusFilter,
     setStatusFilter,
     searchQuery,
+    permissionFilter,
+    onPermissionFilterChange,
     total,
     isLoading: query.isLoading,
     isError: query.isError,

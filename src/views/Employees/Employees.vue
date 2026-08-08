@@ -34,6 +34,8 @@ const {
   statusFilter,
   setStatusFilter,
   searchQuery,
+  permissionFilter,
+  onPermissionFilterChange,
   total,
   isLoading,
   refetch,
@@ -44,7 +46,6 @@ const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'employees', label: 'Colaboradores' },
 ];
 
-const permissionFilter = ref('');
 const selectedIds = ref<string[]>([]);
 const openActionsId = ref<string | null>(null);
 const drawer = ref<EmployeeDrawerState>({ open: false });
@@ -63,10 +64,6 @@ const permissionOptions = computed<SelectFilterOption[]>(() => [
     }),
   ),
 ]);
-
-const onPermissionFilterChange = () => {
-  currentPage.value = 1;
-};
 
 const stats = computed(() => {
   const ativos = employees.value.filter((e) => e.status === 'ativo').length;
