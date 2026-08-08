@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { mapApiEmployeesToEmployees } from '../services/api/employees/map-employee'
 import type { GetEmployeesApi } from '../services/api/employees/types'
 import type { EmployeeStatus } from '../types/employee'
+import type { SelectFilterOption } from '../types/select-filter'
 
 export type StatusFilter = 'todos' | EmployeeStatus
 
@@ -67,6 +68,25 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     resetToFirstPage()
   }
 
+  const permissionOptions = computed<SelectFilterOption[]>(() => [
+    { id: 'all', label: 'Filtrar por permissão', value: '' },
+    ...[...new Set(employees.value.map((employee) => employee.permission))].map(
+      (permission) => ({
+        id: permission,
+        label: permission,
+        value: permission,
+      }),
+    ),
+  ])
+
+  const stats = computed(() => {
+    const ativos = employees.value.filter((e) => e.status === 'ativo').length
+    const ferias = employees.value.filter((e) => e.status === 'ferias').length
+    const inativos = employees.value.filter((e) => e.status === 'inativo').length
+
+    return { total: total.value, ativos, ferias, inativos }
+  })
+
   return {
     employees,
     filteredEmployees,
@@ -78,6 +98,8 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     onSearchQueryChange,
     permissionFilter,
     onPermissionFilterChange,
+    permissionOptions,
+    stats,
     total,
     isLoading: query.isLoading,
     isError: query.isError,

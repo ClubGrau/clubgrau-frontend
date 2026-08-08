@@ -19,7 +19,6 @@ import type {
   EmployeeCreatePayload,
   EmployeeUpdatePayload,
 } from '../../types/employee';
-import type { SelectFilterOption } from '../../types/select-filter';
 import type { StatCardItem } from '../../types/stat-card';
 import {
   useEmployees,
@@ -38,6 +37,8 @@ const {
   onSearchQueryChange,
   permissionFilter,
   onPermissionFilterChange,
+  permissionOptions,
+  stats,
   total,
   isLoading,
   refetch,
@@ -54,25 +55,6 @@ const drawer = ref<EmployeeDrawerState>({ open: false });
 
 const informationSubtitle = computed(() => {
   return `${stats.value.total} pessoas cadastradas · ${stats.value.ativos} ativas · ${stats.value.ferias} em férias`;
-});
-
-const permissionOptions = computed<SelectFilterOption[]>(() => [
-  { id: 'all', label: 'Filtrar por permissão', value: '' },
-  ...[...new Set(employees.value.map((employee) => employee.permission))].map(
-    (permission) => ({
-      id: permission,
-      label: permission,
-      value: permission,
-    }),
-  ),
-]);
-
-const stats = computed(() => {
-  const ativos = employees.value.filter((e) => e.status === 'ativo').length;
-  const ferias = employees.value.filter((e) => e.status === 'ferias').length;
-  const inativos = employees.value.filter((e) => e.status === 'inativo').length;
-
-  return { total: total.value, ativos, ferias, inativos };
 });
 
 const statCards = computed<StatCardItem[]>(() => [
