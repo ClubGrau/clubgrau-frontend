@@ -1,7 +1,7 @@
 export type EmployeeStatus = 'ativo' | 'ferias' | 'inativo';
 
-export interface Employee {
-  id: number;
+export interface EmployeeShapped {
+  id: string;
   name: string;
   username: string;
   email: string;
@@ -25,6 +25,6 @@ export interface Employee {
   skills: string[];
 }
 
-export type EmployeeCreatePayload = Omit<Employee, 'id' | 'initials' | 'employmentId'>;
+export type EmployeeCreatePayload = Omit<EmployeeShapped, 'id' | 'initials' | 'employmentId'>;
 
 export type EmployeeUpdatePayload = EmployeeCreatePayload;

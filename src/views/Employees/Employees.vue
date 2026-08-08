@@ -5,13 +5,13 @@ import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
+import Pagination from '../../components/Pagination/Pagination.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import EmployeeFormPanel from './EmployeeFormPanel.vue';
 import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
 import { employeeStatusBadge } from '../../constants/employee-status';
-import { employeesMock } from './employees-mock';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
 import type { EmployeeDrawerState } from '../../types/drawer';
 import type {
@@ -22,24 +22,31 @@ import type {
 } from '../../types/employee';
 import type { SelectFilterOption } from '../../types/select-filter';
 import type { StatCardItem } from '../../types/stat-card';
+import { useEmployees } from '../../composables/useEmployees';
+import { httpEmployeesApi } from '../../services/api/employees/http-employees-api';
 
 type StatusFilter = 'todos' | EmployeeStatus;
+
+const pageSize = ref(10);
+const currentPage = ref(1);
+
+const { employees, total, isLoading, refetch } = useEmployees(
+  httpEmployeesApi,
+  currentPage,
+  pageSize,
+);
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/app/dashboard' },
   { id: 'employees', label: 'Colaboradores' },
 ];
 
-const employees = ref<Employee[]>([...employeesMock]);
-
 const statusFilter = ref<StatusFilter>('todos');
 const searchQuery = ref('');
 const permissionFilter = ref('');
-const selectedIds = ref<number[]>([]);
-const openActionsId = ref<number | null>(null);
+const selectedIds = ref<string[]>([]);
+const openActionsId = ref<string | null>(null);
 const drawer = ref<EmployeeDrawerState>({ open: false });
-const pageSize = ref(10);
-const currentPage = ref(1);
 
 const informationSubtitle = computed(() => {
   return `${stats.value.total} pessoas cadastradas · ${stats.value.ativos} ativas · ${stats.value.ferias} em férias`;
@@ -56,27 +63,16 @@ const permissionOptions = computed<SelectFilterOption[]>(() => [
   ),
 ]);
 
-const pageSizeOptions: SelectFilterOption[] = [
-  { id: 5, label: '5', value: 5 },
-  { id: 10, label: '10', value: 10 },
-  { id: 20, label: '20', value: 20 },
-];
-
 const onPermissionFilterChange = () => {
   currentPage.value = 1;
 };
 
-const onPageSizeChange = () => {
-  currentPage.value = 1;
-};
-
 const stats = computed(() => {
-  const total = employees.value.length;
   const ativos = employees.value.filter((e) => e.status === 'ativo').length;
   const ferias = employees.value.filter((e) => e.status === 'ferias').length;
   const inativos = employees.value.filter((e) => e.status === 'inativo').length;
 
-  return { total, ativos, ferias, inativos };
+  return { total: total.value, ativos, ferias, inativos };
 });
 
 const statCards = computed<StatCardItem[]>(() => [
@@ -126,28 +122,6 @@ const filteredEmployees = computed(() => {
 
     return matchesStatus && matchesSearch && matchesPermission;
   });
-});
-
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredEmployees.value.length / pageSize.value)),
-);
-
-const paginatedEmployees = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  return filteredEmployees.value.slice(start, start + pageSize.value);
-});
-
-const pageNumbers = computed(() => {
-  const total = totalPages.value;
-  if (total <= 5) {
-    return Array.from({ length: total }, (_, index) => index + 1);
-  }
-
-  const pages: (number | 'ellipsis')[] = [1, 2, 3, 4];
-  if (total > 5) {
-    pages.push('ellipsis', total);
-  }
-  return pages;
 });
 
 const tabs: { label: string; value: StatusFilter }[] = [
@@ -211,57 +185,31 @@ const drawerWidthClass = computed(() =>
   drawer.value.open ? 'w-full max-w-3xl' : 'w-full max-w-md',
 );
 
-const buildInitials = (name: string) => {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '??';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-};
-
-const handleCreateEmployee = (payload: EmployeeCreatePayload) => {
-  const nextId =
-    employees.value.reduce((max, employee) => Math.max(max, employee.id), 0) + 1;
-
-  const created: Employee = {
-    ...payload,
-    id: nextId,
-    initials: buildInitials(payload.name),
-    employmentId: `EMP-${String(nextId).padStart(4, '0')}`,
-  };
-
-  employees.value = [created, ...employees.value];
+const handleCreateEmployee = (_payload: EmployeeCreatePayload) => {
   currentPage.value = 1;
-  openDetailDrawer(created.id);
+  closeDrawer();
+  void refetch();
 };
 
-const handleUpdateEmployee = (payload: EmployeeUpdatePayload) => {
+const handleUpdateEmployee = (_payload: EmployeeUpdatePayload) => {
   const employeeId = activeEmployeeId.value;
   if (employeeId === null) return;
 
-  employees.value = employees.value.map((employee) => {
-    if (employee.id !== employeeId) return employee;
-
-    return {
-      ...employee,
-      ...payload,
-      initials: buildInitials(payload.name),
-    };
-  });
-
   openDetailDrawer(employeeId);
+  void refetch();
 };
 
-const isSelected = (id: number) => selectedIds.value.includes(id);
+const isSelected = (id: string) => selectedIds.value.includes(id);
 
 const openCreateDrawer = () => {
   drawer.value = { open: true, mode: 'create' };
 };
 
-const openDetailDrawer = (employeeId: number) => {
+const openDetailDrawer = (employeeId: string) => {
   drawer.value = { open: true, mode: 'detail', employeeId };
 };
 
-const openEditDrawer = (employeeId: number) => {
+const openEditDrawer = (employeeId: string) => {
   drawer.value = { open: true, mode: 'edit', employeeId };
 };
 
@@ -289,7 +237,7 @@ const goToNextEmployee = () => {
   openDetailDrawer(next.id);
 };
 
-const onEmployeeRowClick = (event: MouseEvent, id: number) => {
+const onEmployeeRowClick = (event: MouseEvent, id: string) => {
   const target = event.target as HTMLElement | null;
   if (target?.closest('[data-row-action]')) return;
   openDetailDrawer(id);
@@ -299,17 +247,17 @@ const closeActionsMenu = () => {
   openActionsId.value = null;
 };
 
-const toggleActionsMenu = (employeeId: number) => {
+const toggleActionsMenu = (employeeId: string) => {
   openActionsId.value =
     openActionsId.value === employeeId ? null : employeeId;
 };
 
-const onEditAction = (employeeId: number) => {
+const onEditAction = (employeeId: string) => {
   closeActionsMenu();
   openEditDrawer(employeeId);
 };
 
-const onRemoveAction = (employeeId: number) => {
+const onRemoveAction = (employeeId: string) => {
   closeActionsMenu();
   console.log('Remove employee:', employeeId);
 };
@@ -329,7 +277,7 @@ onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick);
 });
 
-const toggleSelect = (id: number) => {
+const toggleSelect = (id: string) => {
   if (isSelected(id)) {
     selectedIds.value = selectedIds.value.filter((selectedId) => selectedId !== id);
     return;
@@ -340,11 +288,6 @@ const toggleSelect = (id: number) => {
 const setStatusFilter = (value: StatusFilter) => {
   statusFilter.value = value;
   currentPage.value = 1;
-};
-
-const goToPage = (page: number) => {
-  if (page < 1 || page > totalPages.value) return;
-  currentPage.value = page;
 };
 </script>
 
@@ -434,7 +377,7 @@ const goToPage = (page: number) => {
           </thead>
           <tbody>
             <tr
-              v-for="employee in paginatedEmployees"
+              v-for="employee in filteredEmployees"
               :key="employee.id"
               class="cursor-pointer border-b border-gray-50 last:border-b-0 hover:bg-gray-50/80"
               @click="onEmployeeRowClick($event, employee.id)"
@@ -543,7 +486,7 @@ const goToPage = (page: number) => {
               </td>
             </tr>
 
-            <tr v-if="paginatedEmployees.length === 0">
+            <tr v-if="filteredEmployees.length === 0">
               <td colspan="7" class="py-12 text-center text-sm text-gray-400">
                 Nenhum colaborador encontrado.
               </td>
@@ -552,57 +495,12 @@ const goToPage = (page: number) => {
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <span>Exibindo</span>
-          <SelectFilter
-            v-model="pageSize"
-            :options="pageSizeOptions"
-            variant="compact"
-            placement="top"
-            @change="onPageSizeChange"
-          />
-          <span>de {{ filteredEmployees.length }} resultados</span>
-        </div>
-
-        <div class="flex items-center gap-1 text-sm">
-          <button
-            type="button"
-            class="cursor-pointer px-2 py-1 text-gray-500 transition-colors hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
-            :disabled="currentPage === 1"
-            @click="goToPage(currentPage - 1)"
-          >
-            Anterior
-          </button>
-
-          <template v-for="(page, index) in pageNumbers" :key="`${page}-${index}`">
-            <span v-if="page === 'ellipsis'" class="px-1 text-gray-400">...</span>
-            <button
-              v-else
-              type="button"
-              class="min-w-7 cursor-pointer rounded-md px-2 py-1 transition-colors"
-              :class="
-                currentPage === page
-                  ? 'bg-gray-100 font-semibold text-gray-900'
-                  : 'text-gray-500 hover:text-gray-800'
-              "
-              @click="goToPage(page)"
-            >
-              {{ page }}
-            </button>
-          </template>
-
-          <button
-            type="button"
-            class="cursor-pointer px-2 py-1 text-gray-500 transition-colors hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
-            :disabled="currentPage === totalPages"
-            @click="goToPage(currentPage + 1)"
-          >
-            Próximo
-          </button>
-        </div>
-      </div>
+      <Pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total-items="total"
+        page-size-placement="top"
+      />
     </section>
 
     <Drawer
