@@ -1,19 +1,22 @@
-import { computed, type Ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { mapApiEmployeesToEmployees } from '../services/api/employees/map-employee'
 import type { GetEmployeesApi } from '../services/api/employees/types'
+import type { EmployeeStatus } from '../types/employee'
 
-export function useEmployees(
-  getEmployeesApi: GetEmployeesApi,
-  page: Ref<number>,
-  limit: Ref<number>,
-) {
+export type StatusFilter = 'todos' | EmployeeStatus
+
+export function useEmployees(getEmployeesApi: GetEmployeesApi) {
+  const pageSize = ref(10)
+  const currentPage = ref(1)
+  const statusFilter = ref<StatusFilter>('todos')
+
   const query = useQuery({
-    queryKey: ['employees', page, limit],
+    queryKey: ['employees', currentPage, pageSize],
     queryFn: () =>
       getEmployeesApi.getEmployees({
-        page: page.value,
-        limit: limit.value,
+        page: currentPage.value,
+        limit: pageSize.value,
       }),
   })
 
@@ -23,8 +26,17 @@ export function useEmployees(
 
   const total = computed(() => query.data.value?.total ?? 0)
 
+  const setStatusFilter = (value: StatusFilter) => {
+    statusFilter.value = value
+    currentPage.value = 1
+  }
+
   return {
     employees,
+    pageSize,
+    currentPage,
+    statusFilter,
+    setStatusFilter,
     total,
     isLoading: query.isLoading,
     isError: query.isError,

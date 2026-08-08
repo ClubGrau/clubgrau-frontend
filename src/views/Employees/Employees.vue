@@ -17,31 +17,32 @@ import type { EmployeeDrawerState } from '../../types/drawer';
 import type {
   Employee,
   EmployeeCreatePayload,
-  EmployeeStatus,
   EmployeeUpdatePayload,
 } from '../../types/employee';
 import type { SelectFilterOption } from '../../types/select-filter';
 import type { StatCardItem } from '../../types/stat-card';
-import { useEmployees } from '../../composables/useEmployees';
+import {
+  useEmployees,
+  type StatusFilter,
+} from '../../composables/useEmployees';
 import { httpEmployeesApi } from '../../services/api/employees/http-employees-api';
 
-type StatusFilter = 'todos' | EmployeeStatus;
-
-const pageSize = ref(10);
-const currentPage = ref(1);
-
-const { employees, total, isLoading, refetch } = useEmployees(
-  httpEmployeesApi,
-  currentPage,
+const {
+  employees,
   pageSize,
-);
+  currentPage,
+  statusFilter,
+  setStatusFilter,
+  total,
+  isLoading,
+  refetch,
+} = useEmployees(httpEmployeesApi);
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/app/dashboard' },
   { id: 'employees', label: 'Colaboradores' },
 ];
 
-const statusFilter = ref<StatusFilter>('todos');
 const searchQuery = ref('');
 const permissionFilter = ref('');
 const selectedIds = ref<string[]>([]);
@@ -283,11 +284,6 @@ const toggleSelect = (id: string) => {
     return;
   }
   selectedIds.value = [...selectedIds.value, id];
-};
-
-const setStatusFilter = (value: StatusFilter) => {
-  statusFilter.value = value;
-  currentPage.value = 1;
 };
 </script>
 
