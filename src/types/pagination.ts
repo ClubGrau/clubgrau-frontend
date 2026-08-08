@@ -1,15 +1,12 @@
-import type { SelectFilterOption, SelectFilterPlacement } from './select-filter';
+export namespace Pagination {
+  export interface PaginationParams {
+    page: number;
+    limit: number;
+  }
 
-export type PaginationPageItem = number | 'ellipsis';
-
-export interface PaginationProps {
-  currentPage: number;
-  pageSize: number;
-  totalItems: number;
-  pageSizeOptions?: SelectFilterOption[];
-  pageSizePlacement?: SelectFilterPlacement;
-  previousLabel?: string;
-  nextLabel?: string;
-  showingLabel?: string;
-  resultsLabel?: string;
+  export interface PaginationResponse<T> extends PaginationParams {
+    data: T[];
+    total: number;
+    totalPages: number;
+  }
 }
