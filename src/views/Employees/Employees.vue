@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
@@ -19,6 +19,7 @@ import type {
 } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
 import { useEmployeeDrawer } from '../../composables/useEmployeeDrawer';
+import { useEmployeeSelection } from '../../composables/useEmployeeSelection';
 import {
   useEmployees,
   type StatusFilter,
@@ -62,13 +63,24 @@ const {
   goToNextEmployee,
 } = useEmployeeDrawer(employees, filteredEmployees);
 
+const {
+  openActionsId,
+  isSelected,
+  toggleSelect,
+  toggleActionsMenu,
+  onEditAction,
+  onRemoveAction,
+} = useEmployeeSelection({
+  onEdit: openEditDrawer,
+  onRemove: (employeeId) => {
+    console.log('Remove employee:', employeeId);
+  },
+});
+
 const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/app/dashboard' },
   { id: 'employees', label: 'Colaboradores' },
 ];
-
-const selectedIds = ref<string[]>([]);
-const openActionsId = ref<string | null>(null);
 
 const informationSubtitle = computed(() => {
   return `${stats.value.total} pessoas cadastradas · ${stats.value.ativos} ativas · ${stats.value.ferias} em férias`;
@@ -123,54 +135,10 @@ const handleUpdateEmployee = (_payload: EmployeeUpdatePayload) => {
   void refetch();
 };
 
-const isSelected = (id: string) => selectedIds.value.includes(id);
-
 const onEmployeeRowClick = (event: MouseEvent, id: string) => {
   const target = event.target as HTMLElement | null;
   if (target?.closest('[data-row-action]')) return;
   openDetailDrawer(id);
-};
-
-const closeActionsMenu = () => {
-  openActionsId.value = null;
-};
-
-const toggleActionsMenu = (employeeId: string) => {
-  openActionsId.value =
-    openActionsId.value === employeeId ? null : employeeId;
-};
-
-const onEditAction = (employeeId: string) => {
-  closeActionsMenu();
-  openEditDrawer(employeeId);
-};
-
-const onRemoveAction = (employeeId: string) => {
-  closeActionsMenu();
-  console.log('Remove employee:', employeeId);
-};
-
-const onDocumentClick = (event: MouseEvent) => {
-  const target = event.target as HTMLElement | null;
-  if (!target?.closest('[data-actions-menu]')) {
-    closeActionsMenu();
-  }
-};
-
-onMounted(() => {
-  document.addEventListener('click', onDocumentClick);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('click', onDocumentClick);
-});
-
-const toggleSelect = (id: string) => {
-  if (isSelected(id)) {
-    selectedIds.value = selectedIds.value.filter((selectedId) => selectedId !== id);
-    return;
-  }
-  selectedIds.value = [...selectedIds.value, id];
 };
 </script>
 
