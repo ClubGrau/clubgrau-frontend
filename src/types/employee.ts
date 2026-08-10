@@ -7,6 +7,7 @@ export namespace Employee {
     email: string;
     role: string;
     nif?: string;
+    phone?: string;
     isActive: boolean;
     createdAt: string;
     deactivateAt?: string;

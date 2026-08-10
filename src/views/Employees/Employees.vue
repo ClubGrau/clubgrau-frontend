@@ -271,7 +271,7 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
                 <div class="space-y-1">
                   <div class="flex items-center gap-2 text-xs text-gray-500">
                     <Icon icon="carbon:email" class="size-3.5 shrink-0 text-gray-400" />
-                    <span class="truncate">{{ employee.email }}</span>
+                    <span class="truncate font-semibold">{{ employee.email }}</span>
                   </div>
                   <div class="flex items-center gap-2 text-xs text-gray-500">
                     <Icon icon="carbon:phone" class="size-3.5 shrink-0 text-gray-400" />

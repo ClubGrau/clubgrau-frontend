@@ -15,7 +15,7 @@ export function mapApiEmployeeToEmployee(apiEmployee: Employee.Entity): Employee
     name: apiEmployee.name,
     username: apiEmployee.email?.split('@')[0] ?? '',
     email: apiEmployee.email,
-    phone: '',
+    phone: apiEmployee.phone ?? '',
     nif: apiEmployee.nif ?? '',
     permission: apiEmployee.role,
     status: apiEmployee.isActive ? 'ativo' : 'inativo',
