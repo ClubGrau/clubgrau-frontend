@@ -1,7 +1,7 @@
+import type { Employee } from '../../../types/employee'
 import type { Pagination } from '../../../types/pagination'
 import { api } from '../config'
-import type { GetEmployeesApi } from './types'
-import type { Employee } from '../../../types/employee'
+import type { GetEmployeesApi, GetEmployeesParams } from './types'
 
 type EmployeesApiPayload = {
   employees: Employee.Entity[]
@@ -13,14 +13,14 @@ type EmployeesApiPayload = {
 
 export class HttpEmployeesApi implements GetEmployeesApi {
   async getEmployees(
-    params: Pagination.PaginationParams,
+    params: GetEmployeesParams,
   ): Promise<Pagination.PaginationResponse<Employee.Entity>> {
     const { data } = await api.get<EmployeesApiPayload>('/api/employees', {
       params,
     })
 
     return {
-      data: data.employees,
+      data: data.employees ?? [],
       page: data.page,
       limit: data.limit,
       total: data.total,
