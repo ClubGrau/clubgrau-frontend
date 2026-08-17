@@ -1,4 +1,4 @@
-export type EmployeeStatus = 'ativo' | 'ferias' | 'inativo';
+export type EmployeeStatus = 'ACTIVE' | 'VACATION' | 'INACTIVE';
 
 export namespace Employee {
   export interface Entity {
@@ -8,7 +8,7 @@ export namespace Employee {
     role: string;
     nif?: string;
     phone?: string;
-    isActive: boolean;
+    status: EmployeeStatus;
     createdAt: string;
     deactivateAt?: string;
   }

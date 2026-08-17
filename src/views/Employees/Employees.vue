@@ -34,7 +34,6 @@ const {
   statusFilter,
   setStatusFilter,
   searchQuery,
-  onSearchQueryChange,
   permissionFilter,
   onPermissionFilterChange,
   permissionOptions,
@@ -86,6 +85,10 @@ const informationSubtitle = computed(() => {
   return `${stats.value.total} pessoas cadastradas · ${stats.value.ativos} ativas · ${stats.value.ferias} em férias`;
 });
 
+const employeePermission = (permission: string) => {
+  return permissionOptions.find((option) => option.value === permission)?.label
+};
+
 const statCards = computed<StatCardItem[]>(() => [
   {
     id: 'total',
@@ -116,9 +119,9 @@ const statCards = computed<StatCardItem[]>(() => [
 
 const tabs: { label: string; value: StatusFilter }[] = [
   { label: 'Todos', value: 'todos' },
-  { label: 'Ativos', value: 'ativo' },
-  { label: 'Férias', value: 'ferias' },
-  { label: 'Inativos', value: 'inativo' },
+  { label: 'Ativos', value: 'ACTIVE' },
+  { label: 'Férias', value: 'VACATION' },
+  { label: 'Inativos', value: 'INACTIVE' },
 ];
 
 const handleCreateEmployee = (_payload: EmployeeCreatePayload) => {
@@ -200,7 +203,6 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
             type="search"
             placeholder="Busque por Nome, Contatos..."
             class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-gray-300"
-            @input="onSearchQueryChange"
           />
         </div>
 
@@ -285,7 +287,7 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
               </td>
 
               <td class="py-4 pr-4 align-middle text-sm text-gray-700">
-                {{ employee.permission }}
+                {{ employeePermission(employee.permission) }}
               </td>
 
               <td class="py-4 pr-4 align-middle">

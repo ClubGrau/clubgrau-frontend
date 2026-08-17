@@ -18,7 +18,7 @@ export function mapApiEmployeeToEmployee(apiEmployee: Employee.Entity): Employee
     phone: apiEmployee.phone ?? '',
     nif: apiEmployee.nif ?? '',
     permission: apiEmployee.role,
-    status: apiEmployee.isActive ? 'ativo' : 'inativo',
+    status: apiEmployee.status,
     initials: buildInitials(apiEmployee.name),
     department: '',
     dateHired: apiEmployee.createdAt,

@@ -4,14 +4,14 @@ import { Icon } from '@iconify/vue';
 import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import type {
-  Employee,
   EmployeeCreatePayload,
+  EmployeeShapped,
   EmployeeStatus,
 } from '../../types/employee';
 import type { SelectFilterOption } from '../../types/select-filter';
 
 const props = defineProps<{
-  employee?: Employee;
+  employee?: EmployeeShapped;
 }>();
 
 const emit = defineEmits<{
@@ -29,9 +29,9 @@ const permissionOptions: SelectFilterOption[] = [
 ];
 
 const statusOptions: SelectFilterOption[] = [
-  { id: 'ativo', label: 'Ativo', value: 'ativo' },
-  { id: 'ferias', label: 'Férias', value: 'ferias' },
-  { id: 'inativo', label: 'Inativo', value: 'inativo' },
+  { id: 'ACTIVE', label: 'Ativo', value: 'ACTIVE' },
+  { id: 'VACATION', label: 'Férias', value: 'VACATION' },
+  { id: 'INACTIVE', label: 'Inativo', value: 'INACTIVE' },
 ];
 
 const genderOptions: SelectFilterOption[] = [
@@ -62,7 +62,7 @@ const form = reactive({
   phone: '',
   nif: '',
   permission: 'Operador',
-  status: 'ativo' as EmployeeStatus,
+  status: 'ACTIVE' as EmployeeStatus,
   department: '',
   dateHired: '',
   gender: 'Não informado',
@@ -81,7 +81,7 @@ const submitted = ref(false);
 const isPhoneValid = ref(false);
 const isEmergencyPhoneValid = ref(true);
 
-const fillForm = (employee: Employee) => {
+const fillForm = (employee: EmployeeShapped) => {
   form.name = employee.name;
   form.username = employee.username;
   form.email = employee.email;
