@@ -4,10 +4,10 @@ import { Icon } from '@iconify/vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import { employeeStatusBadge } from '../../constants/employee-status';
-import type { Employee } from '../../types/employee';
+import type { EmployeeShapped } from '../../types/employee';
 
 const props = defineProps<{
-  employee: Employee;
+  employee: EmployeeShapped;
   canGoPrevious?: boolean;
   canGoNext?: boolean;
 }>();

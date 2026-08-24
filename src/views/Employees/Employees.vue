@@ -11,6 +11,7 @@ import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import EmployeeFormPanel from './EmployeeFormPanel.vue';
 import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
+import ModalLayout from '../../components/Modal/ModalLayout.vue';
 import { employeeStatusBadge } from '../../constants/employee-status';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
 import type {
@@ -25,6 +26,7 @@ import {
   type StatusFilter,
 } from '../../composables/useEmployees';
 import { httpEmployeesApi } from '../../services/api/employees/http-employees-api';
+import InactivateModal from '../../components/Modal/InactivateModal.vue';
 
 const {
   employees,
@@ -50,13 +52,19 @@ const {
   activeEmployeeId,
   detailEmployee,
   editEmployee,
+  isInactivateModalOpen,
+  inactivateModalMode,
+  inactivateModalWidthClass,
   canGoPreviousEmployee,
   canGoNextEmployee,
   drawerWidthClass,
   openCreateDrawer,
   openDetailDrawer,
   openEditDrawer,
+  openInactivateDrawer,
+  openRemoveDrawer,
   closeDrawer,
+  closeInactivateModal,
   closeFormDrawer,
   goToPreviousEmployee,
   goToNextEmployee,
@@ -64,6 +72,7 @@ const {
 
 const {
   openActionsId,
+  actionsMenuStyle,
   isSelected,
   toggleSelect,
   toggleActionsMenu,
@@ -71,9 +80,7 @@ const {
   onRemoveAction,
 } = useEmployeeSelection({
   onEdit: openEditDrawer,
-  onRemove: (employeeId) => {
-    console.log('Remove employee:', employeeId);
-  },
+  onRemove: openInactivateDrawer,
 });
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -142,6 +149,19 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
   const target = event.target as HTMLElement | null;
   if (target?.closest('[data-row-action]')) return;
   openDetailDrawer(id);
+};
+
+const handleInactivateEmployee = (employeeId: string) => {
+  if (!employeeId) return;
+  console.log('handleInactivateEmployee', employeeId);
+  closeInactivateModal();
+  void refetch();
+};
+
+const handleRemoveEmployee = (employeeId: string) => {
+  if (!employeeId) return;
+  closeInactivateModal();
+  void refetch();
 };
 </script>
 
@@ -298,7 +318,7 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
               </td>
 
               <td
-                class="relative py-4 pl-2 text-right align-middle"
+                class="py-4 pl-2 text-right align-middle"
                 data-row-action
                 data-actions-menu
               >
@@ -307,35 +327,10 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
                   class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                   :aria-expanded="openActionsId === employee.id"
                   aria-haspopup="menu"
-                  @click.stop="toggleActionsMenu(employee.id)"
+                  @click.stop="toggleActionsMenu(employee.id, $event.currentTarget)"
                 >
                   <Icon icon="carbon:overflow-menu-vertical" class="size-5" />
                 </button>
-
-                <div
-                  v-if="openActionsId === employee.id"
-                  role="menu"
-                  class="absolute top-[calc(100%-0.5rem)] right-0 z-20 min-w-40 rounded-xl border border-gray-100 bg-white p-1.5 shadow-[0_12px_32px_rgba(16,22,37,0.12)]"
-                >
-                  <button
-                    type="button"
-                    role="menuitem"
-                    class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5]"
-                    @click.stop="onEditAction(employee.id)"
-                  >
-                    <Icon icon="carbon:edit" class="size-4 text-gray-400" />
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
-                    @click.stop="onRemoveAction(employee.id)"
-                  >
-                    <Icon icon="carbon:trash-can" class="size-4" />
-                    Remover
-                  </button>
-                </div>
               </td>
             </tr>
 
@@ -356,8 +351,37 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
       />
     </section>
 
+    <Teleport to="body">
+      <div
+        v-if="openActionsId"
+        data-actions-menu
+        role="menu"
+        class="fixed z-50 min-w-40 rounded-xl border border-gray-100 bg-white p-1.5 shadow-[0_12px_32px_rgba(16,22,37,0.12)]"
+        :style="actionsMenuStyle"
+      >
+        <button
+          type="button"
+          role="menuitem"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5]"
+          @click.stop="onEditAction(openActionsId)"
+        >
+          <Icon icon="carbon:edit" class="size-4 text-gray-400" />
+          Editar
+        </button>
+        <button
+          type="button"
+          role="menuitem"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+          @click.stop="onRemoveAction(openActionsId)"
+        >
+          <Icon icon="carbon:trash-can" class="size-4" />
+          Remover
+        </button>
+      </div>
+    </Teleport>
+
     <Drawer
-      :open="drawer.open"
+      :open="drawer.open && !isInactivateModalOpen"
       :width-class="drawerWidthClass"
       @close="closeDrawer"
     >
@@ -381,7 +405,45 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
         @previous="goToPreviousEmployee"
         @next="goToNextEmployee"
         @edit="openEditDrawer(detailEmployee.id)"
+        @delete="openInactivateDrawer(detailEmployee.id)"
       />
     </Drawer>
+
+    <ModalLayout
+      :open="isInactivateModalOpen"
+      :width-class="inactivateModalWidthClass"
+      @close="closeInactivateModal"
+    >
+      <InactivateModal
+        :employee-id="activeEmployeeId ?? ''"
+        :mode="inactivateModalMode"
+        @on-remove-action="openRemoveDrawer"
+      />
+      <template #footer>
+        <button
+          type="button"
+          class="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
+          @click="closeInactivateModal"
+        >
+          Cancelar
+        </button>
+        <button
+          v-if="inactivateModalMode === 'remove'"
+          type="button"
+          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
+          @click="handleRemoveEmployee(activeEmployeeId ?? '')"
+        >
+          Remover
+        </button>
+        <button
+          v-else
+          type="button"
+          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
+          @click="handleInactivateEmployee(activeEmployeeId ?? '')"
+        >
+          Inativar
+        </button>
+      </template>
+    </ModalLayout>
   </div>
 </template>

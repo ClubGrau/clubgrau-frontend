@@ -16,11 +16,25 @@ export function useEmployeeDrawer(
     () => drawer.value.open && drawer.value.mode === 'edit',
   )
 
+  const isInactivateModalOpen = computed(
+    () => {
+      const state = drawer.value
+      return state.open && (state.mode === 'inactivate' || state.mode === 'remove')
+    }
+  )
+
   const activeEmployeeId = computed(() => {
     const state = drawer.value
-    if (!state.open) return null
-    if (state.mode === 'detail' || state.mode === 'edit') return state.employeeId
-    return null
+    if (!state.open || state.mode === 'create') return null
+    return state.employeeId
+  })
+
+  const inactivateModalWidthClass = 'w-full max-w-md'
+
+  const inactivateModalMode = computed<'inactivate' | 'remove'>(() => {
+    const state = drawer.value
+    if (state.open && state.mode === 'remove') return 'remove'
+    return 'inactivate'
   })
 
   const selectedEmployee = computed(() => {
@@ -74,8 +88,20 @@ export function useEmployeeDrawer(
     drawer.value = { open: true, mode: 'edit', employeeId }
   }
 
+  const openInactivateDrawer = (employeeId: string) => {
+    drawer.value = { open: true, mode: 'inactivate', employeeId }
+  }
+
+  const openRemoveDrawer = (employeeId: string) => {
+    drawer.value = { open: true, mode: 'remove', employeeId }
+  }
+
   const closeDrawer = () => {
     drawer.value = { open: false }
+  }
+
+  const closeInactivateModal = () => {
+    closeDrawer()
   }
 
   const closeFormDrawer = () => {
@@ -106,13 +132,19 @@ export function useEmployeeDrawer(
     selectedEmployee,
     detailEmployee,
     editEmployee,
+    isInactivateModalOpen,
+    inactivateModalMode,
+    inactivateModalWidthClass,
     canGoPreviousEmployee,
     canGoNextEmployee,
     drawerWidthClass,
     openCreateDrawer,
     openDetailDrawer,
     openEditDrawer,
+    openInactivateDrawer,
+    openRemoveDrawer,
     closeDrawer,
+    closeInactivateModal,
     closeFormDrawer,
     goToPreviousEmployee,
     goToNextEmployee,
