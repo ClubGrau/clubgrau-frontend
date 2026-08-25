@@ -5,8 +5,10 @@ import type { Account } from '../types/account'
 import type { Actor, ActorRole } from '../types/actor'
 import type { EmployeeStatus } from '../types/employee'
 
+const ACTOR_ROLES: ActorRole[] = ['EMPLOYEE', 'MANAGER', 'ADMIN']
+
 function isActorRole(value: unknown): value is ActorRole {
-  return value === 'EMPLOYEE' || value === 'MANAGER' || value === 'ADMIN'
+  return ACTOR_ROLES.includes(value as ActorRole)
 }
 
 function actorFromToken(token: string | null): Actor | null {
