@@ -37,7 +37,7 @@ The API already enforces the matrix (`403`), Last Admin (`409`), and step-up (`4
 - Two surfaces: Deactivate only on `ACTIVE` / `VACATION`; Reactivate (and ADMIN Remove) only on `INACTIVE`. Kill the Inactivate-then-Remove shortcut.
 - Portuguese labels aligned with the glossary: **Inativar** / **Reativar** / **Remover**. Never label Deactivate as “Remover”.
 - HTTP clients for `update-status` and `remove`. Never send `actorId`.
-- After Deactivate: stay on (or open) the Target detail as the fork.
+- After Deactivate: close the confirm modal and the drawer. Do not open the Target detail.
 - After Remove: close drawer, refetch, Target gone. Toast that the original email is free for a **new** Create.
 - Map `401` / `403` / `409` to operator copy. Last Admin is **not** in the helper.
 
@@ -101,8 +101,8 @@ Use [`CONTEXT.md`](../../CONTEXT.md). Do not invent parallel terms.
 
 | | After Deactivate | After Remove |
 |--|------------------|--------------|
-| A (chosen) | Close confirm modal only. Keep or open detail as the fork. Do not switch the list tab. Status from `{ id, status }`. List refetches underneath. | Close drawer + modal. Refetch. Target gone. Toast: left the team; email free for a **new** Create. |
-| Rejected | Close everything (fork hidden on another tab) / switch to Inativos | Keep a Removed profile (sentinels — PRD forbids) |
+| A (chosen) | Close confirm modal **and** the drawer. Do not open the Target detail. Do not switch the list tab. List refetches. | Close drawer + modal. Refetch. Target gone. Toast: left the team; email free for a **new** Create. |
+| Rejected | Keep or open detail as the fork after success / switch to Inativos | Keep a Removed profile (sentinels — PRD forbids) |
 
 After Reactivate: stay on the same detail, now `ACTIVE` (symmetric to Deactivate).
 
@@ -126,7 +126,7 @@ flowchart TD
   Helper --> Menu[row menu + detail actions]
   Menu -->|ACTIVE / VACATION| Inat[Inativar modal]
   Menu -->|INACTIVE| Fork[Reativar and ADMIN Remover]
-  Inat -->|POST update-status INACTIVE| DetailInactive[detail stays: INACTIVE fork]
+  Inat -->|POST update-status INACTIVE| ClosedAfterInat[close modal and drawer]
   Fork -->|POST update-status ACTIVE| DetailActive[detail stays: ACTIVE]
   Fork -->|POST remove + Actor password| Closed[close drawer; list refetch]
 ```
@@ -146,7 +146,7 @@ Do **not** put the matrix only in Vue. Do **not** call Axios from the view.
 | Reactivate | missing | Visible on `INACTIVE` when helper allows; `status: ACTIVE` |
 | Detail trash | always “Eliminar” → inactivate | Same helper as the menu |
 | `HttpEmployeesApi` | `getEmployees` only | + `updateStatus` + `remove` |
-| After Inativar | `console.log` | Stay on fork |
+| After Inativar | `console.log` | Close modal and drawer |
 | `REMOVED` in filters | not present | keep absent (`400` if ever sent) |
 
 ---
@@ -224,10 +224,10 @@ Primary: **Remover**. Wrong password: same opacity as login (`Authentication fai
 
 | Event | Copy intent |
 |-------|-------------|
-| Deactivate OK | Colaborador inativado. Fork visível no detalhe. |
+| Deactivate OK | Colaborador inativado. Você pode reativá-lo pelo perfil. |
 | Reactivate OK | Colaborador reativado (mesma identidade). |
 | Remove OK | Saiu da equipe. Email original livre para um cadastro **novo**. |
-| Last Admin `409` | É preciso existir outro Administrador ativo antes desta ação. Keep profile open. |
+| Last Admin `409` | É preciso existir outro Administrador ativo antes desta ação. Modal stays open. |
 | `403` | Should be rare if the helper is correct. Generic: ação não permitida. Hide the action on next render. |
 | `401` on Remove | Opaque credentials failure on the modal. No persist. |
 
@@ -263,7 +263,7 @@ Extend `HttpEmployeesApi` / `GetEmployeesApi` into an employees port that includ
 
 | Result | Status | Operator |
 |--------|--------|----------|
-| update-status OK | `200` | Stay on detail; set snapshot status from body |
+| update-status OK | `200` | Deactivate: close modal and drawer. Reactivate: stay on detail; set snapshot status from body |
 | remove OK | `200` | Close drawer; invalidate `['employees', …]` |
 | missing / invalid / not found / already-in-status | `400` | Inline/toast `{ error }` |
 | Actor password / Actor not usable | `401` | Opaque; Remove modal stays open |
@@ -284,11 +284,13 @@ Branch on **HTTP status first**, then on the English `error` string for `409`.
 
 ## 11. Detail snapshot
 
-Today `detailEmployee` is `employees.find(id)`. After Deactivate on the Ativos tab, that find misses.
+Today `detailEmployee` is `employees.find(id)`. After a status change that drops the row from the current tab (Reactivate on Inativos, or a still-open profile whose row left the page), that find misses.
 
-**Chosen:** the drawer keeps a **Target snapshot** (last shaped employee + `status` from the mutation). The open profile reads the snapshot, not only the current page. List query still refetches. If the id is no longer in the list, the drawer stays open until the operator closes it or Remove succeeds.
+**Chosen:** while a profile stays open, the drawer keeps a **Target snapshot** (last shaped employee + `status` from the mutation). The open profile reads the snapshot, not only the current page. List query still refetches. If the id is no longer in the list, the drawer stays open until the operator closes it or Remove succeeds.
 
+After Deactivate: drop the snapshot and `closeDrawer()` — do not keep the fork open.
 Remove: drop the snapshot and `closeDrawer()`.
+Reactivate: keep the snapshot and stay on detail.
 
 ---
 
@@ -318,7 +320,7 @@ Actor clicks Inativar (helper true)
   → confirm modal
   → POST /api/employee/update-status { id, status: INACTIVE }
   → 200 { id, status: INACTIVE }
-  → close confirm; patch snapshot; keep/open detail (fork)
+  → close confirm and drawer; drop snapshot
   → invalidate employees
 ```
 
@@ -355,7 +357,7 @@ Each slice has a spec under [`docs/specs/employee-lifecycle-v1/`](../specs/emplo
 | 0 | JWT → auth store (`id`, `role`, `status`) | [`slice-0-actor-from-jwt.md`](../specs/employee-lifecycle-v1/slice-0-actor-from-jwt.md) | [KAN-8](https://paulodevmais.atlassian.net/browse/KAN-8) |
 | 1 | HTTP `updateStatus` + `remove` on the employees port | [`slice-1-http-lifecycle-commands.md`](../specs/employee-lifecycle-v1/slice-1-http-lifecycle-commands.md) | [KAN-9](https://paulodevmais.atlassian.net/browse/KAN-9) |
 | 2 | Pure helper + wire menus/detail (labels Inativar / Reativar / Remover; kill “clique aqui”) | [`slice-2-visibility-helper.md`](../specs/employee-lifecycle-v1/slice-2-visibility-helper.md) | [KAN-10](https://paulodevmais.atlassian.net/browse/KAN-10) |
-| 3 | Deactivate confirm + mutation + snapshot stay on fork | [`slice-3-deactivate.md`](../specs/employee-lifecycle-v1/slice-3-deactivate.md) | [KAN-11](https://paulodevmais.atlassian.net/browse/KAN-11) |
+| 3 | Deactivate confirm + mutation + close drawer | [`slice-3-deactivate.md`](../specs/employee-lifecycle-v1/slice-3-deactivate.md) | [KAN-11](https://paulodevmais.atlassian.net/browse/KAN-11) |
 | 4 | Reactivate mutation + stay on detail | [`slice-4-reactivate.md`](../specs/employee-lifecycle-v1/slice-4-reactivate.md) | [KAN-12](https://paulodevmais.atlassian.net/browse/KAN-12) |
 | 5 | Remove modal (Actor password) + mutation + close/toast + `401`/`409` | [`slice-5-remove.md`](../specs/employee-lifecycle-v1/slice-5-remove.md) | [KAN-13](https://paulodevmais.atlassian.net/browse/KAN-13) |
 
@@ -373,7 +375,7 @@ Product rules live in the PRD. These were **shape** decisions (24/08/2026):
 - **Two surfaces, no shortcut** — Remove only from the INACTIVE fork. Current “Remover” menu + “clique aqui” is wrong.
 - **Role from JWT** — determining factor for visible actions. No permission catalog, no `/me` this version.
 - **Helper(Actor, Target)** — EMPLOYEE sees nothing; MANAGER only `EMPLOYEE`; ADMIN sees the fork. Last Admin is `409` because the list has no ACTIVE-admin count.
-- **Stay on the fork after Deactivate** — otherwise Remove is hidden on another tab. After Remove, close everything so sentinels never render.
+- **Close the drawer after Deactivate** — the operator is not dropped onto the INACTIVE fork. They open that profile later from Inativos or Todos when they want Reactivate or Remove. After Remove, close everything so sentinels never render.
 - **Vacation actions out** — status remains on the list; Deactivate is the only lifecycle control on `VACATION`.
 
 ---
@@ -387,8 +389,8 @@ Mirrors PRD §7 at the Vue boundary (API already covered by KAN-7):
 - [ ] ADMIN + wrong password → `401`; modal stays; no list change.
 - [ ] `ACTIVE` / `VACATION` → Remover not visible. Inativar visible when helper allows.
 - [ ] MANAGER + Target `MANAGER` or `ADMIN` → no Inativar / Reativar / Remover.
-- [ ] Last Admin + Inativar or Remover → action may show; `409` with Last Admin copy; profile stays open.
+- [ ] Last Admin + Inativar or Remover → action may show; `409` with Last Admin copy; modal stays open.
 - [ ] Two ADMINs: A may Remove `INACTIVE` B; A remains in the list.
 - [ ] No `actorId` in any JSON body.
 - [ ] Overflow menu never uses “Remover” for Deactivate.
-- [ ] After Inativar from the row menu, detail opens on the INACTIVE fork without changing the list tab.
+- [ ] After Inativar, the confirm modal and the drawer close; the list tab is unchanged.

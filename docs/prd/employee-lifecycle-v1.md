@@ -59,7 +59,7 @@ Remove is not a control on `ACTIVE` / `VACATION` profiles.
 | `ACTIVE` / `VACATION` | **Deactivate** only. Never Remove. Never a Vacation action in this version. |
 | `INACTIVE` | **Reactivate**. ADMIN also sees **Remove** (Actor password). Never Deactivate again. |
 
-After a successful Deactivate: close only the confirm modal. Keep (or open) the Target’s detail as the INACTIVE fork — do not switch the list tab. Status on that profile comes from the `update-status` response `{ id, status }`. The list refetches underneath.
+After a successful Deactivate: close the confirm modal **and** the detail drawer. Do not open the Target’s profile. Do not switch the list tab. The list refetches underneath. The operator reaches the INACTIVE fork later from Inativos or Todos.
 
 After a successful Remove: close drawer and modal. Refetch the list. The Target is gone. Do not keep a Removed profile open (sentinels must not appear). Toast: left the team; the original email is free for a **new** Create.
 

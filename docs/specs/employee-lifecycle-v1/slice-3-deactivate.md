@@ -1,10 +1,10 @@
-# Slice 3 — Deactivate: confirm, mutation, stay on the fork
+# Slice 3 — Deactivate: confirm, mutation, close the drawer
 
 **Jira:** [KAN-11](https://paulodevmais.atlassian.net/browse/KAN-11) · **Design doc:** [§9.2](../../design-docs/employee-lifecycle-v1.md#92-deactivate-confirm), [§11 Detail snapshot](../../design-docs/employee-lifecycle-v1.md#11-detail-snapshot), [§13](../../design-docs/employee-lifecycle-v1.md#13-sequences) · **Index:** [`README.md`](README.md)
 
 ## Objective
 
-Make Inativar real. Confirming the modal calls `update-status` with `INACTIVE`, and the operator is left on the Target's profile showing the INACTIVE fork instead of losing the row when the Ativos tab refetches.
+Make Inativar real. Confirming the modal calls `update-status` with `INACTIVE`. On success the confirm modal and the drawer both close — the operator is **not** left on the Target's profile. They reach the INACTIVE fork later from Inativos or Todos.
 
 This slice also lands the toast primitive the whole feature needs — the repo has none today.
 
@@ -16,9 +16,9 @@ This slice also lands the toast primitive the whole feature needs — the repo h
 | `src/composables/useToast.ts` | **new** — minimal toast queue |
 | `src/components/Toast/ToastHost.vue` | **new** — renders the queue |
 | `src/Layout/AppContainer.vue` | mounts `ToastHost` once |
-| `src/composables/useEmployeeDrawer.ts` | Target snapshot: the open profile survives leaving the current page |
+| `src/composables/useEmployeeDrawer.ts` | Target snapshot: a still-open profile survives leaving the current page (used by later slices; Deactivate success closes the drawer) |
 | `src/components/Modal/InactivateModal.vue` | copy per §9.2 |
-| `src/views/Employees/Employees.vue` | wires confirm → mutation → snapshot |
+| `src/views/Employees/Employees.vue` | wires confirm → mutation → close drawer |
 
 ## Contracts
 
@@ -51,13 +51,13 @@ function useToast(): { toasts: Ref<Toast[]>; push(variant: ToastVariant, message
 
 1. `useMutation` with `retry: 0`. On success, `queryClient.invalidateQueries({ queryKey: ['employees'] })`.
 2. Body is `{ id, status: 'INACTIVE' }`. No `actorId`.
-3. On `200`, close **only** the confirm modal. Keep, or open, the Target's detail as the INACTIVE fork. **Do not switch the list tab.** The new status comes from the response `{ id, status }`, not from an optimistic guess.
-4. Opening the confirm from the row menu means the detail was not open — after success, open it on that Target.
-5. **Snapshot.** `detailEmployee` is `employees.find(id)` today, which misses once the Ativos tab refetches without the row. The drawer keeps the last shaped Target plus the status returned by the mutation. The profile reads the live row when present and the snapshot otherwise. The drawer stays open until the operator closes it.
+3. On `200`, close the confirm modal **and** the drawer. **Do not open** the Target's detail. **Do not switch the list tab.**
+4. Opening the confirm from the row menu or from a still-open profile has the same success outcome: everything closes. The operator is not dropped onto the INACTIVE fork.
+5. **Snapshot.** `detailEmployee` is `employees.find(id)` today, which misses once the current tab refetches without the row. The drawer keeps the last shaped Target plus a status patch so a **still-open** profile can survive a list refetch (Reactivate in slice 4). Deactivate success drops the snapshot via `closeDrawer()`.
 6. Modal copy (§9.2), reusing `ModalLayout`: Inativar is an operational stop; the person stays on the list; the original email stays occupied; they can be Reativados later. Primary button **Inativar**. No password field. No link to Remove.
 7. Toasts:
    - `200` → “Colaborador inativado. Você pode reativá-lo pelo perfil.”
-   - `409` `LAST_ADMIN` → “É preciso existir outro Administrador ativo antes desta ação.” Keep the profile open and do not change the status.
+   - `409` `LAST_ADMIN` → “É preciso existir outro Administrador ativo antes desta ação.” Keep the confirm modal open and do not change the status.
    - `403` → “Ação não permitida.” Should be rare if slice 2 is correct.
    - `400` / `CONFLICT` / `UNKNOWN` → show the `error` string from the API.
    - `401` → treated as a session problem, not as a Deactivate failure.
@@ -74,11 +74,11 @@ function useToast(): { toasts: Ref<Toast[]>; push(variant: ToastVariant, message
 ## Acceptance criteria
 
 - [ ] Inativar → confirm → `POST /api/employee/update-status` with exactly `{ id, status: "INACTIVE" }` and no `actorId`.
-- [ ] After success, the confirm modal closes, the Target's profile is open and shows status **Inativo**, and the list tab is unchanged.
-- [ ] Inativar from the Ativos tab: the row disappears from the list after the refetch, and the open profile still shows the Target with the new status.
-- [ ] Inativar from the row menu, with no drawer open: after success the detail opens on the INACTIVE fork.
+- [ ] After success, the confirm modal and the drawer close; the list tab is unchanged; the Target's detail does **not** open.
+- [ ] Inativar from the Ativos tab: the row disappears from the list after the refetch.
+- [ ] Inativar from the row menu, with no drawer open: after success no detail opens.
 - [ ] The confirm modal shows no password field and no “clique aqui”.
-- [ ] Last Admin case: `409` shows the Last Admin copy, the profile stays open and the status stays `ACTIVE`.
+- [ ] Last Admin case: `409` shows the Last Admin copy, the confirm modal stays open and the status stays `ACTIVE`.
 - [ ] Double-clicking the primary button sends one request.
 - [ ] The list query is invalidated after a successful Deactivate.
 
