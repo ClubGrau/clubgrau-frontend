@@ -47,7 +47,7 @@ The API already enforces the matrix (`403`), Last Admin (`409`), and step-up (`4
 - Audit UI / `?status=REMOVED`.
 - `GET /me`. Role comes from the JWT this version.
 - Permission catalog / ACL. Role is the only visibility switch.
-- Revoking JWTs / re-check of Actor status in Auth.
+- Server-side JWT revocation / re-check of Actor status in Auth. Client session drop on Self-Deactivate is in-scope (§9.5).
 - Create-employee authorization matrix.
 - Hard delete, payroll, commissions, downstream `REMOVED` behaviour.
 - Counting Last Admin on the client.
@@ -212,6 +212,8 @@ Reactivate is operational restore of the same identity, not irreversible. **Chos
 
 Reuse `ModalLayout`. Body: Inativar is operational stop; they stay on the list; original email stays occupied; they can be Reativados. Primary: **Inativar**. No “clique aqui” to Remove. No password.
 
+When Target === Actor, the modal uses **distinct copy**: the operator is inactivating their own account, they will be disconnected, and they cannot Reactivate themselves. Primary stays **Inativar**.
+
 ### 9.3 Remove step-up
 
 Own modal (do not reuse the Inativar body with a mode flag that still smells like the shortcut). Fields: **one** password — Actor. Reuse `PasswordRevealler`. No `passwordConfirmation`. No typing the Target’s name.
@@ -230,6 +232,18 @@ Primary: **Remover**. Wrong password: same opacity as login (`Authentication fai
 | Last Admin `409` | É preciso existir outro Administrador ativo antes desta ação. Modal stays open. |
 | `403` | Should be rare if the helper is correct. Generic: ação não permitida. Hide the action on next render. |
 | `401` on Remove | Opaque credentials failure on the modal. No persist. |
+| Self-Deactivate `200` | **No toast.** Session drop + redirect (§9.5). |
+
+### 9.5 Self-Deactivate (client session)
+
+On Deactivate `200`, if Target === Actor:
+
+1. Do **not** push the generic success toast (“você pode reativá-lo pelo perfil”). `ToastHost` lives in `AppContainer` and would vanish on redirect anyway; the redirect is silent.
+2. The composable calls `onSelfDeactivated(result)` instead of `onStatusChanged`.
+3. The view runs `authStore.logout()` (clears `token` + `localStorage` `auth`) and `router.push('/login')`.
+4. `closeDrawer()` is skipped — the `/app` shell unmounts.
+
+Only on `200`. Last Admin `409` is unchanged: Last Admin copy, modal stays open, session kept. The API does not revoke JWTs; this is a client-side compensation.
 
 ---
 
@@ -303,9 +317,9 @@ Follow [`AGENTS.md`](../../AGENTS.md). Suggested split:
 | `useAuthStore` | token + Actor from JWT |
 | `employee-lifecycle.ts` (pure helper) | `canDeactivate` / `canReactivate` / `canRemove` |
 | `HttpEmployeesApi` | `updateStatus`, `remove` |
-| `useEmployeeLifecycle` | mutations, error map, snapshot status, toasts |
+| `useEmployeeLifecycle` | mutations, error map, snapshot status, toasts. Exposes `onSelfDeactivated`; receives `getActorId` so the Actor identity is injectable in tests. |
 | `useEmployeeDrawer` | modes: `detail` \| `create` \| `edit` \| `inactivate` \| `remove` — Remove is **not** a child of Inactivate |
-| `Employees.vue` / detail / menu | ask helper; open the right modal |
+| `Employees.vue` / detail / menu | ask helper; open the right modal. On Self-Deactivate: `authStore.logout()` + `router.push('/login')`. |
 
 `useMutation` `retry: 0`. On success, `queryClient.invalidateQueries({ queryKey: ['employees'] })` (or `refetch`).
 
@@ -322,6 +336,20 @@ Actor clicks Inativar (helper true)
   → 200 { id, status: INACTIVE }
   → close confirm and drawer; drop snapshot
   → invalidate employees
+  → toast (generic)
+```
+
+**Self-Deactivate**
+
+```text
+Actor clicks Inativar on their own row (helper true; Target === Actor)
+  → confirm modal (distinct copy: disconnected, cannot self-reactivate)
+  → POST /api/employee/update-status { id, status: INACTIVE }
+  → 200 { id, status: INACTIVE }
+  → invalidate employees
+  → no toast
+  → onSelfDeactivated → logout + router.push('/login')
+  → 409 Last Admin: toast Last Admin copy; modal stays; session kept
 ```
 
 **Reactivate**
@@ -360,6 +388,7 @@ Each slice has a spec under [`docs/specs/employee-lifecycle-v1/`](../specs/emplo
 | 3 | Deactivate confirm + mutation + close drawer | [`slice-3-deactivate.md`](../specs/employee-lifecycle-v1/slice-3-deactivate.md) | [KAN-11](https://paulodevmais.atlassian.net/browse/KAN-11) |
 | 4 | Reactivate mutation + stay on detail | [`slice-4-reactivate.md`](../specs/employee-lifecycle-v1/slice-4-reactivate.md) | [KAN-12](https://paulodevmais.atlassian.net/browse/KAN-12) |
 | 5 | Remove modal (Actor password) + mutation + close/toast + `401`/`409` | [`slice-5-remove.md`](../specs/employee-lifecycle-v1/slice-5-remove.md) | [KAN-13](https://paulodevmais.atlassian.net/browse/KAN-13) |
+| 6 | Self-Deactivate: drop client session + silent redirect to `/login` | [`slice-6-self-deactivate-logout.md`](../specs/employee-lifecycle-v1/slice-6-self-deactivate-logout.md) | a definir |
 
 Do not implement Vacation actions. Do not call `status: REMOVED`. Do not send `actorId`.
 
@@ -394,3 +423,4 @@ Mirrors PRD §7 at the Vue boundary (API already covered by KAN-7):
 - [ ] No `actorId` in any JSON body.
 - [ ] Overflow menu never uses “Remover” for Deactivate.
 - [ ] After Inativar, the confirm modal and the drawer close; the list tab is unchanged.
+- [ ] ADMIN Self-Deactivate `200` → no toast; token cleared; redirect to `/login`. Last Admin `409` keeps the session.

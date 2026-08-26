@@ -24,7 +24,7 @@ Operators also need a real **Remove**: the person disappears from the collaborat
 
 - Hard delete of the Mongo document
 - Audit UI / list filter for `REMOVED`
-- Revoking JWTs on Deactivate or Remove (Auth sibling)
+- Server-side JWT revocation on Deactivate or Remove (Auth sibling). The client drops the **operator's own** session on Self-Deactivate (Rule 2.9); that is in scope.
 - Changing login to accept `VACATION`
 - Vacation **actions** in the UI (put on vacation / leave vacation). Badge, tab and `VACATION` rows remain. Deactivate is the only lifecycle action on `VACATION` in this version.
 - Create-employee authorization matrix (who may create which role)
@@ -120,6 +120,10 @@ A person who returns to the salon must be **Reactivated**, not Removed and creat
 
 `GET /api/employees` never returns `REMOVED`. No `status=REMOVED` filter in this version.
 
+### Rule 2.9 — Self-Deactivate drops the operator's session (frontend)
+
+On Deactivate `200`, if Target === Actor, the frontend revokes the client token and navigates to `/login`. Last Admin remains `409`: the modal stays open and the session is kept. The API does not revoke JWTs on Deactivate (Auth sibling); this is a client-side compensation so an operator who just became `INACTIVE` does not keep using a still-valid token.
+
 ---
 
 ## 3. Data contracts and dependencies
@@ -136,7 +140,7 @@ Authorization: Bearer <Actor token>
 
 Success: `200` with `{ id }` of the Target. The HTTP adapter must pass `actorId` from the decoded token into the use case. The body must not accept `actorId`.
 
-**Auth (sibling, not this command):** login already refuses `status !== ACTIVE`. Existing JWTs are not revoked here. Product rule “inactive / removed must not keep using the API” belongs in Auth (re-check current status after decode).
+**Auth (sibling, not this command):** login already refuses `status !== ACTIVE`. Existing JWTs are not revoked **server-side** here. On Self-Deactivate the **client** drops its own session (Rule 2.9). Product rule “inactive / removed must not keep using the API” belongs in Auth (re-check current status after decode).
 
 **Other modules:** may hold `employeeId`. This PRD only guarantees the id still exists after Remove. What they do with `REMOVED` is out of scope.
 
@@ -150,6 +154,7 @@ Success: `200` with `{ id }` of the Target. The HTTP adapter must pass `actorId`
 4. **As an ADMIN:** after Remove, I want that person gone from the collaborators list and their former email available for a new hire who is **not** the same identity.
 5. **As an ADMIN:** I want to Deactivate / Reactivate / Remove a MANAGER or another ADMIN (except Last Admin), because those levels stay among ADMINs.
 6. **As the Last Admin:** I must not be able to Deactivate, Vacation, or Remove myself (or be so treated) until another `ACTIVE` ADMIN exists, so the platform is never left without an ADMIN who can log in.
+7. **As an ADMIN:** when I Deactivate my own account, I want to be signed out immediately so I cannot keep using the app after becoming `INACTIVE`.
 
 ---
 
@@ -205,3 +210,5 @@ These scenarios were walked during the grilling session. They are the rationale,
 - [ ] Two ADMINs: ADMIN A may Remove ADMIN B if B is `INACTIVE` and A remains a non-`REMOVED` ADMIN.
 - [ ] Body cannot spoof `actorId`; Actor is taken from the JWT.
 - [ ] `update-status` still does not accept `REMOVED` as a status payload.
+- [ ] ADMIN Self-Deactivate `200` → client token cleared, redirect to `/login`, no success toast.
+- [ ] Last Admin Self-Deactivate `409` → session kept; Last Admin copy; modal stays open.

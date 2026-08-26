@@ -18,10 +18,11 @@ One file per slice of design doc §14. A spec says **which files change**, **whi
 | 3 | [KAN-11](https://paulodevmais.atlassian.net/browse/KAN-11) | [`slice-3-deactivate.md`](slice-3-deactivate.md) | Deactivate confirm + mutation + close drawer |
 | 4 | [KAN-12](https://paulodevmais.atlassian.net/browse/KAN-12) | [`slice-4-reactivate.md`](slice-4-reactivate.md) | Reactivate in one click + stay on detail |
 | 5 | [KAN-13](https://paulodevmais.atlassian.net/browse/KAN-13) | [`slice-5-remove.md`](slice-5-remove.md) | Remove step-up modal + mutation + close/toast + `401` / `409` |
+| 6 | a definir | [`slice-6-self-deactivate-logout.md`](slice-6-self-deactivate-logout.md) | Self-Deactivate: drop client session + silent redirect to `/login` |
 
-All six are on **Grau System Board / Prioritized**. The API side shipped under [KAN-1](https://paulodevmais.atlassian.net/browse/KAN-1) … [KAN-7](https://paulodevmais.atlassian.net/browse/KAN-7).
+Slices 0–5 are on **Grau System Board / Prioritized**. Slice 6 Jira is pending. The API side shipped under [KAN-1](https://paulodevmais.atlassian.net/browse/KAN-1) … [KAN-7](https://paulodevmais.atlassian.net/browse/KAN-7).
 
-Order is sequential: 0 → 1 → 2 → 3 → 4 → 5. Slices 3 and 4 are independent of each other once 2 is in.
+Order is sequential: 0 → 1 → 2 → 3 → 4 → 5. Slices 3 and 4 are independent of each other once 2 is in. Slice 6 depends on 3.
 
 ## Shared conventions
 
