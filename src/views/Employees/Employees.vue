@@ -27,6 +27,14 @@ import {
 } from '../../composables/useEmployees';
 import { httpEmployeesApi } from '../../services/api/employees/http-employees-api';
 import InactivateModal from '../../components/Modal/InactivateModal.vue';
+import { useAuthStore } from '../../stores/auth';
+import {
+  canDeactivate,
+  canReactivate,
+  canRemove,
+  type LifecycleTarget,
+} from '../../domain/employee-lifecycle';
+import type { EmployeeShapped } from '../../types/employee';
 
 const {
   employees,
@@ -51,9 +59,9 @@ const {
   activeEmployeeId,
   detailEmployee,
   editEmployee,
-  isInactivateModalOpen,
-  inactivateModalMode,
-  inactivateModalWidthClass,
+  isDeactivateModalOpen,
+  isRemoveModalOpen,
+  modalWidthClass,
   canGoPreviousEmployee,
   canGoNextEmployee,
   drawerWidthClass,
@@ -63,11 +71,15 @@ const {
   openInactivateDrawer,
   openRemoveDrawer,
   closeDrawer,
-  closeInactivateModal,
+  closeModal,
   closeFormDrawer,
   goToPreviousEmployee,
   goToNextEmployee,
 } = useEmployeeDrawer(employees, filteredEmployees);
+
+const reactivateEmployee = (_employeeId: string) => {
+  // TODO - Reativar command lands in slice 4.
+};
 
 const {
   openActionsId,
@@ -76,11 +88,61 @@ const {
   toggleSelect,
   toggleActionsMenu,
   onEditAction,
+  onDeactivateAction,
+  onReactivateAction,
   onRemoveAction,
 } = useEmployeeSelection({
   onEdit: openEditDrawer,
-  onRemove: openInactivateDrawer,
+  onDeactivate: openInactivateDrawer,
+  onReactivate: reactivateEmployee,
+  onRemove: openRemoveDrawer,
 });
+
+const authStore = useAuthStore();
+
+const toLifecycleTarget = (employee: EmployeeShapped): LifecycleTarget => ({
+  id: employee.id,
+  role: employee.permission,
+  status: employee.status,
+});
+
+const menuEmployee = computed(() =>
+  openActionsId.value
+    ? employees.value.find((employee) => employee.id === openActionsId.value) ?? null
+    : null,
+);
+
+const menuCanDeactivate = computed(() =>
+  menuEmployee.value
+    ? canDeactivate(authStore.actor, toLifecycleTarget(menuEmployee.value))
+    : false,
+);
+const menuCanReactivate = computed(() =>
+  menuEmployee.value
+    ? canReactivate(authStore.actor, toLifecycleTarget(menuEmployee.value))
+    : false,
+);
+const menuCanRemove = computed(() =>
+  menuEmployee.value
+    ? canRemove(authStore.actor, toLifecycleTarget(menuEmployee.value))
+    : false,
+);
+
+const detailCanDeactivate = computed(() =>
+  detailEmployee.value
+    ? canDeactivate(authStore.actor, toLifecycleTarget(detailEmployee.value))
+    : false,
+);
+const detailCanReactivate = computed(() =>
+  detailEmployee.value
+    ? canReactivate(authStore.actor, toLifecycleTarget(detailEmployee.value))
+    : false,
+);
+const detailCanRemove = computed(() =>
+  detailEmployee.value
+    ? canRemove(authStore.actor, toLifecycleTarget(detailEmployee.value))
+    : false,
+);
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/app/dashboard' },
@@ -152,14 +214,15 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
 
 const handleInactivateEmployee = (employeeId: string) => {
   if (!employeeId) return;
-  console.log('handleInactivateEmployee', employeeId);
-  closeInactivateModal();
+  // Deactivate command lands in slice 3.
+  closeModal();
   void refetch();
 };
 
 const handleRemoveEmployee = (employeeId: string) => {
   if (!employeeId) return;
-  closeInactivateModal();
+  // Remove command (with step-up) lands in slice 5.
+  closeModal();
   void refetch();
 };
 </script>
@@ -368,6 +431,27 @@ const handleRemoveEmployee = (employeeId: string) => {
           Editar
         </button>
         <button
+          v-if="menuCanDeactivate"
+          type="button"
+          role="menuitem"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5]"
+          @click.stop="onDeactivateAction(openActionsId)"
+        >
+          <Icon icon="carbon:user-follow" class="size-4 text-gray-400" />
+          Inativar
+        </button>
+        <button
+          v-if="menuCanReactivate"
+          type="button"
+          role="menuitem"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5]"
+          @click.stop="onReactivateAction(openActionsId)"
+        >
+          <Icon icon="carbon:reset" class="size-4 text-gray-400" />
+          Reativar
+        </button>
+        <button
+          v-if="menuCanRemove"
           type="button"
           role="menuitem"
           class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
@@ -380,7 +464,7 @@ const handleRemoveEmployee = (employeeId: string) => {
     </Teleport>
 
     <Drawer
-      :open="drawer.open && !isInactivateModalOpen"
+      :open="drawer.open && !isDeactivateModalOpen && !isRemoveModalOpen"
       :width-class="drawerWidthClass"
       @close="closeDrawer"
     >
@@ -400,47 +484,70 @@ const handleRemoveEmployee = (employeeId: string) => {
         :employee="detailEmployee"
         :can-go-previous="canGoPreviousEmployee"
         :can-go-next="canGoNextEmployee"
+        :can-deactivate="detailCanDeactivate"
+        :can-reactivate="detailCanReactivate"
+        :can-remove="detailCanRemove"
         @close="closeDrawer"
         @previous="goToPreviousEmployee"
         @next="goToNextEmployee"
         @edit="openEditDrawer(detailEmployee.id)"
-        @delete="openInactivateDrawer(detailEmployee.id)"
+        @deactivate="openInactivateDrawer(detailEmployee.id)"
+        @reactivate="reactivateEmployee(detailEmployee.id)"
+        @remove="openRemoveDrawer(detailEmployee.id)"
       />
     </Drawer>
 
     <ModalLayout
-      :open="isInactivateModalOpen"
-      :width-class="inactivateModalWidthClass"
-      @close="closeInactivateModal"
+      :open="isDeactivateModalOpen"
+      :width-class="modalWidthClass"
+      @close="closeModal"
     >
-      <InactivateModal
-        :employee-id="activeEmployeeId ?? ''"
-        :mode="inactivateModalMode"
-        @on-remove-action="openRemoveDrawer"
-      />
+      <InactivateModal :employee-id="activeEmployeeId ?? ''" />
       <template #footer>
         <button
           type="button"
           class="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
-          @click="closeInactivateModal"
+          @click="closeModal"
         >
           Cancelar
         </button>
         <button
-          v-if="inactivateModalMode === 'remove'"
-          type="button"
-          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
-          @click="handleRemoveEmployee(activeEmployeeId ?? '')"
-        >
-          Remover
-        </button>
-        <button
-          v-else
           type="button"
           class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
           @click="handleInactivateEmployee(activeEmployeeId ?? '')"
         >
           Inativar
+        </button>
+      </template>
+    </ModalLayout>
+
+    <ModalLayout
+      :open="isRemoveModalOpen"
+      :width-class="modalWidthClass"
+      @close="closeModal"
+    >
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">
+          Remover colaborador
+        </h2>
+        <p class="mt-1 text-sm text-gray-400">
+          Esta ação remove o colaborador do sistema de forma permanente.
+        </p>
+      </div>
+      <template #footer>
+        <button
+          type="button"
+          class="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
+          @click="closeModal"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
+          @click="handleRemoveEmployee(activeEmployeeId ?? '')"
+        >
+          Remover
         </button>
       </template>
     </ModalLayout>

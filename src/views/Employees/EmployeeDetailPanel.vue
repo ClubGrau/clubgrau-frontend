@@ -10,6 +10,9 @@ const props = defineProps<{
   employee: EmployeeShapped;
   canGoPrevious?: boolean;
   canGoNext?: boolean;
+  canDeactivate?: boolean;
+  canReactivate?: boolean;
+  canRemove?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -18,7 +21,9 @@ const emit = defineEmits<{
   next: [];
   edit: [];
   message: [];
-  delete: [];
+  deactivate: [];
+  reactivate: [];
+  remove: [];
 }>();
 
 type DetailTab = 'details' | 'payroll';
@@ -104,10 +109,29 @@ const professionalFields = computed(() => [
             <Icon icon="carbon:send" class="size-4" />
           </button>
           <button
+            v-if="canDeactivate"
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Inativar"
+            @click="emit('deactivate')"
+          >
+            <Icon icon="carbon:user-follow" class="size-4" />
+          </button>
+          <button
+            v-if="canReactivate"
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Reativar"
+            @click="emit('reactivate')"
+          >
+            <Icon icon="carbon:reset" class="size-4" />
+          </button>
+          <button
+            v-if="canRemove"
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
-            aria-label="Eliminar"
-            @click="emit('delete')"
+            aria-label="Remover"
+            @click="emit('remove')"
           >
             <Icon icon="carbon:trash-can" class="size-4" />
           </button>
