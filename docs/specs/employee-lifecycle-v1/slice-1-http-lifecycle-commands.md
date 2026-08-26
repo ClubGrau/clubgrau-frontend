@@ -15,6 +15,8 @@ No screen changes. It unblocks slices 3, 4 and 5.
 | `src/services/api/employees/types.ts` | new params/results and the write ports |
 | `src/services/api/employees/http-employees-api.ts` | implements the two commands |
 | `src/domain/lifecycle-error.ts` | **new** — `toLifecycleError` |
+| `src/i18n/locales/pt.json` / `en.json` | generic operator copy keyed by `LifecycleErrorCode` |
+| `package.json` / `vite.config.ts` | Vitest runner (`npm run test`) |
 
 ## Contracts
 
@@ -49,10 +51,9 @@ export interface UpdateEmployeeStatusApi {
 export interface RemoveEmployeeApi {
   remove(params: RemoveEmployeeParams): Promise<RemoveEmployeeResult>
 }
-
-export interface EmployeesApi
-  extends GetEmployeesApi, UpdateEmployeeStatusApi, RemoveEmployeeApi {}
 ```
+
+The three ports stay independent (ISP). `HttpEmployeesApi` implements all three; each consumer injects only the port it calls — same pattern as `useEmployees(getEmployeesApi: GetEmployeesApi)`. There is no aggregated `EmployeesApi`.
 
 ```ts
 // src/domain/lifecycle-error.ts
@@ -68,16 +69,35 @@ export type LifecycleErrorCode =
 
 export interface LifecycleError {
   code: LifecycleErrorCode
-  /** Raw `error` string from the API, for fallback copy. */
+  /** Raw English `error` string from the API, for diagnostics only. Never show this. */
   message: string
 }
 
 export function toLifecycleError(error: unknown): LifecycleError
 ```
 
+Operator-facing copy lives in the shared locales, one key per `LifecycleErrorCode`. Views resolve `t('lifecycleError.' + code)` and never display `LifecycleError.message`. Surface (toast, inline, modal) and any screen-specific override stay in slices 3–5.
+
+```json
+{
+  "lifecycleError": {
+    "BAD_REQUEST": "Pedido inválido. Verifique os dados e tente novamente.",
+    "UNAUTHORIZED": "Não foi possível confirmar a sua identidade. Verifique a palavra-passe.",
+    "FORBIDDEN": "Não tem permissão para executar esta ação.",
+    "LAST_ADMIN": "Tem de existir outro Administrador ativo antes de inativar este.",
+    "NOT_INACTIVE": "Só é possível remover um colaborador que esteja inativo.",
+    "ALREADY_REMOVED": "Este colaborador já foi removido.",
+    "CONFLICT": "A operação entra em conflito com o estado atual do colaborador.",
+    "UNKNOWN": "Não foi possível contactar o servidor. Tente novamente."
+  }
+}
+```
+
+The same keys exist in `en.json` (fallback locale).
+
 ## Requirements
 
-1. `HttpEmployeesApi implements EmployeesApi`. Keep the exported `httpEmployeesApi` singleton.
+1. `HttpEmployeesApi` implements the three ports (`GetEmployeesApi`, `UpdateEmployeeStatusApi`, `RemoveEmployeeApi`); consumers depend on the narrow port. Keep the exported `httpEmployeesApi` singleton.
 2. `POST /api/employee/update-status` with body **exactly** `{ id, status }`. Success `200` → `{ id, status }` after the interceptor unwrap.
 3. `POST /api/employee/remove` with body **exactly** `{ id, password }`. Success `200` → `{ id }` after unwrap.
 4. **No `actorId` in any body.** Authorization comes from the existing request interceptor in `src/services/api/config.ts`.
@@ -93,12 +113,13 @@ export function toLifecycleError(error: unknown): LifecycleError
 8. A request with no response (network failure, timeout) is `UNKNOWN`.
 9. `EmployeeLifecycleStatus` must make `'REMOVED'` and `'VACATION'` un-typeable on `updateStatus`. `EmployeeApiStatus` on the list query is unchanged and still accepts `VACATION`.
 10. `GET /api/employees` already excludes `REMOVED`. Do not add a Removed filter.
+11. Every displayable message comes from `lifecycleError.<code>`, never from `LifecycleError.message`.
 
 ## Out of scope
 
 - Any Vue component, composable or mutation. Wiring lands in slices 3–5.
 - Retry or refresh-token behaviour.
-- Operator copy for each error code — that is per-slice, in 3, 4 and 5.
+- Where each message appears (toast, inline, modal) and any screen-specific copy — that stays in slices 3, 4 and 5.
 
 ## Acceptance criteria
 
@@ -108,7 +129,8 @@ export function toLifecycleError(error: unknown): LifecycleError
 - [ ] `updateStatus({ id, status: 'REMOVED' })` fails to compile.
 - [ ] `toLifecycleError` returns `LAST_ADMIN` for a `409` whose `error` is `Last Admin must stay ACTIVE until another Admin exists`, and `CONFLICT` for an unrecognised `409`.
 - [ ] `toLifecycleError` returns `UNAUTHORIZED` for `401`, `FORBIDDEN` for `403`, `BAD_REQUEST` for `400`, `UNKNOWN` when there is no response.
-- [ ] `npm run build` passes.
+- [ ] Every displayable message comes from `lifecycleError.<code>`, never from `LifecycleError.message`.
+- [ ] `npm run test` and `npm run build` pass.
 
 ## Dependencies
 

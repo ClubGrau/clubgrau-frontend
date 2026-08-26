@@ -41,7 +41,6 @@ const {
   permissionOptions,
   stats,
   total,
-  isLoading,
   refetch,
 } = useEmployees(httpEmployeesApi);
 
