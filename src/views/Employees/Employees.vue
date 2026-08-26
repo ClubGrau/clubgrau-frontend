@@ -72,6 +72,7 @@ const {
   openEditDrawer,
   openInactivateDrawer,
   openRemoveDrawer,
+  patchSnapshotStatus,
   closeDrawer,
   closeModal,
   closeFormDrawer,
@@ -82,20 +83,21 @@ const {
 const authStore = useAuthStore();
 const router = useRouter();
 
-const { deactivate, isDeactivating } = useEmployeeLifecycle(httpEmployeesApi, {
-  getActorId: () => authStore.actor?.id ?? null,
-  onStatusChanged: () => {
-    closeDrawer();
-  },
-  onSelfDeactivated: () => {
-    authStore.logout();
-    void router.push('/login');
-  },
-});
-
-const reactivateEmployee = (_employeeId: string) => {
-  // TODO - Reativar command lands in slice 4.
-};
+const { deactivate, isDeactivating, reactivate, isReactivating } =
+  useEmployeeLifecycle(httpEmployeesApi, {
+    getActorId: () => authStore.actor?.id ?? null,
+    onStatusChanged: () => {
+      closeDrawer();
+    },
+    onSelfDeactivated: () => {
+      authStore.logout();
+      void router.push('/login');
+    },
+    onReactivated: (result) => {
+      if (activeEmployeeId.value !== result.id) openDetailDrawer(result.id);
+      patchSnapshotStatus(result.status);
+    },
+  });
 
 const {
   openActionsId,
@@ -110,7 +112,7 @@ const {
 } = useEmployeeSelection({
   onEdit: openEditDrawer,
   onDeactivate: openInactivateDrawer,
-  onReactivate: reactivateEmployee,
+  onReactivate: reactivate,
   onRemove: openRemoveDrawer,
 });
 
@@ -460,7 +462,8 @@ const handleRemoveEmployee = (employeeId: string) => {
           v-if="menuCanReactivate"
           type="button"
           role="menuitem"
-          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5]"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5] disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="isReactivating"
           @click.stop="onReactivateAction(openActionsId)"
         >
           <Icon icon="carbon:reset" class="size-4 text-gray-400" />
@@ -503,12 +506,13 @@ const handleRemoveEmployee = (employeeId: string) => {
         :can-deactivate="detailCanDeactivate"
         :can-reactivate="detailCanReactivate"
         :can-remove="detailCanRemove"
+        :reactivating="isReactivating"
         @close="closeDrawer"
         @previous="goToPreviousEmployee"
         @next="goToNextEmployee"
         @edit="openEditDrawer(detailEmployee.id)"
         @deactivate="openInactivateDrawer(detailEmployee.id)"
-        @reactivate="reactivateEmployee(detailEmployee.id)"
+        @reactivate="reactivate(detailEmployee.id)"
         @remove="openRemoveDrawer(detailEmployee.id)"
       />
     </Drawer>

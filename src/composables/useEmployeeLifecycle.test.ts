@@ -4,6 +4,7 @@ import { createApp, effectScope } from 'vue'
 import type { EmployeesApi } from '../services/api/employees/types'
 import {
   toastMessageForDeactivateError,
+  toastMessageForReactivateError,
   useEmployeeLifecycle,
 } from './useEmployeeLifecycle'
 import { useToast } from './useToast'
@@ -118,10 +119,12 @@ describe('useEmployeeLifecycle self vs other Deactivate', () => {
     const api = stubApi({
       updateStatus: vi.fn().mockResolvedValue(result),
     })
+    const onReactivated = vi.fn()
     const { lifecycle, dispose } = withLifecycle(api, {
       getActorId: () => 'admin-1',
       onSelfDeactivated,
       onStatusChanged,
+      onReactivated,
     })
 
     lifecycle.deactivate('admin-1')
@@ -129,6 +132,7 @@ describe('useEmployeeLifecycle self vs other Deactivate', () => {
 
     expect(onSelfDeactivated).toHaveBeenCalledWith(result)
     expect(onStatusChanged).not.toHaveBeenCalled()
+    expect(onReactivated).not.toHaveBeenCalled()
     expect(toasts.value).toHaveLength(0)
 
     dispose()
@@ -141,10 +145,12 @@ describe('useEmployeeLifecycle self vs other Deactivate', () => {
     const api = stubApi({
       updateStatus: vi.fn().mockResolvedValue(result),
     })
+    const onReactivated = vi.fn()
     const { lifecycle, dispose } = withLifecycle(api, {
       getActorId: () => 'admin-1',
       onSelfDeactivated,
       onStatusChanged,
+      onReactivated,
     })
 
     lifecycle.deactivate('emp-2')
@@ -152,6 +158,7 @@ describe('useEmployeeLifecycle self vs other Deactivate', () => {
 
     expect(onStatusChanged).toHaveBeenCalledWith(result)
     expect(onSelfDeactivated).not.toHaveBeenCalled()
+    expect(onReactivated).not.toHaveBeenCalled()
     expect(toasts.value).toHaveLength(1)
     expect(toasts.value[0]).toMatchObject({
       variant: 'success',
@@ -172,10 +179,12 @@ describe('useEmployeeLifecycle self vs other Deactivate', () => {
         },
       }),
     })
+    const onReactivated = vi.fn()
     const { lifecycle, dispose } = withLifecycle(api, {
       getActorId: () => 'admin-1',
       onSelfDeactivated,
       onStatusChanged,
+      onReactivated,
     })
 
     lifecycle.deactivate('admin-1')
@@ -183,10 +192,123 @@ describe('useEmployeeLifecycle self vs other Deactivate', () => {
 
     expect(onSelfDeactivated).not.toHaveBeenCalled()
     expect(onStatusChanged).not.toHaveBeenCalled()
+    expect(onReactivated).not.toHaveBeenCalled()
     expect(toasts.value).toHaveLength(1)
     expect(toasts.value[0]).toMatchObject({
       variant: 'error',
       message: 'É preciso existir outro Administrador ativo antes desta ação.',
+    })
+
+    dispose()
+  })
+})
+
+describe('toastMessageForReactivateError', () => {
+  it('maps 403 to Ação não permitida', () => {
+    expect(toastMessageForReactivateError(httpError(403, 'Action not allowed'))).toBe(
+      'Ação não permitida.',
+    )
+  })
+
+  it('does not emit a reactivate toast on 401', () => {
+    expect(
+      toastMessageForReactivateError(httpError(401, 'Authentication failed')),
+    ).toBeNull()
+  })
+
+  it('maps 400 and 409 to the API error string', () => {
+    expect(toastMessageForReactivateError(httpError(400, 'Invalid payload'))).toBe(
+      'Invalid payload',
+    )
+    expect(toastMessageForReactivateError(httpError(409, 'Something else'))).toBe(
+      'Something else',
+    )
+  })
+
+  it('returns the API string for unknown failures when present', () => {
+    expect(toastMessageForReactivateError(httpError(500, 'Internal'))).toBe('Internal')
+  })
+
+  it('returns null when there is no API error string', () => {
+    expect(toastMessageForReactivateError(new Error('Network Error'))).toBeNull()
+  })
+})
+
+describe('useEmployeeLifecycle reactivate', () => {
+  afterEach(() => {
+    dismissAllToasts()
+  })
+
+  it('calls updateStatus with exactly { id, status: ACTIVE } and no actorId', async () => {
+    const updateStatus = vi.fn().mockResolvedValue({ id: 'emp-2', status: 'ACTIVE' })
+    const api = stubApi({ updateStatus })
+    const { lifecycle, dispose } = withLifecycle(api, {
+      getActorId: () => 'admin-1',
+      onSelfDeactivated: vi.fn(),
+      onStatusChanged: vi.fn(),
+      onReactivated: vi.fn(),
+    })
+
+    lifecycle.reactivate('emp-2')
+    await flushPromises()
+
+    expect(updateStatus).toHaveBeenCalledTimes(1)
+    expect(updateStatus).toHaveBeenCalledWith({ id: 'emp-2', status: 'ACTIVE' })
+    expect(updateStatus.mock.calls[0][0]).not.toHaveProperty('actorId')
+
+    dispose()
+  })
+
+  it('on 200 calls onReactivated and pushes the success toast', async () => {
+    const onReactivated = vi.fn()
+    const onStatusChanged = vi.fn()
+    const onSelfDeactivated = vi.fn()
+    const result = { id: 'emp-2', status: 'ACTIVE' as const }
+    const api = stubApi({
+      updateStatus: vi.fn().mockResolvedValue(result),
+    })
+    const { lifecycle, dispose } = withLifecycle(api, {
+      getActorId: () => 'admin-1',
+      onSelfDeactivated,
+      onStatusChanged,
+      onReactivated,
+    })
+
+    lifecycle.reactivate('emp-2')
+    await flushPromises()
+
+    expect(onReactivated).toHaveBeenCalledWith(result)
+    expect(onStatusChanged).not.toHaveBeenCalled()
+    expect(onSelfDeactivated).not.toHaveBeenCalled()
+    expect(toasts.value).toHaveLength(1)
+    expect(toasts.value[0]).toMatchObject({
+      variant: 'success',
+      message: 'Colaborador reativado (mesma identidade).',
+    })
+
+    dispose()
+  })
+
+  it('on 403 pushes Ação não permitida and does not call onReactivated', async () => {
+    const onReactivated = vi.fn()
+    const api = stubApi({
+      updateStatus: vi.fn().mockRejectedValue(httpError(403, 'Action not allowed')),
+    })
+    const { lifecycle, dispose } = withLifecycle(api, {
+      getActorId: () => 'admin-1',
+      onSelfDeactivated: vi.fn(),
+      onStatusChanged: vi.fn(),
+      onReactivated,
+    })
+
+    lifecycle.reactivate('emp-2')
+    await flushPromises()
+
+    expect(onReactivated).not.toHaveBeenCalled()
+    expect(toasts.value).toHaveLength(1)
+    expect(toasts.value[0]).toMatchObject({
+      variant: 'error',
+      message: 'Ação não permitida.',
     })
 
     dispose()
