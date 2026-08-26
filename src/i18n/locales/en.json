@@ -1,1 +1,12 @@
-{}
+{
+  "lifecycleError": {
+    "BAD_REQUEST": "Invalid request. Check the data and try again.",
+    "UNAUTHORIZED": "We could not confirm your identity. Check your password.",
+    "FORBIDDEN": "You do not have permission to perform this action.",
+    "LAST_ADMIN": "Another active Administrator must exist before you inactivate this one.",
+    "NOT_INACTIVE": "You can only remove an employee who is inactive.",
+    "ALREADY_REMOVED": "This employee has already been removed.",
+    "CONFLICT": "The operation conflicts with the employee's current state.",
+    "UNKNOWN": "Could not reach the server. Try again."
+  }
+}

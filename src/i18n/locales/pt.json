@@ -1,1 +1,12 @@
-{}
+{
+  "lifecycleError": {
+    "BAD_REQUEST": "Pedido inválido. Verifique os dados e tente novamente.",
+    "UNAUTHORIZED": "Não foi possível confirmar a sua identidade. Verifique a palavra-passe.",
+    "FORBIDDEN": "Não tem permissão para executar esta ação.",
+    "LAST_ADMIN": "Tem de existir outro Administrador ativo antes de inativar este.",
+    "NOT_INACTIVE": "Só é possível remover um colaborador que esteja inativo.",
+    "ALREADY_REMOVED": "Este colaborador já foi removido.",
+    "CONFLICT": "A operação entra em conflito com o estado atual do colaborador.",
+    "UNKNOWN": "Não foi possível contactar o servidor. Tente novamente."
+  }
+}
