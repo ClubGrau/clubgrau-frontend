@@ -413,7 +413,7 @@ Product rules live in the PRD. These were **shape** decisions (24/08/2026):
 
 Mirrors PRD §7 at the Vue boundary (API already covered by KAN-7):
 
-- [ ] MANAGER + `INACTIVE` `EMPLOYEE` → Reativar visible and succeeds; Remover hidden; `POST /remove` not offered.
+- [x] MANAGER + `INACTIVE` `EMPLOYEE` → Reativar visible and succeeds; Remover hidden; `POST /remove` not offered.
 - [ ] ADMIN + `INACTIVE` `EMPLOYEE` + correct Actor password → Remove; row gone; toast about new Create; original email usable on Create as a new id (API).
 - [ ] ADMIN + wrong password → `401`; modal stays; no list change.
 - [ ] `ACTIVE` / `VACATION` → Remover not visible. Inativar visible when helper allows.
