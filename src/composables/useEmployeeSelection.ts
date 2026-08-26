@@ -2,6 +2,8 @@ import { onMounted, onUnmounted, ref, type CSSProperties } from 'vue'
 
 type UseEmployeeSelectionOptions = {
   onEdit?: (employeeId: string) => void
+  onDeactivate?: (employeeId: string) => void
+  onReactivate?: (employeeId: string) => void
   onRemove?: (employeeId: string) => void
 }
 
@@ -58,6 +60,16 @@ export function useEmployeeSelection(options: UseEmployeeSelectionOptions = {}) 
     options.onEdit?.(employeeId)
   }
 
+  const onDeactivateAction = (employeeId: string) => {
+    closeActionsMenu()
+    options.onDeactivate?.(employeeId)
+  }
+
+  const onReactivateAction = (employeeId: string) => {
+    closeActionsMenu()
+    options.onReactivate?.(employeeId)
+  }
+
   const onRemoveAction = (employeeId: string) => {
     closeActionsMenu()
     options.onRemove?.(employeeId)
@@ -95,6 +107,8 @@ export function useEmployeeSelection(options: UseEmployeeSelectionOptions = {}) 
     closeActionsMenu,
     toggleActionsMenu,
     onEditAction,
+    onDeactivateAction,
+    onReactivateAction,
     onRemoveAction,
   }
 }
