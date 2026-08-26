@@ -43,12 +43,12 @@ isReactivating: Ref<boolean>
 
 ## Acceptance criteria
 
-- [ ] Reativar → `POST /api/employee/update-status` with exactly `{ id, status: "ACTIVE" }` and no `actorId`, with no intermediate modal.
-- [ ] After success the same profile stays open and shows status **Ativo**; the list tab does not change.
-- [ ] Reativar from the Inativos tab: the row leaves the list after the refetch and the open profile still shows the Target as `ACTIVE`.
-- [ ] Actor `MANAGER` on an `INACTIVE` `EMPLOYEE`: Reativar succeeds and Remover was never offered.
-- [ ] The reactivated collaborator keeps the same `id` and the same email — this is not a new Create.
-- [ ] The list query is invalidated after a successful Reactivate.
+- [x] Reativar → `POST /api/employee/update-status` with exactly `{ id, status: "ACTIVE" }` and no `actorId`, with no intermediate modal.
+- [x] After success the same profile stays open and shows status **Ativo**; the list tab does not change.
+- [x] Reativar from the Inativos tab: the row leaves the list after the refetch and the open profile still shows the Target as `ACTIVE`.
+- [x] Actor `MANAGER` on an `INACTIVE` `EMPLOYEE`: Reativar succeeds and Remover was never offered.
+- [x] The reactivated collaborator keeps the same `id` and the same email — this is not a new Create.
+- [x] The list query is invalidated after a successful Reactivate.
 
 ## Dependencies
 

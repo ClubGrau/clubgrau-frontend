@@ -13,6 +13,7 @@ const props = defineProps<{
   canDeactivate?: boolean;
   canReactivate?: boolean;
   canRemove?: boolean;
+  reactivating?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -120,11 +121,16 @@ const professionalFields = computed(() => [
           <button
             v-if="canReactivate"
             type="button"
-            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
             aria-label="Reativar"
+            :disabled="reactivating"
+            :aria-busy="reactivating"
             @click="emit('reactivate')"
           >
-            <Icon icon="carbon:reset" class="size-4" />
+            <Icon
+              :icon="reactivating ? 'carbon:circle-dash' : 'carbon:reset'"
+              :class="reactivating ? 'size-4 animate-spin' : 'size-4'"
+            />
           </button>
           <button
             v-if="canRemove"
