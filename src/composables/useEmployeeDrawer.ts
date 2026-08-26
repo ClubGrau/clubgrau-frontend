@@ -1,12 +1,20 @@
 import { computed, ref, type Ref } from 'vue'
 import type { EmployeeDrawerState } from '../types/drawer'
-import type { EmployeeShapped } from '../types/employee'
+import type { EmployeeShapped, EmployeeStatus } from '../types/employee'
 
 export function useEmployeeDrawer(
   employees: Ref<EmployeeShapped[]>,
   filteredEmployees: Ref<EmployeeShapped[]>,
 ) {
   const drawer = ref<EmployeeDrawerState>({ open: false })
+  const targetSnapshot = ref<EmployeeShapped | null>(null)
+
+  const captureSnapshot = (employeeId: string) => {
+    const live = employees.value.find((employee) => employee.id === employeeId)
+    if (live) {
+      targetSnapshot.value = { ...live }
+    }
+  }
 
   const isCreateDrawerOpen = computed(
     () => drawer.value.open && drawer.value.mode === 'create',
@@ -43,7 +51,12 @@ export function useEmployeeDrawer(
   const detailEmployee = computed(() => {
     const state = drawer.value
     if (!state.open || state.mode !== 'detail') return null
-    return selectedEmployee.value
+    const live =
+      employees.value.find((employee) => employee.id === state.employeeId) ?? null
+    const snapshot =
+      targetSnapshot.value?.id === state.employeeId ? targetSnapshot.value : null
+    if (live && snapshot) return { ...live, status: snapshot.status }
+    return live ?? snapshot
   })
 
   const editEmployee = computed(() => {
@@ -76,6 +89,7 @@ export function useEmployeeDrawer(
   }
 
   const openDetailDrawer = (employeeId: string) => {
+    captureSnapshot(employeeId)
     drawer.value = { open: true, mode: 'detail', employeeId }
   }
 
@@ -84,7 +98,17 @@ export function useEmployeeDrawer(
   }
 
   const openInactivateDrawer = (employeeId: string) => {
+    captureSnapshot(employeeId)
     drawer.value = { open: true, mode: 'inactivate', employeeId }
+  }
+
+  const patchSnapshotStatus = (status: EmployeeStatus) => {
+    if (!targetSnapshot.value) return
+    targetSnapshot.value = { ...targetSnapshot.value, status }
+  }
+
+  const clearSnapshot = () => {
+    targetSnapshot.value = null
   }
 
   const openRemoveDrawer = (employeeId: string) => {
@@ -92,6 +116,7 @@ export function useEmployeeDrawer(
   }
 
   const closeDrawer = () => {
+    clearSnapshot()
     drawer.value = { open: false }
   }
 
@@ -127,6 +152,7 @@ export function useEmployeeDrawer(
     selectedEmployee,
     detailEmployee,
     editEmployee,
+    targetSnapshot,
     isDeactivateModalOpen,
     isRemoveModalOpen,
     modalWidthClass,
@@ -138,6 +164,8 @@ export function useEmployeeDrawer(
     openEditDrawer,
     openInactivateDrawer,
     openRemoveDrawer,
+    patchSnapshotStatus,
+    clearSnapshot,
     closeDrawer,
     closeModal,
     closeFormDrawer,

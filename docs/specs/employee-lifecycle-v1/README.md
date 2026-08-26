@@ -15,13 +15,14 @@ One file per slice of design doc §14. A spec says **which files change**, **whi
 | 0 | [KAN-8](https://paulodevmais.atlassian.net/browse/KAN-8) | [`slice-0-actor-from-jwt.md`](slice-0-actor-from-jwt.md) | JWT → auth store Actor (`id`, `role`, `status`) |
 | 1 | [KAN-9](https://paulodevmais.atlassian.net/browse/KAN-9) | [`slice-1-http-lifecycle-commands.md`](slice-1-http-lifecycle-commands.md) | `updateStatus` + `remove` on the employees port, plus the error taxonomy |
 | 2 | [KAN-10](https://paulodevmais.atlassian.net/browse/KAN-10) | [`slice-2-visibility-helper.md`](slice-2-visibility-helper.md) | Pure helper + menu/detail wiring; kills the “clique aqui” shortcut |
-| 3 | [KAN-11](https://paulodevmais.atlassian.net/browse/KAN-11) | [`slice-3-deactivate.md`](slice-3-deactivate.md) | Deactivate confirm + mutation + Target snapshot (stay on the fork) |
+| 3 | [KAN-11](https://paulodevmais.atlassian.net/browse/KAN-11) | [`slice-3-deactivate.md`](slice-3-deactivate.md) | Deactivate confirm + mutation + close drawer |
 | 4 | [KAN-12](https://paulodevmais.atlassian.net/browse/KAN-12) | [`slice-4-reactivate.md`](slice-4-reactivate.md) | Reactivate in one click + stay on detail |
 | 5 | [KAN-13](https://paulodevmais.atlassian.net/browse/KAN-13) | [`slice-5-remove.md`](slice-5-remove.md) | Remove step-up modal + mutation + close/toast + `401` / `409` |
+| 6 | a definir | [`slice-6-self-deactivate-logout.md`](slice-6-self-deactivate-logout.md) | Self-Deactivate: drop client session + silent redirect to `/login` |
 
-All six are on **Grau System Board / Prioritized**. The API side shipped under [KAN-1](https://paulodevmais.atlassian.net/browse/KAN-1) … [KAN-7](https://paulodevmais.atlassian.net/browse/KAN-7).
+Slices 0–5 are on **Grau System Board / Prioritized**. Slice 6 Jira is pending. The API side shipped under [KAN-1](https://paulodevmais.atlassian.net/browse/KAN-1) … [KAN-7](https://paulodevmais.atlassian.net/browse/KAN-7).
 
-Order is sequential: 0 → 1 → 2 → 3 → 4 → 5. Slices 3 and 4 are independent of each other once 2 is in.
+Order is sequential: 0 → 1 → 2 → 3 → 4 → 5. Slices 3 and 4 are independent of each other once 2 is in. Slice 6 depends on 3.
 
 ## Shared conventions
 

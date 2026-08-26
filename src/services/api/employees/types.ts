@@ -45,3 +45,7 @@ export interface UpdateEmployeeStatusApi {
 export interface RemoveEmployeeApi {
   remove(params: RemoveEmployeeParams): Promise<RemoveEmployeeResult>
 }
+
+export type EmployeesApi = GetEmployeesApi &
+  UpdateEmployeeStatusApi &
+  RemoveEmployeeApi

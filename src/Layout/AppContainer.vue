@@ -2,6 +2,7 @@
 import TemplateDefault from './TemplateDefault.vue';
 import SideBarContainer from '../components/SideBar/SideBarContainer.vue';
 import UserAvatar from '../components/UserAvatar/UserAvatar.vue';
+import ToastHost from '../components/Toast/ToastHost.vue';
 </script>
 
 <template>
@@ -23,5 +24,6 @@ import UserAvatar from '../components/UserAvatar/UserAvatar.vue';
         <TemplateDefault />
       </main>
     </div>
+    <ToastHost />
   </div>
 </template>
