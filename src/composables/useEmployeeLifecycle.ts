@@ -13,7 +13,9 @@ const LAST_ADMIN_TOAST =
 const FORBIDDEN_TOAST = 'Ação não permitida.'
 
 interface ToastOptionChange {
+  getActorId: () => string | null
   onStatusChanged: (result: UpdateEmployeeStatusResult) => void
+  onSelfDeactivated: (result: UpdateEmployeeStatusResult) => void
 }
 
 export function toastMessageForDeactivateError(error: unknown): string | null {
@@ -36,6 +38,10 @@ export function useEmployeeLifecycle(
     retry: 0,
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: ['employees'] })
+      if (result.id === options.getActorId()) {
+        options.onSelfDeactivated(result)
+        return
+      }
       toast.push('success', DEACTIVATE_SUCCESS_MESSAGE)
       options.onStatusChanged(result)
     },

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
@@ -78,9 +79,17 @@ const {
   goToNextEmployee,
 } = useEmployeeDrawer(employees, filteredEmployees);
 
+const authStore = useAuthStore();
+const router = useRouter();
+
 const { deactivate, isDeactivating } = useEmployeeLifecycle(httpEmployeesApi, {
+  getActorId: () => authStore.actor?.id ?? null,
   onStatusChanged: () => {
     closeDrawer();
+  },
+  onSelfDeactivated: () => {
+    authStore.logout();
+    void router.push('/login');
   },
 });
 
@@ -104,8 +113,6 @@ const {
   onReactivate: reactivateEmployee,
   onRemove: openRemoveDrawer,
 });
-
-const authStore = useAuthStore();
 
 const toLifecycleTarget = (employee: EmployeeShapped): LifecycleTarget => ({
   id: employee.id,
@@ -149,6 +156,10 @@ const detailCanRemove = computed(() =>
   detailEmployee.value
     ? canRemove(authStore.actor, toLifecycleTarget(detailEmployee.value))
     : false,
+);
+
+const isSelfDeactivate = computed(
+  () => activeEmployeeId.value === authStore.actor?.id,
 );
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -507,7 +518,10 @@ const handleRemoveEmployee = (employeeId: string) => {
       :width-class="modalWidthClass"
       @close="closeModal"
     >
-      <InactivateModal :employee-id="activeEmployeeId ?? ''" />
+      <InactivateModal
+        :employee-id="activeEmployeeId ?? ''"
+        :is-self="isSelfDeactivate"
+      />
       <template #footer>
         <button
           type="button"
@@ -518,10 +532,16 @@ const handleRemoveEmployee = (employeeId: string) => {
         </button>
         <button
           type="button"
-          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c] disabled:cursor-not-allowed disabled:opacity-60"
+          class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c] disabled:cursor-not-allowed disabled:opacity-60"
           :disabled="isDeactivating"
+          :aria-busy="isDeactivating"
           @click="handleInactivateEmployee(activeEmployeeId ?? '')"
         >
+          <Icon
+            v-if="isDeactivating"
+            icon="carbon:circle-dash"
+            class="size-4 animate-spin"
+          />
           Inativar
         </button>
       </template>
