@@ -87,7 +87,7 @@ describe('useEmployeeDrawer snapshot', () => {
     expect(drawer.detailEmployee.value?.status).toBe('ACTIVE')
   })
 
-  it('drops the snapshot when the drawer closes', () => {
+  it('drops the snapshot and leaves the detail closed when the drawer closes after Inativar', () => {
     const target = employee()
     const employees = ref([target])
     const drawer = useEmployeeDrawer(employees, employees)
@@ -96,6 +96,9 @@ describe('useEmployeeDrawer snapshot', () => {
     drawer.closeDrawer()
 
     expect(drawer.targetSnapshot.value).toBeNull()
+    expect(drawer.drawer.value).toEqual({ open: false })
+    expect(drawer.detailEmployee.value).toBeNull()
+    expect(drawer.isDeactivateModalOpen.value).toBe(false)
   })
 
   it('clearSnapshot empties the Target without requiring a close', () => {

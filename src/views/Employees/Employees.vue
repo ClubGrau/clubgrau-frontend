@@ -71,7 +71,6 @@ const {
   openEditDrawer,
   openInactivateDrawer,
   openRemoveDrawer,
-  patchSnapshotStatus,
   closeDrawer,
   closeModal,
   closeFormDrawer,
@@ -80,9 +79,8 @@ const {
 } = useEmployeeDrawer(employees, filteredEmployees);
 
 const { deactivate, isDeactivating } = useEmployeeLifecycle(httpEmployeesApi, {
-  onStatusChanged: ({ id, status }) => {
-    openDetailDrawer(id);
-    patchSnapshotStatus(status);
+  onStatusChanged: () => {
+    closeDrawer();
   },
 });
 
