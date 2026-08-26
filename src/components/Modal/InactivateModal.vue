@@ -14,8 +14,8 @@ withDefaults(defineProps<Props>(), {
       Inativar colaborador
     </h2>
     <p class="mt-1 text-sm text-gray-400">
-      Esta ação revoga os acessos do colaborador ao sistema. Você poderá
-      reativar o colaborador depois.
+      Inativar é uma parada operacional. A pessoa continua na lista, o email
+      original permanece ocupado e você poderá reativá-la depois.
     </p>
   </div>
 </template>

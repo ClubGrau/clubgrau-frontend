@@ -20,6 +20,7 @@ import type {
 } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
 import { useEmployeeDrawer } from '../../composables/useEmployeeDrawer';
+import { useEmployeeLifecycle } from '../../composables/useEmployeeLifecycle';
 import { useEmployeeSelection } from '../../composables/useEmployeeSelection';
 import {
   useEmployees,
@@ -70,12 +71,20 @@ const {
   openEditDrawer,
   openInactivateDrawer,
   openRemoveDrawer,
+  patchSnapshotStatus,
   closeDrawer,
   closeModal,
   closeFormDrawer,
   goToPreviousEmployee,
   goToNextEmployee,
 } = useEmployeeDrawer(employees, filteredEmployees);
+
+const { deactivate, isDeactivating } = useEmployeeLifecycle(httpEmployeesApi, {
+  onStatusChanged: ({ id, status }) => {
+    openDetailDrawer(id);
+    patchSnapshotStatus(status);
+  },
+});
 
 const reactivateEmployee = (_employeeId: string) => {
   // TODO - Reativar command lands in slice 4.
@@ -214,9 +223,7 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
 
 const handleInactivateEmployee = (employeeId: string) => {
   if (!employeeId) return;
-  // Deactivate command lands in slice 3.
-  closeModal();
-  void refetch();
+  deactivate(employeeId);
 };
 
 const handleRemoveEmployee = (employeeId: string) => {
@@ -513,7 +520,8 @@ const handleRemoveEmployee = (employeeId: string) => {
         </button>
         <button
           type="button"
-          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
+          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c] disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="isDeactivating"
           @click="handleInactivateEmployee(activeEmployeeId ?? '')"
         >
           Inativar
