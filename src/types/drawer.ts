@@ -3,4 +3,5 @@ export type EmployeeDrawerState =
   | { open: true; mode: 'create' }
   | { open: true; mode: 'detail'; employeeId: string }
   | { open: true; mode: 'edit'; employeeId: string }
-  | { open: true; mode: 'inactivate' | 'remove'; employeeId: string }
+  | { open: true; mode: 'inactivate'; employeeId: string }
+  | { open: true; mode: 'remove'; employeeId: string }
