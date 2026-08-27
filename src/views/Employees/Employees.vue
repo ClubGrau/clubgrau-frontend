@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
@@ -29,6 +29,7 @@ import {
 } from '../../composables/useEmployees';
 import { httpEmployeesApi } from '../../services/api/employees/http-employees-api';
 import InactivateModal from '../../components/Modal/InactivateModal.vue';
+import RemoveEmployeeModal from '../../components/Modal/RemoveEmployeeModal.vue';
 import { useAuthStore } from '../../stores/auth';
 import {
   canDeactivate,
@@ -59,8 +60,10 @@ const {
   isCreateDrawerOpen,
   isEditDrawerOpen,
   activeEmployeeId,
+  selectedEmployee,
   detailEmployee,
   editEmployee,
+  targetSnapshot,
   isDeactivateModalOpen,
   isRemoveModalOpen,
   modalWidthClass,
@@ -83,21 +86,42 @@ const {
 const authStore = useAuthStore();
 const router = useRouter();
 
-const { deactivate, isDeactivating, reactivate, isReactivating } =
-  useEmployeeLifecycle(httpEmployeesApi, {
-    getActorId: () => authStore.actor?.id ?? null,
-    onStatusChanged: () => {
-      closeDrawer();
-    },
-    onSelfDeactivated: () => {
-      authStore.logout();
-      void router.push('/login');
-    },
-    onReactivated: (result) => {
-      if (activeEmployeeId.value !== result.id) openDetailDrawer(result.id);
-      patchSnapshotStatus(result.status);
-    },
-  });
+const {
+  deactivate,
+  isDeactivating,
+  reactivate,
+  isReactivating,
+  remove,
+  isRemoving,
+  removeError,
+} = useEmployeeLifecycle(httpEmployeesApi, {
+  getActorId: () => authStore.actor?.id ?? null,
+  onStatusChanged: () => {
+    closeDrawer();
+  },
+  onSelfDeactivated: () => {
+    authStore.logout();
+    void router.push('/login');
+  },
+  onReactivated: (result) => {
+    if (activeEmployeeId.value !== result.id) openDetailDrawer(result.id);
+    patchSnapshotStatus(result.status);
+  },
+  onRemoved: () => {
+    closeDrawer();
+  },
+  onRemoveConflict: (id) => {
+    openDetailDrawer(id);
+  },
+});
+
+const removeEmployeeName = computed(
+  () => targetSnapshot.value?.name ?? selectedEmployee.value?.name ?? '',
+);
+
+watch(isRemoveModalOpen, (open) => {
+  if (open) removeError.value = null;
+});
 
 const {
   openActionsId,
@@ -237,11 +261,8 @@ const handleInactivateEmployee = (employeeId: string) => {
   deactivate(employeeId);
 };
 
-const handleRemoveEmployee = (employeeId: string) => {
-  if (!employeeId) return;
-  // Remove command (with step-up) lands in slice 5.
-  closeModal();
-  void refetch();
+const handleRemoveEmployee = (password: string) => {
+  remove({ id: activeEmployeeId.value ?? '', password });
 };
 </script>
 
@@ -556,30 +577,13 @@ const handleRemoveEmployee = (employeeId: string) => {
       :width-class="modalWidthClass"
       @close="closeModal"
     >
-      <div>
-        <h2 class="text-lg font-semibold text-gray-900">
-          Remover colaborador
-        </h2>
-        <p class="mt-1 text-sm text-gray-400">
-          Esta ação remove o colaborador do sistema de forma permanente.
-        </p>
-      </div>
-      <template #footer>
-        <button
-          type="button"
-          class="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
-          @click="closeModal"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
-          @click="handleRemoveEmployee(activeEmployeeId ?? '')"
-        >
-          Remover
-        </button>
-      </template>
+      <RemoveEmployeeModal
+        :employee-name="removeEmployeeName"
+        :is-submitting="isRemoving"
+        :error-message="removeError"
+        @submit="handleRemoveEmployee"
+        @cancel="closeModal"
+      />
     </ModalLayout>
   </div>
 </template>
