@@ -112,4 +112,36 @@ describe('useEmployeeDrawer snapshot', () => {
     expect(drawer.targetSnapshot.value).toBeNull()
     expect(drawer.detailEmployee.value).toMatchObject({ id: 'emp-1', status: 'ACTIVE' })
   })
+
+  it('captures the Target when opening Remover so the name survives a list refetch', () => {
+    const target = employee({ status: 'INACTIVE' })
+    const employees = ref([target])
+    const drawer = useEmployeeDrawer(employees, employees)
+
+    drawer.openRemoveDrawer(target.id)
+    employees.value = []
+
+    expect(drawer.isRemoveModalOpen.value).toBe(true)
+    expect(drawer.targetSnapshot.value).toMatchObject({
+      id: 'emp-1',
+      name: 'Ana Silva',
+      status: 'INACTIVE',
+    })
+  })
+
+  it('keeps the profile after a Remove conflict by falling back to the snapshot', () => {
+    const target = employee({ status: 'INACTIVE' })
+    const employees = ref([target])
+    const drawer = useEmployeeDrawer(employees, employees)
+
+    drawer.openRemoveDrawer(target.id)
+    employees.value = []
+    drawer.openDetailDrawer(target.id)
+
+    expect(drawer.detailEmployee.value).toMatchObject({
+      id: 'emp-1',
+      name: 'Ana Silva',
+      status: 'INACTIVE',
+    })
+  })
 })
