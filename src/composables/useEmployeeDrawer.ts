@@ -112,6 +112,7 @@ export function useEmployeeDrawer(
   }
 
   const openRemoveDrawer = (employeeId: string) => {
+    captureSnapshot(employeeId)
     drawer.value = { open: true, mode: 'remove', employeeId }
   }
 
