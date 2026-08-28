@@ -10,6 +10,10 @@ const props = defineProps<{
   employee: EmployeeShapped;
   canGoPrevious?: boolean;
   canGoNext?: boolean;
+  canDeactivate?: boolean;
+  canReactivate?: boolean;
+  canRemove?: boolean;
+  reactivating?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -18,7 +22,9 @@ const emit = defineEmits<{
   next: [];
   edit: [];
   message: [];
-  delete: [];
+  deactivate: [];
+  reactivate: [];
+  remove: [];
 }>();
 
 type DetailTab = 'details' | 'payroll';
@@ -104,10 +110,34 @@ const professionalFields = computed(() => [
             <Icon icon="carbon:send" class="size-4" />
           </button>
           <button
+            v-if="canDeactivate"
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Inativar"
+            @click="emit('deactivate')"
+          >
+            <Icon icon="carbon:user-follow" class="size-4" />
+          </button>
+          <button
+            v-if="canReactivate"
+            type="button"
+            class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
+            aria-label="Reativar"
+            :disabled="reactivating"
+            :aria-busy="reactivating"
+            @click="emit('reactivate')"
+          >
+            <Icon
+              :icon="reactivating ? 'carbon:circle-dash' : 'carbon:reset'"
+              :class="reactivating ? 'size-4 animate-spin' : 'size-4'"
+            />
+          </button>
+          <button
+            v-if="canRemove"
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
-            aria-label="Eliminar"
-            @click="emit('delete')"
+            aria-label="Remover"
+            @click="emit('remove')"
           >
             <Icon icon="carbon:trash-can" class="size-4" />
           </button>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
@@ -20,6 +21,7 @@ import type {
 } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
 import { useEmployeeDrawer } from '../../composables/useEmployeeDrawer';
+import { useEmployeeLifecycle } from '../../composables/useEmployeeLifecycle';
 import { useEmployeeSelection } from '../../composables/useEmployeeSelection';
 import {
   useEmployees,
@@ -27,6 +29,15 @@ import {
 } from '../../composables/useEmployees';
 import { httpEmployeesApi } from '../../services/api/employees/http-employees-api';
 import InactivateModal from '../../components/Modal/InactivateModal.vue';
+import RemoveEmployeeModal from '../../components/Modal/RemoveEmployeeModal.vue';
+import { useAuthStore } from '../../stores/auth';
+import {
+  canDeactivate,
+  canReactivate,
+  canRemove,
+  type LifecycleTarget,
+} from '../../domain/employee-lifecycle';
+import type { EmployeeShapped } from '../../types/employee';
 
 const {
   employees,
@@ -41,7 +52,6 @@ const {
   permissionOptions,
   stats,
   total,
-  isLoading,
   refetch,
 } = useEmployees(httpEmployeesApi);
 
@@ -50,11 +60,13 @@ const {
   isCreateDrawerOpen,
   isEditDrawerOpen,
   activeEmployeeId,
+  selectedEmployee,
   detailEmployee,
   editEmployee,
-  isInactivateModalOpen,
-  inactivateModalMode,
-  inactivateModalWidthClass,
+  targetSnapshot,
+  isDeactivateModalOpen,
+  isRemoveModalOpen,
+  modalWidthClass,
   canGoPreviousEmployee,
   canGoNextEmployee,
   drawerWidthClass,
@@ -63,12 +75,53 @@ const {
   openEditDrawer,
   openInactivateDrawer,
   openRemoveDrawer,
+  patchSnapshotStatus,
   closeDrawer,
-  closeInactivateModal,
+  closeModal,
   closeFormDrawer,
   goToPreviousEmployee,
   goToNextEmployee,
 } = useEmployeeDrawer(employees, filteredEmployees);
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+const {
+  deactivate,
+  isDeactivating,
+  reactivate,
+  isReactivating,
+  remove,
+  isRemoving,
+  removeError,
+} = useEmployeeLifecycle(httpEmployeesApi, {
+  getActorId: () => authStore.actor?.id ?? null,
+  onStatusChanged: () => {
+    closeDrawer();
+  },
+  onSelfDeactivated: () => {
+    authStore.logout();
+    void router.push('/login');
+  },
+  onReactivated: (result) => {
+    if (activeEmployeeId.value !== result.id) openDetailDrawer(result.id);
+    patchSnapshotStatus(result.status);
+  },
+  onRemoved: () => {
+    closeDrawer();
+  },
+  onRemoveConflict: (id) => {
+    openDetailDrawer(id);
+  },
+});
+
+const removeEmployeeName = computed(
+  () => targetSnapshot.value?.name ?? selectedEmployee.value?.name ?? '',
+);
+
+watch(isRemoveModalOpen, (open) => {
+  if (open) removeError.value = null;
+});
 
 const {
   openActionsId,
@@ -77,11 +130,63 @@ const {
   toggleSelect,
   toggleActionsMenu,
   onEditAction,
+  onDeactivateAction,
+  onReactivateAction,
   onRemoveAction,
 } = useEmployeeSelection({
   onEdit: openEditDrawer,
-  onRemove: openInactivateDrawer,
+  onDeactivate: openInactivateDrawer,
+  onReactivate: reactivate,
+  onRemove: openRemoveDrawer,
 });
+
+const toLifecycleTarget = (employee: EmployeeShapped): LifecycleTarget => ({
+  id: employee.id,
+  role: employee.permission,
+  status: employee.status,
+});
+
+const menuEmployee = computed(() =>
+  openActionsId.value
+    ? employees.value.find((employee) => employee.id === openActionsId.value) ?? null
+    : null,
+);
+
+const menuCanDeactivate = computed(() =>
+  menuEmployee.value
+    ? canDeactivate(authStore.actor, toLifecycleTarget(menuEmployee.value))
+    : false,
+);
+const menuCanReactivate = computed(() =>
+  menuEmployee.value
+    ? canReactivate(authStore.actor, toLifecycleTarget(menuEmployee.value))
+    : false,
+);
+const menuCanRemove = computed(() =>
+  menuEmployee.value
+    ? canRemove(authStore.actor, toLifecycleTarget(menuEmployee.value))
+    : false,
+);
+
+const detailCanDeactivate = computed(() =>
+  detailEmployee.value
+    ? canDeactivate(authStore.actor, toLifecycleTarget(detailEmployee.value))
+    : false,
+);
+const detailCanReactivate = computed(() =>
+  detailEmployee.value
+    ? canReactivate(authStore.actor, toLifecycleTarget(detailEmployee.value))
+    : false,
+);
+const detailCanRemove = computed(() =>
+  detailEmployee.value
+    ? canRemove(authStore.actor, toLifecycleTarget(detailEmployee.value))
+    : false,
+);
+
+const isSelfDeactivate = computed(
+  () => activeEmployeeId.value === authStore.actor?.id,
+);
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { id: 'dashboard', label: 'Dashboard', to: '/app/dashboard' },
@@ -153,15 +258,11 @@ const onEmployeeRowClick = (event: MouseEvent, id: string) => {
 
 const handleInactivateEmployee = (employeeId: string) => {
   if (!employeeId) return;
-  console.log('handleInactivateEmployee', employeeId);
-  closeInactivateModal();
-  void refetch();
+  deactivate(employeeId);
 };
 
-const handleRemoveEmployee = (employeeId: string) => {
-  if (!employeeId) return;
-  closeInactivateModal();
-  void refetch();
+const handleRemoveEmployee = (password: string) => {
+  remove({ id: activeEmployeeId.value ?? '', password });
 };
 </script>
 
@@ -369,6 +470,28 @@ const handleRemoveEmployee = (employeeId: string) => {
           Editar
         </button>
         <button
+          v-if="menuCanDeactivate"
+          type="button"
+          role="menuitem"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5]"
+          @click.stop="onDeactivateAction(openActionsId)"
+        >
+          <Icon icon="carbon:user-follow" class="size-4 text-gray-400" />
+          Inativar
+        </button>
+        <button
+          v-if="menuCanReactivate"
+          type="button"
+          role="menuitem"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5] disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="isReactivating"
+          @click.stop="onReactivateAction(openActionsId)"
+        >
+          <Icon icon="carbon:reset" class="size-4 text-gray-400" />
+          Reativar
+        </button>
+        <button
+          v-if="menuCanRemove"
           type="button"
           role="menuitem"
           class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
@@ -381,7 +504,7 @@ const handleRemoveEmployee = (employeeId: string) => {
     </Teleport>
 
     <Drawer
-      :open="drawer.open && !isInactivateModalOpen"
+      :open="drawer.open && !isDeactivateModalOpen && !isRemoveModalOpen"
       :width-class="drawerWidthClass"
       @close="closeDrawer"
     >
@@ -401,49 +524,66 @@ const handleRemoveEmployee = (employeeId: string) => {
         :employee="detailEmployee"
         :can-go-previous="canGoPreviousEmployee"
         :can-go-next="canGoNextEmployee"
+        :can-deactivate="detailCanDeactivate"
+        :can-reactivate="detailCanReactivate"
+        :can-remove="detailCanRemove"
+        :reactivating="isReactivating"
         @close="closeDrawer"
         @previous="goToPreviousEmployee"
         @next="goToNextEmployee"
         @edit="openEditDrawer(detailEmployee.id)"
-        @delete="openInactivateDrawer(detailEmployee.id)"
+        @deactivate="openInactivateDrawer(detailEmployee.id)"
+        @reactivate="reactivate(detailEmployee.id)"
+        @remove="openRemoveDrawer(detailEmployee.id)"
       />
     </Drawer>
 
     <ModalLayout
-      :open="isInactivateModalOpen"
-      :width-class="inactivateModalWidthClass"
-      @close="closeInactivateModal"
+      :open="isDeactivateModalOpen"
+      :width-class="modalWidthClass"
+      @close="closeModal"
     >
       <InactivateModal
         :employee-id="activeEmployeeId ?? ''"
-        :mode="inactivateModalMode"
-        @on-remove-action="openRemoveDrawer"
+        :is-self="isSelfDeactivate"
       />
       <template #footer>
         <button
           type="button"
           class="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
-          @click="closeInactivateModal"
+          @click="closeModal"
         >
           Cancelar
         </button>
         <button
-          v-if="inactivateModalMode === 'remove'"
           type="button"
-          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
-          @click="handleRemoveEmployee(activeEmployeeId ?? '')"
-        >
-          Remover
-        </button>
-        <button
-          v-else
-          type="button"
-          class="cursor-pointer rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c]"
+          class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#d64545] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#c13c3c] disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="isDeactivating"
+          :aria-busy="isDeactivating"
           @click="handleInactivateEmployee(activeEmployeeId ?? '')"
         >
+          <Icon
+            v-if="isDeactivating"
+            icon="carbon:circle-dash"
+            class="size-4 animate-spin"
+          />
           Inativar
         </button>
       </template>
+    </ModalLayout>
+
+    <ModalLayout
+      :open="isRemoveModalOpen"
+      :width-class="modalWidthClass"
+      @close="closeModal"
+    >
+      <RemoveEmployeeModal
+        :employee-name="removeEmployeeName"
+        :is-submitting="isRemoving"
+        :error-message="removeError"
+        @submit="handleRemoveEmployee"
+        @cancel="closeModal"
+      />
     </ModalLayout>
   </div>
 </template>

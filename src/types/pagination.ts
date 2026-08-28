@@ -1,3 +1,5 @@
+export type PaginationPageItem = number | 'ellipsis'
+
 export namespace Pagination {
   export interface PaginationParams {
     page: number;
