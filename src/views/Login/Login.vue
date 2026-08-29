@@ -8,7 +8,7 @@ import PasswordRevealler from '../../components/PasswordRevealler.vue'
 
 const { t } = useI18n()
 
-const { userCredentials, handleSubmit } = useLogin(httpAuthApi)
+const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
 const showPassword = ref(false)
 </script>
 
@@ -90,6 +90,14 @@ const showPassword = ref(false)
             >
               {{ t('Login.submit') }}
             </button>
+
+            <p
+              v-if="loginError"
+              role="alert"
+              class="text-sm text-red-600"
+            >
+              {{ t('Login.error') }}
+            </p>
           </form>
         </div>
       </div>

@@ -11,6 +11,7 @@
   "hidePassword": "Hide password",
   "rememberDevice": "Remember this device for 15 days",
   "submit": "Sign in to Grau System",
+  "error": "Could not sign in. Check your email and password.",
   "privacy": "PRIVACY",
   "terms": "TERMS",
   "support": "CONTACT SUPPORT",
