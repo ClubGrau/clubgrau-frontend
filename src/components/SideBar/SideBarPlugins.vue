@@ -1,11 +1,31 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { Icon } from "@iconify/vue";
 import { navigationSections } from "../../routes/navigation-paths";
 import { useRoute } from "vue-router";
 import { useRouterOptions } from "../../composables/useRouterOptions";
+import { useAuthStore } from "../../stores/auth";
+import { canAccessEmployees } from "../../domain/actor-display";
+import type { NavigatePathsProps } from "../../types/navigation";
 
 const router = useRoute();
 const { matchedRouter } = useRouterOptions();
+const authStore = useAuthStore();
+const actor = computed(() => authStore.actor);
+
+const visibleSections = computed(() =>
+  navigationSections.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => isNavItemVisible(item)),
+  })),
+);
+
+function isNavItemVisible(item: NavigatePathsProps) {
+  if (!item.roles) {
+    return true;
+  }
+  return canAccessEmployees(actor.value);
+}
 
 const isRouteActive = (route: string) => {
   return router.path === route || matchedRouter(route);
@@ -15,7 +35,7 @@ const isRouteActive = (route: string) => {
 <template>
   <nav class="px-4 py-3">
     <div
-      v-for="section in navigationSections"
+      v-for="section in visibleSections"
       :key="section.id"
       class="mb-5 last:mb-0"
     >

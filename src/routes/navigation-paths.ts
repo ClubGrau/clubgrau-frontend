@@ -25,6 +25,7 @@ export const navigationSections: NavigationSection[] = [
         icon: 'clarity:employee-line',
         description: 'Colaboradores',
         content: 'Colaboradores',
+        roles: ['MANAGER', 'ADMIN'],
       },
     ],
   },
