@@ -26,11 +26,14 @@ function actorFromToken(token: string | null): Actor | null {
     return null
   }
 
+  const { name, role, status } = payload
+
   return {
     id,
-    role: isActorRole(payload.role) ? payload.role : null,
-    status: typeof payload.status === 'string' ? (payload.status as EmployeeStatus) : null,
-  }
+    name: name as string | null,
+    role: isActorRole(role) ? role : null,
+    status: status as EmployeeStatus | null,
+  } satisfies Actor
 }
 
 export const useAuthStore = defineStore('auth', () => {

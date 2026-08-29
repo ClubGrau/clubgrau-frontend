@@ -9,7 +9,7 @@ import {
 } from './employee-lifecycle'
 
 function actor(role: ActorRole | null, id = 'actor-1'): Actor {
-  return { id, role, status: 'ACTIVE' }
+  return { id, name: null, role, status: 'ACTIVE' }
 }
 
 function target(
