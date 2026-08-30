@@ -1,6 +1,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { mapApiEmployeesToEmployees } from '../services/api/employees/map-employee'
+import { employeeQueryKeys } from '../services/api/employees/query-keys'
 import type {
   EmployeeApiStatus,
   GetEmployeesApi,
@@ -62,7 +63,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
   })
 
   const query = useQuery({
-    queryKey: ['employees', listParams],
+    queryKey: employeeQueryKeys.list(listParams),
     queryFn: () => getEmployeesApi.getEmployees(listParams.value),
   })
 
