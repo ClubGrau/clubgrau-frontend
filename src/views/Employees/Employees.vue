@@ -20,6 +20,7 @@ import type {
   EmployeeUpdatePayload,
 } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
+import { useCreateEmployee } from '../../composables/useCreateEmployee';
 import { useEmployeeDrawer } from '../../composables/useEmployeeDrawer';
 import { useEmployeeLifecycle } from '../../composables/useEmployeeLifecycle';
 import { useEmployeeSelection } from '../../composables/useEmployeeSelection';
@@ -236,10 +237,15 @@ const tabs: { label: string; value: StatusFilter }[] = [
   { label: 'Inativos', value: 'INACTIVE' },
 ];
 
-const handleCreateEmployee = (_payload: EmployeeCreatePayload) => {
-  currentPage.value = 1;
-  closeDrawer();
-  void refetch();
+const { create: createEmployee, isCreating } = useCreateEmployee(httpEmployeesApi, {
+  onCreated: () => {
+    currentPage.value = 1;
+    closeDrawer();
+  },
+});
+
+const handleCreateEmployee = (payload: EmployeeCreatePayload) => {
+  createEmployee(payload);
 };
 
 const handleUpdateEmployee = (_payload: EmployeeUpdatePayload) => {
@@ -510,6 +516,7 @@ const handleRemoveEmployee = (password: string) => {
     >
       <EmployeeFormPanel
         v-if="isCreateDrawerOpen"
+        :submitting="isCreating"
         @close="closeFormDrawer"
         @submit="handleCreateEmployee"
       />
