@@ -4,7 +4,7 @@ import { createApp, effectScope } from 'vue'
 import type { CreateEmployeeApi, CreateEmployeeResult } from '../services/api/employees/types'
 import type { Employee } from '../types/employee'
 import {
-  toastMessageForCreateError,
+  toastKeyForCreateError,
   toCreateEmployeeParams,
   useCreateEmployee,
 } from './useCreateEmployee'
@@ -118,27 +118,27 @@ describe('toCreateEmployeeParams', () => {
   })
 })
 
-describe('toastMessageForCreateError', () => {
-  it('maps 409 to e-mail em uso and does not use the English API string', () => {
-    expect(toastMessageForCreateError(httpError(409, 'Email already in use'))).toBe(
-      'Este e-mail já está em uso.',
+describe('toastKeyForCreateError', () => {
+  it('maps 409 to the emailInUse key and does not use the English API string', () => {
+    expect(toastKeyForCreateError(httpError(409, 'Email already in use'))).toBe(
+      'Employees.toast.emailInUse',
     )
   })
 
-  it('maps 400 to the validation copy', () => {
-    expect(toastMessageForCreateError(httpError(400, 'Invalid payload'))).toBe(
-      'Não foi possível criar o colaborador. Verifique os dados.',
+  it('maps 400 to the createValidation key', () => {
+    expect(toastKeyForCreateError(httpError(400, 'Invalid payload'))).toBe(
+      'Employees.toast.createValidation',
     )
   })
 
-  it('maps 403 to Ação não permitida', () => {
-    expect(toastMessageForCreateError(httpError(403, 'Action not allowed'))).toBe(
-      'Ação não permitida.',
+  it('maps 403 to the forbidden key', () => {
+    expect(toastKeyForCreateError(httpError(403, 'Action not allowed'))).toBe(
+      'Employees.toast.forbidden',
     )
   })
 
   it('does not emit a create toast on 401', () => {
-    expect(toastMessageForCreateError(httpError(401, 'Authentication failed'))).toBeNull()
+    expect(toastKeyForCreateError(httpError(401, 'Authentication failed'))).toBeNull()
   })
 })
 

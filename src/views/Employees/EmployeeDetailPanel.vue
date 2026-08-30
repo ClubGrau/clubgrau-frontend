@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Icon } from '@iconify/vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
@@ -29,6 +30,8 @@ const emit = defineEmits<{
   remove: [];
 }>();
 
+const { t } = useI18n();
+
 type DetailTab = 'details' | 'payroll';
 
 const activeTab = ref<DetailTab>('details');
@@ -40,28 +43,28 @@ watch(
   },
 );
 
-const tabs: { id: DetailTab; label: string }[] = [
-  { id: 'details', label: 'Detalhes' },
-  { id: 'payroll', label: 'Folha' },
-];
+const tabs = computed(() => [
+  { id: 'details' as const, label: t('Employees.detail.tabDetails') },
+  { id: 'payroll' as const, label: t('Employees.detail.tabPayroll') },
+]);
 
 const personalFields = computed(() => [
-  { label: 'Nome completo', value: props.employee.name },
-  { label: 'Idiomas', value: props.employee.languages ?? '' },
-  { label: 'Gênero', value: props.employee.gender ?? '' },
+  { label: t('Employees.detail.fullName'), value: props.employee.name },
+  { label: t('Employees.detail.languages'), value: props.employee.languages ?? '' },
+  { label: t('Employees.detail.gender'), value: props.employee.gender ?? '' },
   {
-    label: 'Contato de emergência',
+    label: t('Employees.detail.emergencyContact'),
     value: props.employee.emergencyContact ?? '',
     icon: 'carbon:phone',
   },
-  { label: 'Morada', value: props.employee.address ?? '', fullWidth: true },
+  { label: t('Employees.detail.address'), value: props.employee.address ?? '', fullWidth: true },
 ]);
 
 const professionalFields = computed(() => [
-  { label: 'Matrícula', value: props.employee.employmentId ?? '' },
-  { label: 'Cargo', value: props.employee.jobTitle ?? '' },
-  { label: 'Permissão', value: props.employee.role },
-  { label: 'Status', value: employeeStatusBadge[props.employee.status].label },
+  { label: t('Employees.detail.employmentId'), value: props.employee.employmentId ?? '' },
+  { label: t('Employees.detail.jobTitle'), value: props.employee.jobTitle ?? '' },
+  { label: t('Employees.detail.permission'), value: props.employee.role },
+  { label: t('Employees.detail.status'), value: employeeStatusBadge[props.employee.status].label },
 ]);
 </script>
 
@@ -74,7 +77,7 @@ const professionalFields = computed(() => [
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
             :disabled="!canGoPrevious"
-            aria-label="Colaborador anterior"
+            :aria-label="t('Employees.detail.previous')"
             @click="emit('previous')"
           >
             <Icon icon="carbon:chevron-left" class="size-5" />
@@ -83,7 +86,7 @@ const professionalFields = computed(() => [
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
             :disabled="!canGoNext"
-            aria-label="Próximo colaborador"
+            :aria-label="t('Employees.detail.next')"
             @click="emit('next')"
           >
             <Icon icon="carbon:chevron-right" class="size-5" />
@@ -94,7 +97,7 @@ const professionalFields = computed(() => [
           <button
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Editar"
+            :aria-label="t('Employees.detail.edit')"
             @click="emit('edit')"
           >
             <Icon icon="carbon:edit" class="size-4" />
@@ -102,7 +105,7 @@ const professionalFields = computed(() => [
           <button
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Mensagem"
+            :aria-label="t('Employees.detail.message')"
             @click="emit('message')"
           >
             <Icon icon="carbon:send" class="size-4" />
@@ -111,7 +114,7 @@ const professionalFields = computed(() => [
             v-if="canDeactivate"
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Inativar"
+            :aria-label="t('Employees.detail.deactivate')"
             @click="emit('deactivate')"
           >
             <Icon icon="carbon:user-follow" class="size-4" />
@@ -120,7 +123,7 @@ const professionalFields = computed(() => [
             v-if="canReactivate"
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Reativar"
+            :aria-label="t('Employees.detail.reactivate')"
             :disabled="reactivating"
             :aria-busy="reactivating"
             @click="emit('reactivate')"
@@ -134,7 +137,7 @@ const professionalFields = computed(() => [
             v-if="canRemove"
             type="button"
             class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
-            aria-label="Remover"
+            :aria-label="t('Employees.detail.remove')"
             @click="emit('remove')"
           >
             <Icon icon="carbon:trash-can" class="size-4" />
@@ -142,7 +145,7 @@ const professionalFields = computed(() => [
           <button
             type="button"
             class="ml-1 inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Fechar"
+            :aria-label="t('Employees.detail.close')"
             @click="emit('close')"
           >
             <Icon icon="carbon:close" class="size-5" />
@@ -172,7 +175,7 @@ const professionalFields = computed(() => [
 
           <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
             <div class="text-sm">
-              <span class="text-gray-400">Matrícula: </span>
+              <span class="text-gray-400">{{ t('Employees.detail.employmentId') }}: </span>
               <span class="font-medium text-gray-800">{{ employee.employmentId ?? '' }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">
@@ -180,7 +183,7 @@ const professionalFields = computed(() => [
               <span class="truncate">{{ employee.email }}</span>
             </div>
             <div class="text-sm">
-              <span class="text-gray-400">Permissão: </span>
+              <span class="text-gray-400">{{ t('Employees.detail.permission') }}: </span>
               <span class="font-medium text-gray-800">{{ employee.role }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">
@@ -219,7 +222,7 @@ const professionalFields = computed(() => [
       <template v-if="activeTab === 'details'">
         <section class="mb-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <h3 class="mb-4 text-base font-semibold text-gray-900">
-            Informações pessoais
+            {{ t('Employees.detail.personalInfo') }}
           </h3>
 
           <div class="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
@@ -243,7 +246,7 @@ const professionalFields = computed(() => [
 
         <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <h3 class="mb-4 text-base font-semibold text-gray-900">
-            Informações profissionais
+            {{ t('Employees.detail.professionalInfo') }}
           </h3>
 
           <div class="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
@@ -260,7 +263,7 @@ const professionalFields = computed(() => [
 
       <template v-else>
         <section class="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
-          <p class="text-sm text-gray-400">Folha de pagamento em breve.</p>
+          <p class="text-sm text-gray-400">{{ t('Employees.detail.payrollSoon') }}</p>
         </section>
       </template>
     </div>

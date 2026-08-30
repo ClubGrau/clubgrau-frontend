@@ -42,4 +42,7 @@ export namespace Employee {
     employmentId?: string;
     jobTitle?: string;
   }
+
+  /** Payload do formulário de edição — CreateCommand sem senha. */
+  export type UpdateCommand = Omit<CreateCommand, 'password' | 'passwordConfirmation'>;
 }

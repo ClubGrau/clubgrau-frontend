@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Icon } from '@iconify/vue'
 import PasswordInput from '../PasswordInput/PasswordInput.vue'
 
@@ -13,6 +14,8 @@ const emit = defineEmits<{
   submit: [password: string]
   cancel: []
 }>()
+
+const { t } = useI18n()
 
 const password = ref('')
 
@@ -33,35 +36,37 @@ const cancel = () => {
 }
 
 onUnmounted(clearPassword)
+
+const removeBody = computed(() =>
+  props.employeeName
+    ? t('Employees.modal.removeBodyNamed', { name: props.employeeName })
+    : t('Employees.modal.removeBodyAnonymous'),
+)
 </script>
 
 <template>
   <form class="flex flex-col gap-4" @submit.prevent="submit">
     <div>
       <h2 class="text-lg font-semibold text-gray-900">
-        Remover colaborador
+        {{ t('Employees.modal.removeTitle') }}
       </h2>
       <p class="mt-1 text-sm text-gray-400">
-        Esta ação é irreversível.
-        {{ employeeName ? `${employeeName} desaparece` : 'O colaborador desaparece' }}
-        da lista e o email original fica livre. Um cadastro posterior com esse
-        email é uma <span class="font-medium text-gray-500">nova</span> identidade
-        e não herda o histórico.
+        {{ removeBody }}
       </p>
     </div>
 
     <div class="flex flex-col gap-1.5">
       <label for="remove-actor-password" class="text-sm text-gray-500">
-        A sua palavra-passe
+        {{ t('Employees.modal.actorPassword') }}
       </label>
       <PasswordInput
         id="remove-actor-password"
         v-model="password"
         variant="modal"
         autocomplete="current-password"
-        placeholder="Palavra-passe"
-        show-label="Revelar palavra-passe"
-        hide-label="Ocultar palavra-passe"
+        :placeholder="t('Employees.modal.passwordPlaceholder')"
+        :show-label="t('Employees.modal.showPassword')"
+        :hide-label="t('Employees.modal.hidePassword')"
         :disabled="isSubmitting"
         :invalid="Boolean(errorMessage)"
         :aria-describedby="errorMessage ? 'remove-actor-password-error' : undefined"
@@ -83,7 +88,7 @@ onUnmounted(clearPassword)
         :disabled="isSubmitting"
         @click="cancel"
       >
-        Cancelar
+        {{ t('Employees.actions.cancel') }}
       </button>
       <button
         type="submit"
@@ -96,7 +101,7 @@ onUnmounted(clearPassword)
           icon="carbon:circle-dash"
           class="size-4 animate-spin"
         />
-        Remover
+        {{ t('Employees.actions.remove') }}
       </button>
     </div>
   </form>

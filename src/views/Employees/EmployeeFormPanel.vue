@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Icon } from '@iconify/vue';
 import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
 import PasswordInput from '../../components/PasswordInput/PasswordInput.vue';
@@ -18,25 +19,28 @@ const props = defineProps<EmployeeFormPanelProps>();
 
 const emit = defineEmits<{
   close: [];
-  submit: [payload: Employee.CreateCommand];
+  create: [payload: Employee.CreateCommand];
+  update: [payload: Employee.UpdateCommand];
 }>();
+
+const { t } = useI18n();
 
 const isEditMode = computed(() => Boolean(props.employee));
 
 const permissionOptions = EMPLOYEE_ROLE_OPTIONS;
 
-const statusOptions: SelectFilterOption[] = [
-  { id: 'ACTIVE', label: 'Ativo', value: 'ACTIVE' },
-  { id: 'VACATION', label: 'Férias', value: 'VACATION' },
-  { id: 'INACTIVE', label: 'Inativo', value: 'INACTIVE' },
-];
+const statusOptions = computed<SelectFilterOption[]>(() => [
+  { id: 'ACTIVE', label: t('Employees.form.statusActive'), value: 'ACTIVE' },
+  { id: 'VACATION', label: t('Employees.form.statusVacation'), value: 'VACATION' },
+  { id: 'INACTIVE', label: t('Employees.form.statusInactive'), value: 'INACTIVE' },
+]);
 
-const genderOptions: SelectFilterOption[] = [
-  { id: 'feminino', label: 'Feminino', value: 'Feminino' },
-  { id: 'masculino', label: 'Masculino', value: 'Masculino' },
-  { id: 'outro', label: 'Outro', value: 'Outro' },
-  { id: 'nao-informado', label: 'Não informado', value: 'Não informado' },
-];
+const genderOptions = computed<SelectFilterOption[]>(() => [
+  { id: 'feminino', label: t('Employees.form.genderFemale'), value: 'Feminino' },
+  { id: 'masculino', label: t('Employees.form.genderMale'), value: 'Masculino' },
+  { id: 'outro', label: t('Employees.form.genderOther'), value: 'Outro' },
+  { id: 'nao-informado', label: t('Employees.form.genderUnspecified'), value: 'Não informado' },
+]);
 
 const form = reactive({
   name: '',
@@ -105,31 +109,37 @@ const passwordOk = computed(() =>
 
 const missingRequired = computed(() => {
   const missing: string[] = [];
-  if (form.name.trim().length <= 1) missing.push('Nome completo');
-  if (!form.email.trim().includes('@')) missing.push('E-mail');
-  if (!isValidPhone(form.phone)) missing.push('Telefone');
-  if (form.role.trim().length === 0) missing.push('Permissão');
+  if (form.name.trim().length <= 1) missing.push(t('Employees.form.name'));
+  if (!form.email.trim().includes('@')) missing.push(t('Employees.form.email'));
+  if (!isValidPhone(form.phone)) missing.push(t('Employees.form.phone'));
+  if (form.role.trim().length === 0) missing.push(t('Employees.form.permission'));
   if (hasEmergencyContact.value && !isValidPhone(form.emergencyContact)) {
-    missing.push('Contato de emergência');
+    missing.push(t('Employees.form.emergencyContact'));
   }
-  if (!passwordOk.value) missing.push(isEditMode.value ? 'Senha' : 'Senha e confirmação');
+  if (!passwordOk.value) {
+    missing.push(
+      isEditMode.value
+        ? t('Employees.form.password')
+        : t('Employees.form.passwordAndConfirm'),
+    );
+  }
   return missing;
 });
 
 const isValid = computed(() => missingRequired.value.length === 0);
 
 const title = computed(() =>
-  isEditMode.value ? 'Editar colaborador' : 'Novo colaborador',
+  isEditMode.value ? t('Employees.form.editTitle') : t('Employees.form.createTitle'),
 );
 
 const subtitle = computed(() =>
   isEditMode.value
-    ? 'Atualize os dados do membro da equipe'
-    : 'Preencha os dados para cadastrar um novo membro da equipe',
+    ? t('Employees.form.editSubtitle')
+    : t('Employees.form.createSubtitle'),
 );
 
 const submitLabel = computed(() =>
-  isEditMode.value ? 'Salvar alterações' : 'Criar colaborador',
+  isEditMode.value ? t('Employees.form.editSubmit') : t('Employees.form.createSubmit'),
 );
 
 const onSubmit = () => {
@@ -137,7 +147,7 @@ const onSubmit = () => {
   submitted.value = true;
   if (!isValid.value) return;
 
-  const payload: Employee.CreateCommand = {
+  const fields: Employee.UpdateCommand = {
     name: form.name.trim(),
     username: form.username.trim().replace(/^@/, ''),
     email: form.email.trim(),
@@ -151,11 +161,18 @@ const onSubmit = () => {
     employmentId: form.employmentId.trim(),
     emergencyContact: hasEmergencyContact.value ? form.emergencyContact.trim() : '',
     jobTitle: form.jobTitle.trim(),
-    password: form.password.trim(),
-    passwordConfirmation: form.passwordConfirmation.trim(),
   };
 
-  emit('submit', payload);
+  if (isEditMode.value) {
+    emit('update', fields);
+    return;
+  }
+
+  emit('create', {
+    ...fields,
+    password: form.password.trim(),
+    passwordConfirmation: form.passwordConfirmation.trim(),
+  });
 };
 
 const fieldError = (value: string, min = 1) =>
@@ -173,7 +190,7 @@ const fieldError = (value: string, min = 1) =>
         <button
           type="button"
           class="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-          aria-label="Fechar"
+          :aria-label="t('Employees.actions.close')"
           @click="emit('close')"
         >
           <Icon icon="carbon:close" class="size-5" />
@@ -184,50 +201,60 @@ const fieldError = (value: string, min = 1) =>
     <form class="flex min-h-0 flex-1 flex-col" @submit.prevent="onSubmit">
       <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
         <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-          <h3 class="mb-4 text-base font-semibold text-gray-900">Dados principais</h3>
+          <h3 class="mb-4 text-base font-semibold text-gray-900">
+            {{ t('Employees.form.sectionMain') }}
+          </h3>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="flex flex-col gap-1.5 sm:col-span-2">
-              <label for="create-name" class="text-xs text-gray-400">Nome completo *</label>
+              <label for="create-name" class="text-xs text-gray-400">
+                {{ t('Employees.form.nameRequired') }}
+              </label>
               <input
                 id="create-name"
                 v-model="form.name"
                 type="text"
-                placeholder="Ex: Cameron Williamson"
+                :placeholder="t('Employees.form.namePlaceholder')"
                 class="form-input"
                 :class="{ 'form-input-error': fieldError(form.name, 2) }"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-email" class="text-xs text-gray-400">E-mail *</label>
+              <label for="create-email" class="text-xs text-gray-400">
+                {{ t('Employees.form.emailRequired') }}
+              </label>
               <input
                 id="create-email"
                 v-model="form.email"
                 type="email"
-                placeholder="nome@empresa.pt"
+                :placeholder="t('Employees.form.emailPlaceholder')"
                 class="form-input"
                 :class="{ 'form-input-error': submitted && !form.email.includes('@') }"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-phone" class="text-xs text-gray-400">Telefone *</label>
+              <label for="create-phone" class="text-xs text-gray-400">
+                {{ t('Employees.form.phoneRequired') }}
+              </label>
               <PhoneInput
                 id="create-phone"
                 v-model="form.phone"
-                placeholder="912 345 678"
+                :placeholder="t('Employees.form.phonePlaceholder')"
                 :invalid="submitted && !isValidPhone(form.phone)"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-username" class="text-xs text-gray-400">Username</label>
+              <label for="create-username" class="text-xs text-gray-400">
+                {{ t('Employees.form.username') }}
+              </label>
               <input
                 id="create-username"
                 v-model="form.username"
                 type="text"
-                placeholder="ex: cameronw"
+                :placeholder="t('Employees.form.usernamePlaceholder')"
                 class="form-input"
               />
             </div>
@@ -235,61 +262,69 @@ const fieldError = (value: string, min = 1) =>
         </section>
 
         <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-          <h3 class="mb-4 text-base font-semibold text-gray-900">Informações pessoais</h3>
+          <h3 class="mb-4 text-base font-semibold text-gray-900">
+            {{ t('Employees.form.sectionPersonal') }}
+          </h3>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="flex flex-col gap-1.5">
-              <span class="text-xs text-gray-400">Gênero</span>
+              <span class="text-xs text-gray-400">{{ t('Employees.form.gender') }}</span>
               <SelectFilter
                 v-model="form.gender"
                 :options="genderOptions"
                 variant="field"
                 placement="left"
-                placeholder="Selecionar gênero"
+                :placeholder="t('Employees.form.genderPlaceholder')"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-languages" class="text-xs text-gray-400">Idiomas</label>
+              <label for="create-languages" class="text-xs text-gray-400">
+                {{ t('Employees.form.languages') }}
+              </label>
               <input
                 id="create-languages"
                 v-model="form.languages"
                 type="text"
-                placeholder="Português, Inglês"
+                :placeholder="t('Employees.form.languagesPlaceholder')"
                 class="form-input"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
               <label for="create-emergency" class="text-xs text-gray-400">
-                Contato de emergência
+                {{ t('Employees.form.emergencyContact') }}
               </label>
               <PhoneInput
                 id="create-emergency"
                 v-model="form.emergencyContact"
-                placeholder="912 345 678"
+                :placeholder="t('Employees.form.phonePlaceholder')"
                 :invalid="emergencyPhoneInvalid"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-nif" class="text-xs text-gray-400">NIF</label>
+              <label for="create-nif" class="text-xs text-gray-400">
+                {{ t('Employees.form.nif') }}
+              </label>
               <input
                 id="create-nif"
                 v-model="form.nif"
                 type="text"
-                placeholder="123456789"
+                :placeholder="t('Employees.form.nifPlaceholder')"
                 class="form-input"
               />
             </div>
 
             <div class="flex flex-col gap-1.5 sm:col-span-2">
-              <label for="create-address" class="text-xs text-gray-400">Morada</label>
+              <label for="create-address" class="text-xs text-gray-400">
+                {{ t('Employees.form.address') }}
+              </label>
               <input
                 id="create-address"
                 v-model="form.address"
                 type="text"
-                placeholder="Rua, cidade, país"
+                :placeholder="t('Employees.form.addressPlaceholder')"
                 class="form-input"
               />
             </div>
@@ -298,51 +333,57 @@ const fieldError = (value: string, min = 1) =>
 
         <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <h3 class="mb-4 text-base font-semibold text-gray-900">
-            Informações profissionais
+            {{ t('Employees.form.sectionProfessional') }}
           </h3>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="flex flex-col gap-1.5">
-              <label for="create-job" class="text-xs text-gray-400">Cargo</label>
+              <label for="create-job" class="text-xs text-gray-400">
+                {{ t('Employees.form.jobTitle') }}
+              </label>
               <input
                 id="create-job"
                 v-model="form.jobTitle"
                 type="text"
-                placeholder="Ex: UI Designer"
+                :placeholder="t('Employees.form.jobTitlePlaceholder')"
                 class="form-input"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <span class="text-xs text-gray-400">Permissão *</span>
+              <span class="text-xs text-gray-400">
+                {{ t('Employees.form.permissionRequired') }}
+              </span>
               <SelectFilter
                 v-model="form.role"
                 :options="permissionOptions"
                 variant="field"
                 placement="top"
-                placeholder="Selecionar permissão"
+                :placeholder="t('Employees.form.permissionPlaceholder')"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <span class="text-xs text-gray-400">Status</span>
+              <span class="text-xs text-gray-400">{{ t('Employees.form.status') }}</span>
               <SelectFilter
                 v-model="form.status"
                 :options="statusOptions"
                 variant="field"
                 placement="top"
-                placeholder="Selecionar status"
+                :placeholder="t('Employees.form.statusPlaceholder')"
                 :disabled="!isEditMode"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-matricula" class="text-xs text-gray-400">Matrícula</label>
+              <label for="create-matricula" class="text-xs text-gray-400">
+                {{ t('Employees.form.employmentId') }}
+              </label>
               <input
                 id="create-matricula"
                 v-model="form.employmentId"
                 type="text"
-                placeholder="123456789"
+                :placeholder="t('Employees.form.employmentIdPlaceholder')"
                 class="form-input"
               />
             </div>
@@ -351,22 +392,22 @@ const fieldError = (value: string, min = 1) =>
 
         <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <h3 class="mb-4 text-base font-semibold text-gray-900">
-            Informações de acesso
+            {{ t('Employees.form.sectionAccess') }}
           </h3>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="flex flex-col gap-1.5">
               <label for="create-password" class="text-xs text-gray-400">
-                Senha{{ isEditMode ? '' : ' *' }}
+                {{ isEditMode ? t('Employees.form.password') : t('Employees.form.passwordRequired') }}
               </label>
               <PasswordInput
                 id="create-password"
                 v-model="form.password"
                 variant="field"
                 autocomplete="new-password"
-                placeholder="********"
-                show-label="Mostrar senha"
-                hide-label="Ocultar senha"
+                :placeholder="t('Employees.form.passwordPlaceholder')"
+                :show-label="t('Employees.form.showPassword')"
+                :hide-label="t('Employees.form.hidePassword')"
                 :invalid="
                   submitted &&
                   (!isEditMode
@@ -378,16 +419,20 @@ const fieldError = (value: string, min = 1) =>
 
             <div class="flex flex-col gap-1.5">
               <label for="create-confirm-password" class="text-xs text-gray-400">
-                Confirmar senha{{ isEditMode ? '' : ' *' }}
+                {{
+                  isEditMode
+                    ? t('Employees.form.confirmPassword')
+                    : t('Employees.form.confirmPasswordRequired')
+                }}
               </label>
               <PasswordInput
                 id="create-confirm-password"
                 v-model="form.passwordConfirmation"
                 variant="field"
                 autocomplete="new-password"
-                placeholder="********"
-                show-label="Mostrar senha"
-                hide-label="Ocultar senha"
+                :placeholder="t('Employees.form.passwordPlaceholder')"
+                :show-label="t('Employees.form.showPassword')"
+                :hide-label="t('Employees.form.hidePassword')"
                 :invalid="
                   submitted &&
                   (!isEditMode
@@ -400,7 +445,7 @@ const fieldError = (value: string, min = 1) =>
         </section>
 
         <p v-if="submitted && missingRequired.length" class="text-sm text-red-500">
-          Preencha os campos obrigatórios: {{ missingRequired.join(', ') }}.
+          {{ t('Employees.form.missingFields', { fields: missingRequired.join(', ') }) }}
         </p>
       </div>
 
@@ -412,7 +457,7 @@ const fieldError = (value: string, min = 1) =>
           class="cursor-pointer rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
           @click="emit('close')"
         >
-          Cancelar
+          {{ t('Employees.actions.cancel') }}
         </button>
         <button
           type="submit"

@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { t } from '../i18n'
 import { toLifecycleError } from '../domain/lifecycle-error'
+import { employeeQueryKeys } from '../services/api/employees/query-keys'
 import type {
   CreateEmployeeApi,
   CreateEmployeeParams,
@@ -7,11 +9,6 @@ import type {
 } from '../services/api/employees/types'
 import type { Employee } from '../types/employee'
 import { useToast } from './useToast'
-
-const CREATE_SUCCESS_MESSAGE = 'Colaborador criado.'
-const EMAIL_IN_USE_TOAST = 'Este e-mail já está em uso.'
-const VALIDATION_TOAST = 'Não foi possível criar o colaborador. Verifique os dados.'
-const FORBIDDEN_TOAST = 'Ação não permitida.'
 
 function omitBlank(value: Employee.CreateCommand): CreateEmployeeParams {
   return Object.fromEntries(
@@ -25,13 +22,12 @@ export function toCreateEmployeeParams(
   return omitBlank(payload)
 }
 
-export function toastMessageForCreateError(error: unknown): string | null {
+export function toastKeyForCreateError(error: unknown): string | null {
   const mapped = toLifecycleError(error)
   if (mapped.code === 'UNAUTHORIZED') return null
-  if (mapped.code === 'FORBIDDEN') return FORBIDDEN_TOAST
-  if (mapped.code === 'CONFLICT') return EMAIL_IN_USE_TOAST
-  if (mapped.code === 'BAD_REQUEST') return VALIDATION_TOAST
-  return mapped.message || VALIDATION_TOAST
+  if (mapped.code === 'FORBIDDEN') return 'Employees.toast.forbidden'
+  if (mapped.code === 'CONFLICT') return 'Employees.toast.emailInUse'
+  return 'Employees.toast.createValidation'
 }
 
 interface CreateEmployeeOptions {
@@ -50,13 +46,13 @@ export function useCreateEmployee(
       api.create(toCreateEmployeeParams(payload)),
     retry: 0,
     onSuccess: (result) => {
-      void queryClient.invalidateQueries({ queryKey: ['employees'] })
-      toast.push('success', CREATE_SUCCESS_MESSAGE)
+      void queryClient.invalidateQueries({ queryKey: employeeQueryKeys.all })
+      toast.push('success', t('Employees.toast.created'))
       options.onCreated(result)
     },
     onError: (error) => {
-      const message = toastMessageForCreateError(error)
-      if (message) toast.push('error', message)
+      const key = toastKeyForCreateError(error)
+      if (key) toast.push('error', t(key))
     },
   })
 
