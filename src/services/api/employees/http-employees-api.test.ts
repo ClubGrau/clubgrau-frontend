@@ -61,4 +61,39 @@ describe('HttpEmployeesApi lifecycle commands', () => {
     const params: UpdateEmployeeStatusParams = { id: 'emp-1', status: 'REMOVED' }
     void params
   })
+
+  it('posts create to /api/employee without actorId', async () => {
+    const created = {
+      id: 'emp-new',
+      name: 'João Silva',
+      email: 'joao@grau.pt',
+      role: 'EMPLOYEE',
+      phone: '+351912345678',
+      nif: '123456789',
+      status: 'ACTIVE' as const,
+      createdAt: '2026-08-29T00:00:00.000Z',
+    }
+    vi.mocked(api.post).mockResolvedValue({ data: created })
+
+    const body = {
+      name: 'João Silva',
+      email: 'joao@grau.pt',
+      role: 'EMPLOYEE',
+      password: 'senhaSegura123',
+      passwordConfirmation: 'senhaSegura123',
+      phone: '+351912345678',
+      nif: '123456789',
+      status: 'ACTIVE' as const,
+    }
+
+    const result = await httpEmployeesApi.create(body)
+
+    expect(api.post).toHaveBeenCalledTimes(1)
+    expect(api.post).toHaveBeenCalledWith('/api/employee', body)
+
+    const sent = vi.mocked(api.post).mock.calls[0]?.[1] as object
+    expect(sent).not.toHaveProperty('actorId')
+    expect(sent).not.toHaveProperty('permission')
+    expect(result).toEqual(created)
+  })
 })

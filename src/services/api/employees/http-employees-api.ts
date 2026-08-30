@@ -2,6 +2,9 @@ import type { Employee } from '../../../types/employee'
 import type { Pagination } from '../../../types/pagination'
 import { api } from '../config'
 import type {
+  CreateEmployeeApi,
+  CreateEmployeeParams,
+  CreateEmployeeResult,
   GetEmployeesApi,
   GetEmployeesParams,
   RemoveEmployeeApi,
@@ -21,7 +24,11 @@ type EmployeesApiPayload = {
 }
 
 export class HttpEmployeesApi
-  implements GetEmployeesApi, UpdateEmployeeStatusApi, RemoveEmployeeApi
+  implements
+    GetEmployeesApi,
+    UpdateEmployeeStatusApi,
+    RemoveEmployeeApi,
+    CreateEmployeeApi
 {
   async getEmployees(
     params: GetEmployeesParams,
@@ -57,6 +64,11 @@ export class HttpEmployeesApi
       id: params.id,
       password: params.password,
     })
+    return data
+  }
+
+  async create(params: CreateEmployeeParams): Promise<CreateEmployeeResult> {
+    const { data } = await api.post<CreateEmployeeResult>('/api/employee', params)
     return data
   }
 }

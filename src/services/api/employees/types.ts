@@ -46,6 +46,31 @@ export interface RemoveEmployeeApi {
   remove(params: RemoveEmployeeParams): Promise<RemoveEmployeeResult>
 }
 
+export interface CreateEmployeeParams {
+  name: string
+  email: string
+  role: string
+  password: string
+  passwordConfirmation: string
+  phone?: string
+  nif?: string
+  status?: EmployeeApiStatus
+  username?: string
+  gender?: string
+  address?: string
+  languages?: string
+  emergencyContact?: string
+  employmentId?: string
+  jobTitle?: string
+}
+
+export type CreateEmployeeResult = Employee.Entity
+
+export interface CreateEmployeeApi {
+  create(params: CreateEmployeeParams): Promise<CreateEmployeeResult>
+}
+
 export type EmployeesApi = GetEmployeesApi &
   UpdateEmployeeStatusApi &
-  RemoveEmployeeApi
+  RemoveEmployeeApi &
+  CreateEmployeeApi

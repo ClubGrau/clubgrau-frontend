@@ -23,6 +23,7 @@ function stubApi(overrides: Partial<EmployeesApi> = {}): EmployeesApi {
     getEmployees: vi.fn(),
     updateStatus: vi.fn(),
     remove: vi.fn(),
+    create: vi.fn(),
     ...overrides,
   }
 }
