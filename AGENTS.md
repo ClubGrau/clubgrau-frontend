@@ -51,7 +51,7 @@ view  →  composable  →  Http*Api (port)  →  axios `api`
 2. **HTTP clients implement a TypeScript port** (`GetEmployeesApi`, `AuthApi`, …). Views depend on the port, not the class, so the composable stays testable.
 3. **The Actor is the Bearer token.** Never send `actorId` in a JSON body. The API stamps it from the JWT.
 4. **Actor Role drives visible actions.** Decode the JWT on login (and on a persisted token) and keep `id` + `role` (+ `status`) in the auth store. There is no separate permission catalog in this version.
-5. **Lifecycle visibility is a helper, not ad-hoc `if`s.** `canDeactivate` / `canReactivate` / `canRemove` take Actor (role) and Target (role + status). Views and menus only ask the helper. Last Admin is **not** in the helper: the list does not say how many `ACTIVE` ADMINs exist; that refusal is HTTP `409`.
+5. **Lifecycle visibility is a helper, not ad-hoc `if`s.** `lifecycleActions(actor, target)` (and the individual `canDeactivate` / `canReactivate` / `canRemove` it wraps) take Actor (role) and Target (role + status). Views and menus only ask the aggregator. Last Admin is **not** in the helper: the list does not say how many `ACTIVE` ADMINs exist; that refusal is HTTP `409`.
 6. **Hiding a button is not authorization.** The API returns `403` / `409` / `401`. The UI must handle those codes even when it already hid the action.
 7. **Do not put the authority matrix only in Vue.** Mirror it for UX from Role (+ Target Role/status). The server is the source of truth.
 8. **Read models for the table are mapped once**, in `services/api/<resource>/`. Views consume the shaped type, not the raw payload, when the UI needs extra fields (initials, labels).
@@ -109,7 +109,7 @@ src/
 | HTTP adapter | `http-<resource>-api.ts` | `http-employees-api.ts` |
 | Mapper | `map-<resource>.ts` | `map-employee.ts` |
 | Pinia store | `src/stores/<name>.ts` | `auth.ts` → `useAuthStore` |
-| Query key | `['<resource>', params]` | `['employees', listParams]` |
+| Query key | `employeeQueryKeys` in `services/api/<resource>/query-keys.ts` | `employeeQueryKeys.list(params)` |
 
 ### Composable split (Employees as template)
 
@@ -118,6 +118,10 @@ src/
 | `useEmployees` | list query, filters, pagination, stats |
 | `useEmployeeDrawer` | which panel/modal is open and which id is active |
 | `useEmployeeSelection` | row selection + overflow menu |
+| `useCreateEmployee` | Create mutation |
+| `useDeactivateEmployee` | Deactivate mutation |
+| `useReactivateEmployee` | Reactivate mutation |
+| `useRemoveEmployee` | Remove mutation |
 | `useLogin` | credentials form + login mutation |
 
 A screen composable may take the API port as an argument (`useEmployees(getEmployeesApi)`). Do not import `httpEmployeesApi` inside a composable if the port can be injected — the Employees list already follows this.
@@ -150,11 +154,13 @@ Default locale `pt`. Shared strings in `src/i18n/locales/`. Screen-specific stri
 
 ### New write command
 
-1. Method on the same resource port (or a dedicated command port).
-2. `useMutation` in a composable — not in the `.vue` except for wiring emit/submit.
-3. Do not send fields the API stamps from the JWT.
-4. Map HTTP `400` / `401` / `403` / `409` to operator copy in the design doc of that feature.
-5. On success, invalidate or refetch the list; close the modal/drawer.
+1. Dedicated port for the verb (`CreateEmployeeApi`, `UpdateEmployeeStatusApi`, …). The composable depends **only** on that port — not on a fat `EmployeesApi` union.
+2. One composable per command (`useCreateEmployee`, `useDeactivateEmployee`, …). Do not add a mutation to a composable that already owns another command.
+3. `useMutation` in the composable — not in the `.vue` except for wiring emit/submit.
+4. Do not send fields the API stamps from the JWT.
+5. Map HTTP `400` / `401` / `403` / `409` to **i18n keys** (or `null` for `401`); the composable calls `t(key)` and passes the translated string to `useToast`. Operator copy of the feature lives in `src/views/<View>/locales/`.
+6. On success, invalidate with `employeeQueryKeys.all` (pattern: `src/services/api/<resource>/query-keys.ts`); close the modal/drawer.
+7. Lifecycle visibility in the view goes through `lifecycleActions`, not loose `can*` calls.
 
 ### New reusable UI
 
