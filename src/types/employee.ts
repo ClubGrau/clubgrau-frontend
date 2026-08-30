@@ -24,21 +24,16 @@ export interface EmployeeShapped {
   permission: string;
   status: EmployeeStatus;
   initials: string;
-  department: string;
-  dateHired: string;
   gender: string;
-  maritalStatus: string;
   address: string;
   languages: string;
-  education: string;
   emergencyContact: string;
-  emergencyContactRelation: string;
   employmentId: string;
-  employmentType: string;
   jobTitle: string;
-  skills: string[];
+  password: string;
+  passwordConfirmation: string;
 }
 
-export type EmployeeCreatePayload = Omit<EmployeeShapped, 'id' | 'initials' | 'employmentId'>;
+export type EmployeeCreatePayload = Omit<EmployeeShapped, 'id' | 'initials'>;
 
 export type EmployeeUpdatePayload = EmployeeCreatePayload;

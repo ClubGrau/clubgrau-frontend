@@ -20,19 +20,14 @@ export function mapApiEmployeeToEmployee(apiEmployee: Employee.Entity): Employee
     permission: apiEmployee.role,
     status: apiEmployee.status,
     initials: buildInitials(apiEmployee.name),
-    department: '',
-    dateHired: apiEmployee.createdAt,
     gender: '',
-    maritalStatus: '',
     address: '',
     languages: '',
-    education: '',
     emergencyContact: '',
-    emergencyContactRelation: '',
     employmentId: apiEmployee.id,
-    employmentType: '',
     jobTitle: apiEmployee.role,
-    skills: [],
+    password: '',
+    passwordConfirmation: '',
   }
 }
 

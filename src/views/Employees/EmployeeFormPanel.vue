@@ -2,16 +2,20 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
+import PasswordInput from '../../components/PasswordInput/PasswordInput.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import type {
   EmployeeCreatePayload,
   EmployeeShapped,
   EmployeeStatus,
 } from '../../types/employee';
+import { EMPLOYEE_ROLE_OPTIONS } from '../../constants/employee-role';
 import type { SelectFilterOption } from '../../types/select-filter';
+import { hasPhoneNumber, isValidPhone } from '../../domain/phone-value';
 
 const props = defineProps<{
   employee?: EmployeeShapped;
+  submitting?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -21,12 +25,7 @@ const emit = defineEmits<{
 
 const isEditMode = computed(() => Boolean(props.employee));
 
-const permissionOptions: SelectFilterOption[] = [
-  { id: 'manager', label: 'Manager', value: 'Manager' },
-  { id: 'operador', label: 'Operador', value: 'Operador' },
-  { id: 'admin', label: 'Admin', value: 'Admin' },
-  { id: 'financeiro', label: 'Financeiro', value: 'Financeiro' },
-];
+const permissionOptions = EMPLOYEE_ROLE_OPTIONS;
 
 const statusOptions: SelectFilterOption[] = [
   { id: 'ACTIVE', label: 'Ativo', value: 'ACTIVE' },
@@ -41,45 +40,25 @@ const genderOptions: SelectFilterOption[] = [
   { id: 'nao-informado', label: 'Não informado', value: 'Não informado' },
 ];
 
-const maritalOptions: SelectFilterOption[] = [
-  { id: 'solteiro', label: 'Solteiro(a)', value: 'Solteiro(a)' },
-  { id: 'casado', label: 'Casado(a)', value: 'Casado(a)' },
-  { id: 'divorciado', label: 'Divorciado(a)', value: 'Divorciado(a)' },
-  { id: 'viuvo', label: 'Viúvo(a)', value: 'Viúvo(a)' },
-];
-
-const employmentTypeOptions: SelectFilterOption[] = [
-  { id: 'tempo-integral', label: 'Tempo integral', value: 'Tempo integral' },
-  { id: 'meio-periodo', label: 'Meio período', value: 'Meio período' },
-  { id: 'temporario', label: 'Temporário', value: 'Temporário' },
-  { id: 'estagio', label: 'Estágio', value: 'Estágio' },
-];
-
 const form = reactive({
   name: '',
   username: '',
   email: '',
   phone: '',
   nif: '',
-  permission: 'Operador',
+  permission: 'EMPLOYEE',
   status: 'ACTIVE' as EmployeeStatus,
-  department: '',
-  dateHired: '',
   gender: 'Não informado',
-  maritalStatus: 'Solteiro(a)',
   address: '',
   languages: 'Português',
-  education: '',
+  employmentId: '',
   emergencyContact: '',
-  emergencyContactRelation: 'Familiar',
-  employmentType: 'Tempo integral',
   jobTitle: '',
-  skillsInput: '',
+  password: '',
+  passwordConfirmation: '',
 });
 
 const submitted = ref(false);
-const isPhoneValid = ref(false);
-const isEmergencyPhoneValid = ref(true);
 
 const fillForm = (employee: EmployeeShapped) => {
   form.name = employee.name;
@@ -89,20 +68,14 @@ const fillForm = (employee: EmployeeShapped) => {
   form.nif = employee.nif;
   form.permission = employee.permission;
   form.status = employee.status;
-  form.department = employee.department;
-  form.dateHired = employee.dateHired;
   form.gender = employee.gender;
-  form.maritalStatus = employee.maritalStatus;
-  form.address = employee.address === '—' ? '' : employee.address;
+  form.address = employee.address;
   form.languages = employee.languages;
-  form.education = employee.education === '—' ? '' : employee.education;
-  form.emergencyContact = employee.emergencyContact;
-  form.emergencyContactRelation = employee.emergencyContactRelation;
-  form.employmentType = employee.employmentType;
+  form.employmentId = employee.employmentId;
+  form.emergencyContact = employee.emergencyContact ?? '';
   form.jobTitle = employee.jobTitle;
-  form.skillsInput = employee.skills.join(', ');
-  isPhoneValid.value = Boolean(employee.phone);
-  isEmergencyPhoneValid.value = true;
+  form.password = employee.password;
+  form.passwordConfirmation = employee.passwordConfirmation;
   submitted.value = false;
 };
 
@@ -114,33 +87,40 @@ watch(
   { immediate: true },
 );
 
-const skills = computed(() =>
-  form.skillsInput
-    .split(',')
-    .map((skill) => skill.trim())
-    .filter(Boolean),
+const passwordsMatch = computed(
+  () => form.password.trim() === form.passwordConfirmation.trim(),
 );
 
-const isValid = computed(() => {
-  const emergencyOk =
-    !form.emergencyContact.trim() || isEmergencyPhoneValid.value;
+const passwordFilled = computed(
+  () => Boolean(form.password.trim() || form.passwordConfirmation.trim()),
+);
 
-  const phoneOk =
-    isPhoneValid.value ||
-    (isEditMode.value && form.phone.trim().length >= 8);
+const hasEmergencyContact = computed(() => hasPhoneNumber(form.emergencyContact));
 
-  return (
-    form.name.trim().length > 1 &&
-    form.username.trim().length > 1 &&
-    form.email.trim().includes('@') &&
-    phoneOk &&
-    form.nif.trim().length >= 5 &&
-    form.permission.trim().length > 0 &&
-    form.department.trim().length > 0 &&
-    form.jobTitle.trim().length > 0 &&
-    emergencyOk
-  );
+const emergencyPhoneInvalid = computed(
+  () => submitted.value && hasEmergencyContact.value && !isValidPhone(form.emergencyContact),
+);
+
+const passwordOk = computed(() =>
+  isEditMode.value
+    ? !passwordFilled.value || (passwordsMatch.value && form.password.trim().length >= 6)
+    : form.password.trim().length >= 6 && passwordsMatch.value,
+);
+
+const missingRequired = computed(() => {
+  const missing: string[] = [];
+  if (form.name.trim().length <= 1) missing.push('Nome completo');
+  if (!form.email.trim().includes('@')) missing.push('E-mail');
+  if (!isValidPhone(form.phone)) missing.push('Telefone');
+  if (form.permission.trim().length === 0) missing.push('Permissão');
+  if (hasEmergencyContact.value && !isValidPhone(form.emergencyContact)) {
+    missing.push('Contato de emergência');
+  }
+  if (!passwordOk.value) missing.push(isEditMode.value ? 'Senha' : 'Senha e confirmação');
+  return missing;
 });
+
+const isValid = computed(() => missingRequired.value.length === 0);
 
 const title = computed(() =>
   isEditMode.value ? 'Editar colaborador' : 'Novo colaborador',
@@ -157,6 +137,7 @@ const submitLabel = computed(() =>
 );
 
 const onSubmit = () => {
+  if (props.submitting) return;
   submitted.value = true;
   if (!isValid.value) return;
 
@@ -168,41 +149,21 @@ const onSubmit = () => {
     nif: form.nif.trim(),
     permission: form.permission,
     status: form.status,
-    department: form.department.trim(),
-    dateHired: form.dateHired || formatToday(),
     gender: form.gender,
-    maritalStatus: form.maritalStatus,
-    address: form.address.trim() || '—',
+    address: form.address.trim(),
     languages: form.languages.trim() || 'Português',
-    education: form.education.trim() || '—',
-    emergencyContact: form.emergencyContact.trim() || form.phone.trim(),
-    emergencyContactRelation: form.emergencyContactRelation.trim() || 'Familiar',
-    employmentType: form.employmentType,
+    employmentId: form.employmentId.trim(),
+    emergencyContact: hasEmergencyContact.value ? form.emergencyContact.trim() : '',
     jobTitle: form.jobTitle.trim(),
-    skills: skills.value.length ? skills.value : ['Comunicação'],
+    password: form.password.trim(),
+   passwordConfirmation: form.passwordConfirmation.trim(),
   };
 
   emit('submit', payload);
 };
 
-const formatToday = () => {
-  return new Intl.DateTimeFormat('pt-PT', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date());
-};
-
 const fieldError = (value: string, min = 1) =>
   submitted.value && value.trim().length < min;
-
-const onPhoneValidate = (valid: boolean) => {
-  isPhoneValid.value = valid;
-};
-
-const onEmergencyPhoneValidate = (valid: boolean) => {
-  isEmergencyPhoneValid.value = !form.emergencyContact.trim() || valid;
-};
 </script>
 
 <template>
@@ -243,30 +204,6 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-username" class="text-xs text-gray-400">Username *</label>
-              <input
-                id="create-username"
-                v-model="form.username"
-                type="text"
-                placeholder="ex: cameronw"
-                class="form-input"
-                :class="{ 'form-input-error': fieldError(form.username, 2) }"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-              <label for="create-nif" class="text-xs text-gray-400">NIF *</label>
-              <input
-                id="create-nif"
-                v-model="form.nif"
-                type="text"
-                placeholder="123456789"
-                class="form-input"
-                :class="{ 'form-input-error': fieldError(form.nif, 5) }"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
               <label for="create-email" class="text-xs text-gray-400">E-mail *</label>
               <input
                 id="create-email"
@@ -283,15 +220,19 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
               <PhoneInput
                 id="create-phone"
                 v-model="form.phone"
-                placeholder="900 000 000"
-                :invalid="
-                  submitted &&
-                  !(
-                    isPhoneValid ||
-                    (isEditMode && form.phone.trim().length >= 8)
-                  )
-                "
-                @validate="onPhoneValidate"
+                placeholder="912 345 678"
+                :invalid="submitted && !isValidPhone(form.phone)"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label for="create-username" class="text-xs text-gray-400">Username</label>
+              <input
+                id="create-username"
+                v-model="form.username"
+                type="text"
+                placeholder="ex: cameronw"
+                class="form-input"
               />
             </div>
           </div>
@@ -313,17 +254,6 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <span class="text-xs text-gray-400">Estado civil</span>
-              <SelectFilter
-                v-model="form.maritalStatus"
-                :options="maritalOptions"
-                variant="field"
-                placement="right"
-                placeholder="Selecionar estado civil"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
               <label for="create-languages" class="text-xs text-gray-400">Idiomas</label>
               <input
                 id="create-languages"
@@ -335,42 +265,24 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-education" class="text-xs text-gray-400">Formação</label>
-              <input
-                id="create-education"
-                v-model="form.education"
-                type="text"
-                placeholder="Licenciatura em..."
-                class="form-input"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
               <label for="create-emergency" class="text-xs text-gray-400">
                 Contato de emergência
               </label>
               <PhoneInput
                 id="create-emergency"
                 v-model="form.emergencyContact"
-                placeholder="900 000 000"
-                :invalid="
-                  submitted &&
-                  Boolean(form.emergencyContact.trim()) &&
-                  !isEmergencyPhoneValid
-                "
-                @validate="onEmergencyPhoneValidate"
+                placeholder="912 345 678"
+                :invalid="emergencyPhoneInvalid"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="create-emergency-relation" class="text-xs text-gray-400">
-                Parentesco
-              </label>
+              <label for="create-nif" class="text-xs text-gray-400">NIF</label>
               <input
-                id="create-emergency-relation"
-                v-model="form.emergencyContactRelation"
+                id="create-nif"
+                v-model="form.nif"
                 type="text"
-                placeholder="Pai, Mãe, Cônjuge..."
+                placeholder="123456789"
                 class="form-input"
               />
             </div>
@@ -395,26 +307,13 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="flex flex-col gap-1.5">
-              <label for="create-job" class="text-xs text-gray-400">Cargo *</label>
+              <label for="create-job" class="text-xs text-gray-400">Cargo</label>
               <input
                 id="create-job"
                 v-model="form.jobTitle"
                 type="text"
                 placeholder="Ex: UI Designer"
                 class="form-input"
-                :class="{ 'form-input-error': fieldError(form.jobTitle) }"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-              <label for="create-department" class="text-xs text-gray-400">Departamento *</label>
-              <input
-                id="create-department"
-                v-model="form.department"
-                type="text"
-                placeholder="Ex: Design"
-                class="form-input"
-                :class="{ 'form-input-error': fieldError(form.department) }"
               />
             </div>
 
@@ -437,48 +336,75 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
                 variant="field"
                 placement="top"
                 placeholder="Selecionar status"
+                :disabled="!isEditMode"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <span class="text-xs text-gray-400">Tipo de contrato</span>
-              <SelectFilter
-                v-model="form.employmentType"
-                :options="employmentTypeOptions"
-                variant="field"
-                placement="top"
-                placeholder="Selecionar contrato"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-              <label for="create-hired" class="text-xs text-gray-400">Data de admissão</label>
+              <label for="create-matricula" class="text-xs text-gray-400">Matrícula</label>
               <input
-                id="create-hired"
-                v-model="form.dateHired"
+                id="create-matricula"
+                v-model="form.employmentId"
                 type="text"
-                placeholder="17 Mar 2024"
-                class="form-input"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5 sm:col-span-2">
-              <label for="create-skills" class="text-xs text-gray-400">
-                Competências
-              </label>
-              <input
-                id="create-skills"
-                v-model="form.skillsInput"
-                type="text"
-                placeholder="Separe por vírgula: UI Design, Comunicação..."
+                placeholder="123456789"
                 class="form-input"
               />
             </div>
           </div>
         </section>
 
-        <p v-if="submitted && !isValid" class="text-sm text-red-500">
-          Preencha os campos obrigatórios marcados com *.
+        <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <h3 class="mb-4 text-base font-semibold text-gray-900">
+            Informações de acesso
+          </h3>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="flex flex-col gap-1.5">
+              <label for="create-password" class="text-xs text-gray-400">
+                Senha{{ isEditMode ? '' : ' *' }}
+              </label>
+              <PasswordInput
+                id="create-password"
+                v-model="form.password"
+                variant="field"
+                autocomplete="new-password"
+                placeholder="********"
+                show-label="Mostrar senha"
+                hide-label="Ocultar senha"
+                :invalid="
+                  submitted &&
+                  (!isEditMode
+                    ? form.password.trim().length < 6
+                    : passwordFilled && form.password.trim().length < 6)
+                "
+              />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label for="create-confirm-password" class="text-xs text-gray-400">
+                Confirmar senha{{ isEditMode ? '' : ' *' }}
+              </label>
+              <PasswordInput
+                id="create-confirm-password"
+                v-model="form.passwordConfirmation"
+                variant="field"
+                autocomplete="new-password"
+                placeholder="********"
+                show-label="Mostrar senha"
+                hide-label="Ocultar senha"
+                :invalid="
+                  submitted &&
+                  (!isEditMode
+                    ? !passwordsMatch || form.passwordConfirmation.trim().length < 6
+                    : passwordFilled && !passwordsMatch)
+                "
+              />
+            </div>
+          </div>
+        </section>
+
+        <p v-if="submitted && missingRequired.length" class="text-sm text-red-500">
+          Preencha os campos obrigatórios: {{ missingRequired.join(', ') }}.
         </p>
       </div>
 
@@ -494,8 +420,15 @@ const onEmergencyPhoneValidate = (valid: boolean) => {
         </button>
         <button
           type="submit"
-          class="cursor-pointer rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
+          class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f] disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="submitting"
+          :aria-busy="submitting"
         >
+          <Icon
+            v-if="submitting"
+            icon="carbon:circle-dash"
+            class="size-4 animate-spin"
+          />
           {{ submitLabel }}
         </button>
       </footer>

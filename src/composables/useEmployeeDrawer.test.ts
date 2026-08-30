@@ -14,22 +14,41 @@ function employee(overrides: Partial<EmployeeShapped> = {}): EmployeeShapped {
     permission: 'ADMIN',
     status: 'ACTIVE',
     initials: 'AS',
-    department: '',
-    dateHired: '2024-01-01',
     gender: '',
-    maritalStatus: '',
     address: '',
     languages: '',
-    education: '',
     emergencyContact: '',
-    emergencyContactRelation: '',
     employmentId: 'emp-1',
-    employmentType: '',
     jobTitle: 'ADMIN',
-    skills: [],
+    password: '',
+    passwordConfirmation: '',
     ...overrides,
   }
 }
+
+describe('useEmployeeDrawer create', () => {
+  it('openCreateDrawer opens in create mode without an employee id', () => {
+    const employees = ref<EmployeeShapped[]>([])
+    const drawer = useEmployeeDrawer(employees, employees)
+
+    drawer.openCreateDrawer()
+
+    expect(drawer.isCreateDrawerOpen.value).toBe(true)
+    expect(drawer.activeEmployeeId.value).toBeNull()
+    expect(drawer.drawer.value).toEqual({ open: true, mode: 'create' })
+  })
+
+  it('closeFormDrawer from create closes the drawer', () => {
+    const employees = ref<EmployeeShapped[]>([])
+    const drawer = useEmployeeDrawer(employees, employees)
+
+    drawer.openCreateDrawer()
+    drawer.closeFormDrawer()
+
+    expect(drawer.isCreateDrawerOpen.value).toBe(false)
+    expect(drawer.drawer.value).toEqual({ open: false })
+  })
+})
 
 describe('useEmployeeDrawer snapshot', () => {
   it('captures the Target when opening Inativar, before the list drops the row', () => {

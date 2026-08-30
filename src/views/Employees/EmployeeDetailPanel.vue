@@ -47,22 +47,18 @@ const personalFields = computed(() => [
   { label: 'Nome completo', value: props.employee.name },
   { label: 'Idiomas', value: props.employee.languages },
   { label: 'Gênero', value: props.employee.gender },
-  { label: 'Formação', value: props.employee.education },
-  { label: 'Estado civil', value: props.employee.maritalStatus },
   {
     label: 'Contato de emergência',
-    value: `${props.employee.emergencyContact} (${props.employee.emergencyContactRelation})`,
+    value: props.employee.emergencyContact,
     icon: 'carbon:phone',
   },
   { label: 'Morada', value: props.employee.address, fullWidth: true },
 ]);
 
 const professionalFields = computed(() => [
-  { label: 'ID do colaborador', value: props.employee.employmentId },
+  { label: 'Matrícula', value: props.employee.employmentId },
   { label: 'Cargo', value: props.employee.jobTitle },
-  { label: 'Tipo de contrato', value: props.employee.employmentType },
-  { label: 'Departamento', value: props.employee.department },
-  { label: 'Data de admissão', value: props.employee.dateHired },
+  { label: 'Permissão', value: props.employee.permission },
   { label: 'Status', value: employeeStatusBadge[props.employee.status].label },
 ]);
 </script>
@@ -174,16 +170,16 @@ const professionalFields = computed(() => [
 
           <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
             <div class="text-sm">
-              <span class="text-gray-400">Departamento: </span>
-              <span class="font-medium text-gray-800">{{ employee.department }}</span>
+              <span class="text-gray-400">Matrícula: </span>
+              <span class="font-medium text-gray-800">{{ employee.employmentId }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">
               <Icon icon="carbon:email" class="size-4 shrink-0 text-gray-400" />
               <span class="truncate">{{ employee.email }}</span>
             </div>
             <div class="text-sm">
-              <span class="text-gray-400">Data de admissão: </span>
-              <span class="font-medium text-gray-800">{{ employee.dateHired }}</span>
+              <span class="text-gray-400">Permissão: </span>
+              <span class="font-medium text-gray-800">{{ employee.permission }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">
               <Icon icon="carbon:phone" class="size-4 shrink-0 text-gray-400" />
@@ -255,19 +251,6 @@ const professionalFields = computed(() => [
             >
               <p class="mb-1 text-xs text-gray-400">{{ field.label }}</p>
               <p class="text-sm font-semibold text-gray-900">{{ field.value }}</p>
-            </div>
-
-            <div class="sm:col-span-2">
-              <p class="mb-2 text-xs text-gray-400">Competências</p>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="skill in employee.skills"
-                  :key="skill"
-                  class="rounded-full bg-[#e8f2ff] px-3 py-1 text-xs font-medium text-[#3b6ea5]"
-                >
-                  {{ skill }}
-                </span>
-              </div>
             </div>
           </div>
         </section>
