@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from 'vue'
 import { Icon } from '@iconify/vue'
-import PasswordRevealler from '../PasswordRevealler.vue'
+import PasswordInput from '../PasswordInput/PasswordInput.vue'
 
 const props = defineProps<{
   employeeName: string
@@ -15,11 +15,9 @@ const emit = defineEmits<{
 }>()
 
 const password = ref('')
-const showPassword = ref(false)
 
 const clearPassword = () => {
   password.value = ''
-  showPassword.value = false
 }
 
 const submit = () => {
@@ -56,24 +54,18 @@ onUnmounted(clearPassword)
       <label for="remove-actor-password" class="text-sm text-gray-500">
         A sua palavra-passe
       </label>
-      <div class="relative">
-        <input
-          id="remove-actor-password"
-          v-model="password"
-          :type="showPassword ? 'text' : 'password'"
-          autocomplete="current-password"
-          placeholder="Palavra-passe"
-          :disabled="isSubmitting"
-          :aria-invalid="Boolean(errorMessage)"
-          :aria-describedby="errorMessage ? 'remove-actor-password-error' : undefined"
-          class="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 pr-11 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-gray-300 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60"
-        />
-        <PasswordRevealler
-          v-model="showPassword"
-          show-label="Revelar palavra-passe"
-          hide-label="Ocultar palavra-passe"
-        />
-      </div>
+      <PasswordInput
+        id="remove-actor-password"
+        v-model="password"
+        variant="modal"
+        autocomplete="current-password"
+        placeholder="Palavra-passe"
+        show-label="Revelar palavra-passe"
+        hide-label="Ocultar palavra-passe"
+        :disabled="isSubmitting"
+        :invalid="Boolean(errorMessage)"
+        :aria-describedby="errorMessage ? 'remove-actor-password-error' : undefined"
+      />
       <p
         v-if="errorMessage"
         id="remove-actor-password-error"

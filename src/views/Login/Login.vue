@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import logoGrau from '../../assets/img/login-logo-grau.png'
+import PasswordInput from '../../components/PasswordInput/PasswordInput.vue'
 import { useLogin } from '../../composables/useLogin'
 import { httpAuthApi } from '../../services/api/auth/http-auth-api'
-import PasswordRevealler from '../../components/PasswordRevealler.vue'
 
 const { t } = useI18n()
 
 const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
-const showPassword = ref(false)
 </script>
 
 <template>
@@ -57,20 +55,15 @@ const showPassword = ref(false)
                   {{ t('Login.forgotPassword') }}
                 </a>
               </div>
-              <div class="relative">
-                <input
-                  id="password"
-                  v-model="userCredentials.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  :placeholder="t('Login.passwordPlaceholder')"
-                  class="styled-input"
-                />
-                <PasswordRevealler
-                  v-model="showPassword"
-                  :show-label="t('Login.showPassword')"
-                  :hide-label="t('Login.hidePassword')"
-                />
-              </div>
+              <PasswordInput
+                id="password"
+                v-model="userCredentials.password"
+                variant="login"
+                autocomplete="current-password"
+                :placeholder="t('Login.passwordPlaceholder')"
+                :show-label="t('Login.showPassword')"
+                :hide-label="t('Login.hidePassword')"
+              />
             </div>
 
             <label class="flex cursor-pointer items-center gap-2.5">
@@ -117,13 +110,13 @@ const showPassword = ref(false)
 @reference "../../style.css";
 
 .styled-input {
-  @apply w-full 
-    rounded-lg border border-transparent 
-    bg-gray-100 
-    px-4 py-3 pr-11 
-    text-sm text-[#092D4D] 
-    outline-none 
-    placeholder:text-gray-400 
+  @apply w-full
+    rounded-lg border border-transparent
+    bg-gray-100
+    px-4 py-3
+    text-sm text-[#092D4D]
+    outline-none
+    placeholder:text-gray-400
     focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30;
 }
 </style>
