@@ -4,23 +4,21 @@ import { Icon } from '@iconify/vue';
 import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
 import PasswordInput from '../../components/PasswordInput/PasswordInput.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
-import type {
-  EmployeeCreatePayload,
-  EmployeeShapped,
-  EmployeeStatus,
-} from '../../types/employee';
+import type { Employee, EmployeeStatus } from '../../types/employee';
 import { EMPLOYEE_ROLE_OPTIONS } from '../../constants/employee-role';
 import type { SelectFilterOption } from '../../types/select-filter';
 import { hasPhoneNumber, isValidPhone } from '../../domain/phone-value';
 
-const props = defineProps<{
-  employee?: EmployeeShapped;
+interface EmployeeFormPanelProps {
+  employee?: Employee.ListItem;
   submitting?: boolean;
-}>();
+}
+
+const props = defineProps<EmployeeFormPanelProps>();
 
 const emit = defineEmits<{
   close: [];
-  submit: [payload: EmployeeCreatePayload];
+  submit: [payload: Employee.CreateCommand];
 }>();
 
 const isEditMode = computed(() => Boolean(props.employee));
@@ -46,7 +44,7 @@ const form = reactive({
   email: '',
   phone: '',
   nif: '',
-  permission: 'EMPLOYEE',
+  role: 'ADMIN',
   status: 'ACTIVE' as EmployeeStatus,
   gender: 'Não informado',
   address: '',
@@ -60,22 +58,20 @@ const form = reactive({
 
 const submitted = ref(false);
 
-const fillForm = (employee: EmployeeShapped) => {
+const fillForm = (employee: Employee.ListItem) => {
   form.name = employee.name;
   form.username = employee.username;
   form.email = employee.email;
-  form.phone = employee.phone;
-  form.nif = employee.nif;
-  form.permission = employee.permission;
+  form.phone = employee.phone ?? '';
+  form.nif = employee.nif ?? '';
+  form.role = employee.role;
   form.status = employee.status;
-  form.gender = employee.gender;
-  form.address = employee.address;
-  form.languages = employee.languages;
-  form.employmentId = employee.employmentId;
+  form.gender = employee.gender ?? 'Não informado';
+  form.address = employee.address ?? '';
+  form.languages = employee.languages ?? 'Português';
+  form.employmentId = employee.employmentId ?? '';
   form.emergencyContact = employee.emergencyContact ?? '';
-  form.jobTitle = employee.jobTitle;
-  form.password = employee.password;
-  form.passwordConfirmation = employee.passwordConfirmation;
+  form.jobTitle = employee.jobTitle ?? '';
   submitted.value = false;
 };
 
@@ -112,7 +108,7 @@ const missingRequired = computed(() => {
   if (form.name.trim().length <= 1) missing.push('Nome completo');
   if (!form.email.trim().includes('@')) missing.push('E-mail');
   if (!isValidPhone(form.phone)) missing.push('Telefone');
-  if (form.permission.trim().length === 0) missing.push('Permissão');
+  if (form.role.trim().length === 0) missing.push('Permissão');
   if (hasEmergencyContact.value && !isValidPhone(form.emergencyContact)) {
     missing.push('Contato de emergência');
   }
@@ -141,13 +137,13 @@ const onSubmit = () => {
   submitted.value = true;
   if (!isValid.value) return;
 
-  const payload: EmployeeCreatePayload = {
+  const payload: Employee.CreateCommand = {
     name: form.name.trim(),
     username: form.username.trim().replace(/^@/, ''),
     email: form.email.trim(),
     phone: form.phone.trim(),
     nif: form.nif.trim(),
-    permission: form.permission,
+    role: form.role,
     status: form.status,
     gender: form.gender,
     address: form.address.trim(),
@@ -156,7 +152,7 @@ const onSubmit = () => {
     emergencyContact: hasEmergencyContact.value ? form.emergencyContact.trim() : '',
     jobTitle: form.jobTitle.trim(),
     password: form.password.trim(),
-   passwordConfirmation: form.passwordConfirmation.trim(),
+    passwordConfirmation: form.passwordConfirmation.trim(),
   };
 
   emit('submit', payload);
@@ -320,7 +316,7 @@ const fieldError = (value: string, min = 1) =>
             <div class="flex flex-col gap-1.5">
               <span class="text-xs text-gray-400">Permissão *</span>
               <SelectFilter
-                v-model="form.permission"
+                v-model="form.role"
                 :options="permissionOptions"
                 variant="field"
                 placement="top"

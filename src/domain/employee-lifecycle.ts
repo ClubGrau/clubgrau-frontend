@@ -3,7 +3,7 @@ import type { EmployeeStatus } from '../types/employee'
 
 export interface LifecycleTarget {
   id: string
-  /** `EmployeeShapped.permission` — the Target's Role. */
+  /** `Employee.Entity.role` — the Target's Role. */
   role: string
   status: EmployeeStatus
 }

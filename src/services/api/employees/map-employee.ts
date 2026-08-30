@@ -1,4 +1,3 @@
-import type { EmployeeShapped } from '../../../types/employee'
 import type { Employee } from '../../../types/employee'
 
 function buildInitials(name: string): string {
@@ -8,29 +7,14 @@ function buildInitials(name: string): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-/** Maps backend employee payload to the UI `Employee` shape. */
-export function mapApiEmployeeToEmployee(apiEmployee: Employee.Entity): EmployeeShapped {
+/** Maps backend employee payload to the list/detail row (Entity + initials). */
+export function mapApiEmployeeToEmployee(entity: Employee.Entity): Employee.ListItem {
   return {
-    id: apiEmployee.id,
-    name: apiEmployee.name,
-    username: apiEmployee.email?.split('@')[0] ?? '',
-    email: apiEmployee.email,
-    phone: apiEmployee.phone ?? '',
-    nif: apiEmployee.nif ?? '',
-    permission: apiEmployee.role,
-    status: apiEmployee.status,
-    initials: buildInitials(apiEmployee.name),
-    gender: '',
-    address: '',
-    languages: '',
-    emergencyContact: '',
-    employmentId: apiEmployee.id,
-    jobTitle: apiEmployee.role,
-    password: '',
-    passwordConfirmation: '',
+    ...entity,
+    initials: buildInitials(entity.name),
   }
 }
 
-export function mapApiEmployeesToEmployees(apiEmployees: Employee.Entity[]): EmployeeShapped[] {
+export function mapApiEmployeesToEmployees(apiEmployees: Employee.Entity[]): Employee.ListItem[] {
   return apiEmployees.map(mapApiEmployeeToEmployee)
 }

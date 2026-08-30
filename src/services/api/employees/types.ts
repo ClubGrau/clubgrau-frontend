@@ -64,7 +64,7 @@ export interface CreateEmployeeParams {
   jobTitle?: string
 }
 
-export type CreateEmployeeResult = Employee.Entity
+export type CreateEmployeeResult = { id: string }
 
 export interface CreateEmployeeApi {
   create(params: CreateEmployeeParams): Promise<CreateEmployeeResult>

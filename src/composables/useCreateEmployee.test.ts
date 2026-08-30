@@ -2,7 +2,7 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp, effectScope } from 'vue'
 import type { CreateEmployeeApi, CreateEmployeeResult } from '../services/api/employees/types'
-import type { EmployeeCreatePayload } from '../types/employee'
+import type { Employee } from '../types/employee'
 import {
   toastMessageForCreateError,
   toCreateEmployeeParams,
@@ -31,14 +31,14 @@ function httpError(status: number, error?: string) {
   }
 }
 
-function payload(overrides: Partial<EmployeeCreatePayload> = {}): EmployeeCreatePayload {
+function payload(overrides: Partial<Employee.CreateCommand> = {}): Employee.CreateCommand {
   return {
     name: 'João Silva',
     username: 'joaosilva',
     email: 'joao@grau.pt',
     phone: '+351912345678',
     nif: '123456789',
-    permission: 'EMPLOYEE',
+    role: 'EMPLOYEE',
     status: 'ACTIVE',
     gender: 'Masculino',
     address: 'Rua das Flores, 123',
@@ -47,22 +47,13 @@ function payload(overrides: Partial<EmployeeCreatePayload> = {}): EmployeeCreate
     employmentId: 'EMP-001',
     jobTitle: 'Barbeiro',
     password: 'senhaSegura123',
-   passwordConfirmation: 'senhaSegura123',
+    passwordConfirmation: 'senhaSegura123',
     ...overrides,
   }
 }
 
 function created(): CreateEmployeeResult {
-  return {
-    id: 'emp-new',
-    name: 'João Silva',
-    email: 'joao@grau.pt',
-    role: 'EMPLOYEE',
-    phone: '+351912345678',
-    nif: '123456789',
-    status: 'ACTIVE',
-    createdAt: '2026-08-29T00:00:00.000Z',
-  }
+  return { id: 'emp-new' }
 }
 
 function withCreate(
@@ -94,7 +85,7 @@ function withCreate(
 }
 
 describe('toCreateEmployeeParams', () => {
-  it('renames permission to role and keeps passwordConfirmation', () => {
+  it('maps role and passwordConfirmation without renaming', () => {
     const params = toCreateEmployeeParams(payload())
 
     expect(params.role).toBe('EMPLOYEE')

@@ -6,7 +6,7 @@ import type {
   GetEmployeesApi,
   GetEmployeesParams,
 } from '../services/api/employees/types'
-import type { EmployeeStatus } from '../types/employee'
+import type { Employee, EmployeeStatus } from '../types/employee'
 import { EMPLOYEE_ROLE_OPTIONS } from '../constants/employee-role'
 
 export type StatusFilter = 'todos' | EmployeeStatus
@@ -66,7 +66,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     queryFn: () => getEmployeesApi.getEmployees(listParams.value),
   })
 
-  const employees = computed(() =>
+  const employees = computed<Employee.ListItem[]>(() =>
     mapApiEmployeesToEmployees(query.data.value?.data ?? []),
   )
 

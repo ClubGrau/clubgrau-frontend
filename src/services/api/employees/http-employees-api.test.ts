@@ -63,16 +63,7 @@ describe('HttpEmployeesApi lifecycle commands', () => {
   })
 
   it('posts create to /api/employee without actorId', async () => {
-    const created = {
-      id: 'emp-new',
-      name: 'João Silva',
-      email: 'joao@grau.pt',
-      role: 'EMPLOYEE',
-      phone: '+351912345678',
-      nif: '123456789',
-      status: 'ACTIVE' as const,
-      createdAt: '2026-08-29T00:00:00.000Z',
-    }
+    const created = { id: 'emp-new' }
     vi.mocked(api.post).mockResolvedValue({ data: created })
 
     const body = {

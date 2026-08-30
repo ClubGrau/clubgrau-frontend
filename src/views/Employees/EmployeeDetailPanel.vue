@@ -4,17 +4,19 @@ import { Icon } from '@iconify/vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import { employeeStatusBadge } from '../../constants/employee-status';
-import type { EmployeeShapped } from '../../types/employee';
+import type { Employee } from '../../types/employee';
 
-const props = defineProps<{
-  employee: EmployeeShapped;
+interface EmployeeDetailPanelProps {
+  employee: Employee.ListItem;
   canGoPrevious?: boolean;
   canGoNext?: boolean;
   canDeactivate?: boolean;
   canReactivate?: boolean;
   canRemove?: boolean;
   reactivating?: boolean;
-}>();
+}
+
+const props = defineProps<EmployeeDetailPanelProps>();
 
 const emit = defineEmits<{
   close: [];
@@ -45,20 +47,20 @@ const tabs: { id: DetailTab; label: string }[] = [
 
 const personalFields = computed(() => [
   { label: 'Nome completo', value: props.employee.name },
-  { label: 'Idiomas', value: props.employee.languages },
-  { label: 'Gênero', value: props.employee.gender },
+  { label: 'Idiomas', value: props.employee.languages ?? '' },
+  { label: 'Gênero', value: props.employee.gender ?? '' },
   {
     label: 'Contato de emergência',
-    value: props.employee.emergencyContact,
+    value: props.employee.emergencyContact ?? '',
     icon: 'carbon:phone',
   },
-  { label: 'Morada', value: props.employee.address, fullWidth: true },
+  { label: 'Morada', value: props.employee.address ?? '', fullWidth: true },
 ]);
 
 const professionalFields = computed(() => [
-  { label: 'Matrícula', value: props.employee.employmentId },
-  { label: 'Cargo', value: props.employee.jobTitle },
-  { label: 'Permissão', value: props.employee.permission },
+  { label: 'Matrícula', value: props.employee.employmentId ?? '' },
+  { label: 'Cargo', value: props.employee.jobTitle ?? '' },
+  { label: 'Permissão', value: props.employee.role },
   { label: 'Status', value: employeeStatusBadge[props.employee.status].label },
 ]);
 </script>
@@ -165,13 +167,13 @@ const professionalFields = computed(() => [
               :variant="employeeStatusBadge[employee.status].variant"
               size="sm"
             />
-            <span class="text-sm text-gray-500">{{ employee.jobTitle }}</span>
+            <span class="text-sm text-gray-500">{{ employee.jobTitle ?? '' }}</span>
           </div>
 
           <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
             <div class="text-sm">
               <span class="text-gray-400">Matrícula: </span>
-              <span class="font-medium text-gray-800">{{ employee.employmentId }}</span>
+              <span class="font-medium text-gray-800">{{ employee.employmentId ?? '' }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">
               <Icon icon="carbon:email" class="size-4 shrink-0 text-gray-400" />
@@ -179,11 +181,11 @@ const professionalFields = computed(() => [
             </div>
             <div class="text-sm">
               <span class="text-gray-400">Permissão: </span>
-              <span class="font-medium text-gray-800">{{ employee.permission }}</span>
+              <span class="font-medium text-gray-800">{{ employee.role }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">
               <Icon icon="carbon:phone" class="size-4 shrink-0 text-gray-400" />
-              <span>{{ employee.phone }}</span>
+              <span>{{ employee.phone ?? '' }}</span>
             </div>
           </div>
         </div>

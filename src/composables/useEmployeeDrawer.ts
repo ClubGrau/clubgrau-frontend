@@ -1,13 +1,13 @@
 import { computed, ref, type Ref } from 'vue'
 import type { EmployeeDrawerState } from '../types/drawer'
-import type { EmployeeShapped, EmployeeStatus } from '../types/employee'
+import type { Employee, EmployeeStatus } from '../types/employee'
 
 export function useEmployeeDrawer(
-  employees: Ref<EmployeeShapped[]>,
-  filteredEmployees: Ref<EmployeeShapped[]>,
+  employees: Ref<Employee.ListItem[]>,
+  filteredEmployees: Ref<Employee.ListItem[]>,
 ) {
   const drawer = ref<EmployeeDrawerState>({ open: false })
-  const targetSnapshot = ref<EmployeeShapped | null>(null)
+  const targetSnapshot = ref<Employee.ListItem | null>(null)
 
   const captureSnapshot = (employeeId: string) => {
     const live = employees.value.find((employee) => employee.id === employeeId)

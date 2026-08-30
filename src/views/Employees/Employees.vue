@@ -15,10 +15,7 @@ import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
 import ModalLayout from '../../components/Modal/ModalLayout.vue';
 import { employeeStatusBadge } from '../../constants/employee-status';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
-import type {
-  EmployeeCreatePayload,
-  EmployeeUpdatePayload,
-} from '../../types/employee';
+import type { Employee } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
 import { useCreateEmployee } from '../../composables/useCreateEmployee';
 import { useEmployeeDrawer } from '../../composables/useEmployeeDrawer';
@@ -38,7 +35,6 @@ import {
   canRemove,
   type LifecycleTarget,
 } from '../../domain/employee-lifecycle';
-import type { EmployeeShapped } from '../../types/employee';
 
 const {
   employees,
@@ -141,9 +137,9 @@ const {
   onRemove: openRemoveDrawer,
 });
 
-const toLifecycleTarget = (employee: EmployeeShapped): LifecycleTarget => ({
+const toLifecycleTarget = (employee: Employee.ListItem): LifecycleTarget => ({
   id: employee.id,
-  role: employee.permission,
+  role: employee.role,
   status: employee.status,
 });
 
@@ -244,11 +240,11 @@ const { create: createEmployee, isCreating } = useCreateEmployee(httpEmployeesAp
   },
 });
 
-const handleCreateEmployee = (payload: EmployeeCreatePayload) => {
+const handleCreateEmployee = (payload: Employee.CreateCommand) => {
   createEmployee(payload);
 };
 
-const handleUpdateEmployee = (_payload: EmployeeUpdatePayload) => {
+const handleUpdateEmployee = (_payload: Employee.CreateCommand) => {
   const employeeId = activeEmployeeId.value;
   if (employeeId === null) return;
 
@@ -414,7 +410,7 @@ const handleRemoveEmployee = (password: string) => {
               </td>
 
               <td class="py-4 pr-4 align-middle text-sm text-gray-700">
-                {{ employeePermission(employee.permission) }}
+                {{ employeePermission(employee.role) }}
               </td>
 
               <td class="py-4 pr-4 align-middle">

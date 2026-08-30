@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { ref } from 'vue'
 import { useEmployeeDrawer } from './useEmployeeDrawer'
-import type { EmployeeShapped } from '../types/employee'
+import type { Employee } from '../types/employee'
 
-function employee(overrides: Partial<EmployeeShapped> = {}): EmployeeShapped {
+function employee(overrides: Partial<Employee.ListItem> = {}): Employee.ListItem {
   return {
     id: 'emp-1',
     name: 'Ana Silva',
@@ -11,8 +11,9 @@ function employee(overrides: Partial<EmployeeShapped> = {}): EmployeeShapped {
     email: 'ana@clubgrau.com',
     phone: '',
     nif: '',
-    permission: 'ADMIN',
+    role: 'ADMIN',
     status: 'ACTIVE',
+    createdAt: '2026-01-01T00:00:00.000Z',
     initials: 'AS',
     gender: '',
     address: '',
@@ -20,15 +21,13 @@ function employee(overrides: Partial<EmployeeShapped> = {}): EmployeeShapped {
     emergencyContact: '',
     employmentId: 'emp-1',
     jobTitle: 'ADMIN',
-    password: '',
-    passwordConfirmation: '',
     ...overrides,
   }
 }
 
 describe('useEmployeeDrawer create', () => {
   it('openCreateDrawer opens in create mode without an employee id', () => {
-    const employees = ref<EmployeeShapped[]>([])
+    const employees = ref<Employee.ListItem[]>([])
     const drawer = useEmployeeDrawer(employees, employees)
 
     drawer.openCreateDrawer()
@@ -39,7 +38,7 @@ describe('useEmployeeDrawer create', () => {
   })
 
   it('closeFormDrawer from create closes the drawer', () => {
-    const employees = ref<EmployeeShapped[]>([])
+    const employees = ref<Employee.ListItem[]>([])
     const drawer = useEmployeeDrawer(employees, employees)
 
     drawer.openCreateDrawer()
