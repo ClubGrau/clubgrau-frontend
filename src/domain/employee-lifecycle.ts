@@ -31,3 +31,11 @@ export function canRemove(actor: Actor | null, target: LifecycleTarget): boolean
   if (actor.id === target.id) return false
   return target.status === 'INACTIVE'
 }
+
+export function lifecycleActions(actor: Actor | null, target: LifecycleTarget) {
+  return {
+    canDeactivate: canDeactivate(actor, target),
+    canReactivate: canReactivate(actor, target),
+    canRemove: canRemove(actor, target),
+  }
+}

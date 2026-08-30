@@ -5,6 +5,7 @@ import {
   canDeactivate,
   canReactivate,
   canRemove,
+  lifecycleActions,
   type LifecycleTarget,
 } from './employee-lifecycle'
 
@@ -108,5 +109,29 @@ describe('employee-lifecycle helper', () => {
   it('ADMIN self-Deactivate may still show', () => {
     const t = target('ADMIN', 'ACTIVE', 'same-id')
     expect(canDeactivate(actor('ADMIN', 'same-id'), t)).toBe(true)
+  })
+
+  describe('lifecycleActions aggregator', () => {
+    it('mirrors the individual flags', () => {
+      const admin = actor('ADMIN')
+      const activeEmployee = target('EMPLOYEE', 'ACTIVE')
+      const inactiveEmployee = target('EMPLOYEE', 'INACTIVE')
+
+      expect(lifecycleActions(admin, activeEmployee)).toEqual({
+        canDeactivate: true,
+        canReactivate: false,
+        canRemove: false,
+      })
+      expect(lifecycleActions(admin, inactiveEmployee)).toEqual({
+        canDeactivate: false,
+        canReactivate: true,
+        canRemove: true,
+      })
+      expect(lifecycleActions(null, activeEmployee)).toEqual({
+        canDeactivate: false,
+        canReactivate: false,
+        canRemove: false,
+      })
+    })
   })
 })
