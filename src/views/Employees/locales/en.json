@@ -1,0 +1,162 @@
+{
+  "title": "Employees",
+  "breadcrumb": {
+    "dashboard": "Dashboard",
+    "employees": "Employees"
+  },
+  "subtitle": "{total} people registered · {ativos} active · {ferias} on vacation",
+  "newEmployee": "New employee",
+  "searchPlaceholder": "Search by name, contacts...",
+  "permissionFilterPlaceholder": "Filter by role",
+  "empty": "No employees found.",
+  "tabs": {
+    "all": "All",
+    "active": "Active",
+    "vacation": "Vacation",
+    "inactive": "Inactive"
+  },
+  "stats": {
+    "total": {
+      "label": "Team total",
+      "description": "Registered in the system"
+    },
+    "active": {
+      "label": "Active",
+      "description": "Available for allocation"
+    },
+    "vacation": {
+      "label": "On vacation",
+      "description": "Registered in the system"
+    },
+    "inactive": {
+      "label": "Inactive",
+      "description": "No system access"
+    }
+  },
+  "table": {
+    "name": "Employee name",
+    "contacts": "Contacts",
+    "nif": "Tax ID",
+    "permission": "Role",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "menu": {
+    "edit": "Edit",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "remove": "Remove"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "deactivate": "Deactivate",
+    "remove": "Remove",
+    "close": "Close"
+  },
+  "toast": {
+    "created": "Employee created.",
+    "deactivated": "Employee deactivated. You can reactivate them from the profile.",
+    "reactivated": "Employee reactivated (same identity).",
+    "removed": "Left the team. The original email is free for a new signup.",
+    "emailInUse": "This email is already in use.",
+    "createValidation": "Could not create the employee. Check the data.",
+    "forbidden": "Action not allowed.",
+    "lastAdmin": "Another active Administrator must exist before this action.",
+    "removeUnauthorized": "Could not confirm your identity. Check your password.",
+    "unexpected": "Could not complete the action. Try again."
+  },
+  "form": {
+    "createTitle": "New employee",
+    "editTitle": "Edit employee",
+    "createSubtitle": "Fill in the details to add a new team member",
+    "editSubtitle": "Update the team member's details",
+    "createSubmit": "Create employee",
+    "editSubmit": "Save changes",
+    "sectionMain": "Main details",
+    "sectionPersonal": "Personal information",
+    "sectionProfessional": "Professional information",
+    "sectionAccess": "Access information",
+    "name": "Full name",
+    "nameRequired": "Full name *",
+    "namePlaceholder": "E.g. Cameron Williamson",
+    "email": "E-mail",
+    "emailRequired": "E-mail *",
+    "emailPlaceholder": "name{'@'}company.pt",
+    "phone": "Phone",
+    "phoneRequired": "Phone *",
+    "phonePlaceholder": "912 345 678",
+    "username": "Username",
+    "usernamePlaceholder": "e.g. cameronw",
+    "gender": "Gender",
+    "genderPlaceholder": "Select gender",
+    "languages": "Languages",
+    "languagesPlaceholder": "Portuguese, English",
+    "emergencyContact": "Emergency contact",
+    "nif": "Tax ID",
+    "nifPlaceholder": "123456789",
+    "address": "Address",
+    "addressPlaceholder": "Street, city, country",
+    "jobTitle": "Job title",
+    "jobTitlePlaceholder": "E.g. UI Designer",
+    "permission": "Role",
+    "permissionRequired": "Role *",
+    "permissionPlaceholder": "Select role",
+    "status": "Status",
+    "statusPlaceholder": "Select status",
+    "employmentId": "Employee ID",
+    "employmentIdPlaceholder": "123456789",
+    "password": "Password",
+    "passwordRequired": "Password *",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordRequired": "Confirm password *",
+    "passwordPlaceholder": "********",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "missingFields": "Fill in the required fields: {fields}.",
+    "passwordAndConfirm": "Password and confirmation",
+    "statusActive": "Active",
+    "statusVacation": "Vacation",
+    "statusInactive": "Inactive",
+    "genderFemale": "Female",
+    "genderMale": "Male",
+    "genderOther": "Other",
+    "genderUnspecified": "Not specified"
+  },
+  "modal": {
+    "deactivateSelfTitle": "Deactivate your account",
+    "deactivateSelfBody": "This action deactivates your own account. You will be signed out and lose access to the system. You will not be able to reactivate yourself.",
+    "deactivateTitle": "Deactivate employee",
+    "deactivateBody": "Deactivate is an operational pause. The person stays on the list, the original email remains taken, and you can reactivate them later.",
+    "removeTitle": "Remove employee",
+    "removeBodyNamed": "This action is irreversible. {name} disappears from the list and the original email is freed. A later signup with that email is a new identity and does not inherit history.",
+    "removeBodyAnonymous": "This action is irreversible. The employee disappears from the list and the original email is freed. A later signup with that email is a new identity and does not inherit history.",
+    "actorPassword": "Your password",
+    "passwordPlaceholder": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "detail": {
+    "previous": "Previous employee",
+    "next": "Next employee",
+    "edit": "Edit",
+    "message": "Message",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "remove": "Remove",
+    "close": "Close",
+    "tabDetails": "Details",
+    "tabPayroll": "Payroll",
+    "personalInfo": "Personal information",
+    "professionalInfo": "Professional information",
+    "payrollSoon": "Payroll coming soon.",
+    "fullName": "Full name",
+    "languages": "Languages",
+    "gender": "Gender",
+    "emergencyContact": "Emergency contact",
+    "address": "Address",
+    "employmentId": "Employee ID",
+    "jobTitle": "Job title",
+    "permission": "Role",
+    "status": "Status"
+  }
+}

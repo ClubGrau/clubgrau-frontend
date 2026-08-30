@@ -1,0 +1,162 @@
+{
+  "title": "Colaboradores",
+  "breadcrumb": {
+    "dashboard": "Dashboard",
+    "employees": "Colaboradores"
+  },
+  "subtitle": "{total} pessoas cadastradas · {ativos} ativas · {ferias} em férias",
+  "newEmployee": "Novo colaborador",
+  "searchPlaceholder": "Busque por Nome, Contatos...",
+  "permissionFilterPlaceholder": "Filtrar por permissão",
+  "empty": "Nenhum colaborador encontrado.",
+  "tabs": {
+    "all": "Todos",
+    "active": "Ativos",
+    "vacation": "Férias",
+    "inactive": "Inativos"
+  },
+  "stats": {
+    "total": {
+      "label": "Total da equipe",
+      "description": "Cadastrados ativos no sistema"
+    },
+    "active": {
+      "label": "Em atividade",
+      "description": "Disponível para alocação"
+    },
+    "vacation": {
+      "label": "Em férias",
+      "description": "Cadastrados ativos no sistema"
+    },
+    "inactive": {
+      "label": "Inativos",
+      "description": "Sem acesso ao sistema"
+    }
+  },
+  "table": {
+    "name": "Nome do colaborador",
+    "contacts": "Contatos",
+    "nif": "Nif",
+    "permission": "Permissão",
+    "status": "Status",
+    "actions": "Ações"
+  },
+  "menu": {
+    "edit": "Editar",
+    "deactivate": "Inativar",
+    "reactivate": "Reativar",
+    "remove": "Remover"
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "deactivate": "Inativar",
+    "remove": "Remover",
+    "close": "Fechar"
+  },
+  "toast": {
+    "created": "Colaborador criado.",
+    "deactivated": "Colaborador inativado. Você pode reativá-lo pelo perfil.",
+    "reactivated": "Colaborador reativado (mesma identidade).",
+    "removed": "Saiu da equipe. O email original está livre para um cadastro novo.",
+    "emailInUse": "Este e-mail já está em uso.",
+    "createValidation": "Não foi possível criar o colaborador. Verifique os dados.",
+    "forbidden": "Ação não permitida.",
+    "lastAdmin": "É preciso existir outro Administrador ativo antes desta ação.",
+    "removeUnauthorized": "Não foi possível confirmar a sua identidade. Verifique a palavra-passe.",
+    "unexpected": "Não foi possível concluir a ação. Tente novamente."
+  },
+  "form": {
+    "createTitle": "Novo colaborador",
+    "editTitle": "Editar colaborador",
+    "createSubtitle": "Preencha os dados para cadastrar um novo membro da equipe",
+    "editSubtitle": "Atualize os dados do membro da equipe",
+    "createSubmit": "Criar colaborador",
+    "editSubmit": "Salvar alterações",
+    "sectionMain": "Dados principais",
+    "sectionPersonal": "Informações pessoais",
+    "sectionProfessional": "Informações profissionais",
+    "sectionAccess": "Informações de acesso",
+    "name": "Nome completo",
+    "nameRequired": "Nome completo *",
+    "namePlaceholder": "Ex: Cameron Williamson",
+    "email": "E-mail",
+    "emailRequired": "E-mail *",
+    "emailPlaceholder": "nome{'@'}empresa.pt",
+    "phone": "Telefone",
+    "phoneRequired": "Telefone *",
+    "phonePlaceholder": "912 345 678",
+    "username": "Username",
+    "usernamePlaceholder": "ex: cameronw",
+    "gender": "Gênero",
+    "genderPlaceholder": "Selecionar gênero",
+    "languages": "Idiomas",
+    "languagesPlaceholder": "Português, Inglês",
+    "emergencyContact": "Contato de emergência",
+    "nif": "NIF",
+    "nifPlaceholder": "123456789",
+    "address": "Morada",
+    "addressPlaceholder": "Rua, cidade, país",
+    "jobTitle": "Cargo",
+    "jobTitlePlaceholder": "Ex: UI Designer",
+    "permission": "Permissão",
+    "permissionRequired": "Permissão *",
+    "permissionPlaceholder": "Selecionar permissão",
+    "status": "Status",
+    "statusPlaceholder": "Selecionar status",
+    "employmentId": "Matrícula",
+    "employmentIdPlaceholder": "123456789",
+    "password": "Senha",
+    "passwordRequired": "Senha *",
+    "confirmPassword": "Confirmar senha",
+    "confirmPasswordRequired": "Confirmar senha *",
+    "passwordPlaceholder": "********",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "missingFields": "Preencha os campos obrigatórios: {fields}.",
+    "passwordAndConfirm": "Senha e confirmação",
+    "statusActive": "Ativo",
+    "statusVacation": "Férias",
+    "statusInactive": "Inativo",
+    "genderFemale": "Feminino",
+    "genderMale": "Masculino",
+    "genderOther": "Outro",
+    "genderUnspecified": "Não informado"
+  },
+  "modal": {
+    "deactivateSelfTitle": "Inativar a sua conta",
+    "deactivateSelfBody": "Esta ação inativa a sua própria conta. Você será desconectado e perderá o acesso ao sistema. Não será possível reativar a si mesmo.",
+    "deactivateTitle": "Inativar colaborador",
+    "deactivateBody": "Inativar é uma parada operacional. A pessoa continua na lista, o email original permanece ocupado e você poderá reativá-la depois.",
+    "removeTitle": "Remover colaborador",
+    "removeBodyNamed": "Esta ação é irreversível. {name} desaparece da lista e o email original fica livre. Um cadastro posterior com esse email é uma nova identidade e não herda o histórico.",
+    "removeBodyAnonymous": "Esta ação é irreversível. O colaborador desaparece da lista e o email original fica livre. Um cadastro posterior com esse email é uma nova identidade e não herda o histórico.",
+    "actorPassword": "A sua palavra-passe",
+    "passwordPlaceholder": "Palavra-passe",
+    "showPassword": "Revelar palavra-passe",
+    "hidePassword": "Ocultar palavra-passe"
+  },
+  "detail": {
+    "previous": "Colaborador anterior",
+    "next": "Próximo colaborador",
+    "edit": "Editar",
+    "message": "Mensagem",
+    "deactivate": "Inativar",
+    "reactivate": "Reativar",
+    "remove": "Remover",
+    "close": "Fechar",
+    "tabDetails": "Detalhes",
+    "tabPayroll": "Folha",
+    "personalInfo": "Informações pessoais",
+    "professionalInfo": "Informações profissionais",
+    "payrollSoon": "Folha de pagamento em breve.",
+    "fullName": "Nome completo",
+    "languages": "Idiomas",
+    "gender": "Gênero",
+    "emergencyContact": "Contato de emergência",
+    "address": "Morada",
+    "employmentId": "Matrícula",
+    "jobTitle": "Cargo",
+    "permission": "Permissão",
+    "status": "Status"
+  }
+}
