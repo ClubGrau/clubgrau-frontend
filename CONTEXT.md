@@ -30,7 +30,7 @@ _Avoid_: permission catalog, ACL, permissão as a separate entity, `/me` as the 
 
 **Actor**:
 The authenticated operator who executes a lifecycle command. Their Role comes from the session (JWT payload). For Remove, the modal asks only for their password (not the Target’s, not `passwordConfirmation`, not the Target’s name typed out).
-_Avoid_: Target password, passwordConfirmation, MANAGER acting on ADMIN
+_Avoid_: Target password,passwordConfirmation, MANAGER acting on ADMIN
 
 **Target**:
 The Collaborator the Actor acts on. On the INACTIVE screen the Target is a candidate for Reactivate or Remove. May be `ADMIN`, `MANAGER`, or `EMPLOYEE` — the Target’s role does not by itself block Remove.
