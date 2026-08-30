@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { VueTelInput } from 'vue-tel-input';
 import type { PhoneObject } from 'vue-tel-input';
+import type { CountryCode } from 'libphonenumber-js';
+import { toNationalPhoneDisplay } from '../../domain/phone-value';
 import 'vue-tel-input/vue-tel-input.css';
 
 const props = withDefaults(
@@ -14,7 +16,7 @@ const props = withDefaults(
     defaultCountry?: string;
   }>(),
   {
-    placeholder: 'Número de telefone',
+    placeholder: '912 345 678',
     disabled: false,
     invalid: false,
     defaultCountry: 'PT',
@@ -31,21 +33,34 @@ const preferredCountries = ['PT', 'BR', 'AO', 'MZ', 'CV', 'GW', 'ST', 'ES', 'FR'
 const inputOptions = computed(() => ({
   id: props.id,
   placeholder: props.placeholder,
-  showDialCode: true,
+  showDialCode: false,
   styleClasses: 'phone-input__field',
 }));
 
 const dropdownOptions = {
   showDialCodeInList: true,
-  showDialCodeInSelection: false,
+  showDialCodeInSelection: true,
   showFlags: true,
   showSearchBox: true,
   searchBoxPlaceholder: 'Buscar país...',
 };
 
+const inputValue = ref('');
+let lastEmitted = '';
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (value === lastEmitted) return;
+    inputValue.value = toNationalPhoneDisplay(value, props.defaultCountry as CountryCode);
+    lastEmitted = value;
+  },
+  { immediate: true },
+);
+
 const onInput = (_number: string, phoneObject: PhoneObject) => {
-  const value = phoneObject.number || phoneObject.formatted || _number || '';
-  emit('update:modelValue', value);
+  lastEmitted = phoneObject.number || '';
+  emit('update:modelValue', lastEmitted);
   emit('validate', Boolean(phoneObject.isValid));
 };
 
@@ -57,8 +72,8 @@ const onValidate = (phoneObject: PhoneObject) => {
 <template>
   <div class="phone-input-root" :class="{ 'is-invalid': invalid }">
     <VueTelInput
-      :model-value="modelValue"
-      mode="international"
+      v-model="inputValue"
+      mode="national"
       :default-country="defaultCountry"
       :auto-default-country="false"
       :auto-format="true"
@@ -124,9 +139,10 @@ const onValidate = (phoneObject: PhoneObject) => {
 .phone-input-root :deep(.vti__selection) {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
   font-size: 0.875rem;
-  color: #374151;
+  color: #6b7280;
+  white-space: nowrap;
 }
 
 .phone-input-root :deep(.vti__dropdown-arrow) {
