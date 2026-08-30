@@ -7,15 +7,13 @@ import type {
   GetEmployeesParams,
 } from '../services/api/employees/types'
 import type { EmployeeStatus } from '../types/employee'
-import type { SelectFilterOption } from '../types/select-filter'
+import { EMPLOYEE_ROLE_OPTIONS } from '../constants/employee-role'
 
 export type StatusFilter = 'todos' | EmployeeStatus
 
-const EMPLOYEE_ROLE_OPTIONS: SelectFilterOption[] = [
+const ROLE_FILTER_OPTIONS = [
   { id: 'all', label: 'Todos', value: '' },
-  { id: 'EMPLOYEE', label: 'Colaborador', value: 'EMPLOYEE' },
-  { id: 'MANAGER', label: 'Gerente', value: 'MANAGER' },
-  { id: 'ADMIN', label: 'Administrador', value: 'ADMIN' },
+  ...EMPLOYEE_ROLE_OPTIONS,
 ]
 
 function toApiStatus(filter: StatusFilter): EmployeeApiStatus | undefined {
@@ -90,7 +88,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     resetToFirstPage()
   }
 
-  const permissionOptions = EMPLOYEE_ROLE_OPTIONS
+  const permissionOptions = ROLE_FILTER_OPTIONS
 
   const stats = computed(() => {
     const ativos = employees.value.filter((e) => e.status === 'ACTIVE').length
