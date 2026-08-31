@@ -68,6 +68,7 @@ describe('HttpEmployeesApi lifecycle commands', () => {
 
     const body = {
       name: 'João Silva',
+      username: 'joaosilva',
       email: 'joao@grau.pt',
       role: 'EMPLOYEE',
       password: 'senhaSegura123',

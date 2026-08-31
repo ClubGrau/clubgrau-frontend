@@ -10,16 +10,31 @@ import type {
 import type { Employee } from '../types/employee'
 import { useToast } from './useToast'
 
-function omitBlank(value: Employee.CreateCommand): CreateEmployeeParams {
-  return Object.fromEntries(
-    Object.entries(value).filter(([, item]) => item !== ''),
-  ) as CreateEmployeeParams
+function omitBlank(value: string | undefined): string | undefined {
+  if (value === undefined || value === '') return
+  return value
 }
 
 export function toCreateEmployeeParams(
   payload: Employee.CreateCommand,
 ): CreateEmployeeParams {
-  return omitBlank(payload)
+  return {
+    name: payload.name,
+    username: payload.username,
+    email: payload.email,
+    role: payload.role,
+    password: payload.password,
+    passwordConfirmation: payload.passwordConfirmation,
+    phone: omitBlank(payload.phone),
+    nif: omitBlank(payload.nif),
+    status: payload.status,
+    gender: omitBlank(payload.gender),
+    address: omitBlank(payload.address),
+    languages: omitBlank(payload.languages),
+    emergencyContact: omitBlank(payload.emergencyContact),
+    employmentId: omitBlank(payload.employmentId),
+    jobTitle: omitBlank(payload.jobTitle),
+  }
 }
 
 export function toastKeyForCreateError(error: unknown): string | null {

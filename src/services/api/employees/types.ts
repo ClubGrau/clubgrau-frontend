@@ -48,6 +48,7 @@ export interface RemoveEmployeeApi {
 
 export interface CreateEmployeeParams {
   name: string
+  username: string
   email: string
   role: string
   password: string
@@ -55,7 +56,6 @@ export interface CreateEmployeeParams {
   phone?: string
   nif?: string
   status?: EmployeeApiStatus
-  username?: string
   gender?: string
   address?: string
   languages?: string
@@ -69,8 +69,3 @@ export type CreateEmployeeResult = { id: string }
 export interface CreateEmployeeApi {
   create(params: CreateEmployeeParams): Promise<CreateEmployeeResult>
 }
-
-export type EmployeesApi = GetEmployeesApi &
-  UpdateEmployeeStatusApi &
-  RemoveEmployeeApi &
-  CreateEmployeeApi

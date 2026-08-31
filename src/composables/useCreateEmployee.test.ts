@@ -95,12 +95,11 @@ describe('toCreateEmployeeParams', () => {
     expect(params).not.toHaveProperty('confirmPassword')
   })
 
-  it('drops empty optional fields', () => {
+  it('drops empty optional fields and keeps required username', () => {
     const params = toCreateEmployeeParams(
       payload({
         phone: '',
         nif: '',
-        username: '',
         address: '',
         emergencyContact: '',
         employmentId: '',
@@ -108,9 +107,9 @@ describe('toCreateEmployeeParams', () => {
       }),
     )
 
+    expect(params.username).toBe('joaosilva')
     expect(params.phone).toBeUndefined()
     expect(params.nif).toBeUndefined()
-    expect(params.username).toBeUndefined()
     expect(params.address).toBeUndefined()
     expect(params.emergencyContact).toBeUndefined()
     expect(params.employmentId).toBeUndefined()
