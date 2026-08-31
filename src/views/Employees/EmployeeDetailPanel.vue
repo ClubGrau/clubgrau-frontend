@@ -48,21 +48,33 @@ const tabs = computed(() => [
   { id: 'payroll' as const, label: t('Employees.detail.tabPayroll') },
 ]);
 
+function optionalDisplay(value: string | undefined): string {
+  if (value === undefined || value.trim() === '') return t('Employees.detail.empty');
+  return value;
+}
+
 const personalFields = computed(() => [
   { label: t('Employees.detail.fullName'), value: props.employee.name },
-  { label: t('Employees.detail.languages'), value: props.employee.languages ?? '' },
-  { label: t('Employees.detail.gender'), value: props.employee.gender ?? '' },
+  { label: t('Employees.detail.languages'), value: optionalDisplay(props.employee.languages) },
+  { label: t('Employees.detail.gender'), value: optionalDisplay(props.employee.gender) },
   {
     label: t('Employees.detail.emergencyContact'),
-    value: props.employee.emergencyContact ?? '',
+    value: optionalDisplay(props.employee.emergencyContact),
     icon: 'carbon:phone',
   },
-  { label: t('Employees.detail.address'), value: props.employee.address ?? '', fullWidth: true },
+  {
+    label: t('Employees.detail.address'),
+    value: optionalDisplay(props.employee.address),
+    fullWidth: true,
+  },
 ]);
 
 const professionalFields = computed(() => [
-  { label: t('Employees.detail.employmentId'), value: props.employee.employmentId ?? '' },
-  { label: t('Employees.detail.jobTitle'), value: props.employee.jobTitle ?? '' },
+  {
+    label: t('Employees.detail.employmentId'),
+    value: optionalDisplay(props.employee.employmentId),
+  },
+  { label: t('Employees.detail.jobTitle'), value: optionalDisplay(props.employee.jobTitle) },
   { label: t('Employees.detail.permission'), value: props.employee.role },
   { label: t('Employees.detail.status'), value: employeeStatusBadge[props.employee.status].label },
 ]);
@@ -170,13 +182,13 @@ const professionalFields = computed(() => [
               :variant="employeeStatusBadge[employee.status].variant"
               size="sm"
             />
-            <span class="text-sm text-gray-500">{{ employee.jobTitle ?? '' }}</span>
+            <span class="text-sm text-gray-500">{{ optionalDisplay(employee.jobTitle) }}</span>
           </div>
 
           <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
             <div class="text-sm">
               <span class="text-gray-400">{{ t('Employees.detail.employmentId') }}: </span>
-              <span class="font-medium text-gray-800">{{ employee.employmentId ?? '' }}</span>
+              <span class="font-medium text-gray-800">{{ optionalDisplay(employee.employmentId) }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">
               <Icon icon="carbon:email" class="size-4 shrink-0 text-gray-400" />
@@ -188,7 +200,7 @@ const professionalFields = computed(() => [
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">
               <Icon icon="carbon:phone" class="size-4 shrink-0 text-gray-400" />
-              <span>{{ employee.phone ?? '' }}</span>
+              <span>{{ optionalDisplay(employee.phone) }}</span>
             </div>
           </div>
         </div>
