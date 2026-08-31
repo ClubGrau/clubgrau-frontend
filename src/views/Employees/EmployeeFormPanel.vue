@@ -62,20 +62,24 @@ const form = reactive({
 
 const submitted = ref(false);
 
+function formText(value: string | null | undefined): string {
+  return value ?? '';
+}
+
 const fillForm = (employee: Employee.ListItem) => {
-  form.name = employee.name;
-  form.username = employee.username;
-  form.email = employee.email;
-  form.phone = employee.phone ?? '';
-  form.nif = employee.nif ?? '';
-  form.role = employee.role;
-  form.status = employee.status;
-  form.gender = employee.gender ?? 'Não informado';
-  form.address = employee.address ?? '';
-  form.languages = employee.languages ?? 'Português';
-  form.employmentId = employee.employmentId ?? '';
-  form.emergencyContact = employee.emergencyContact ?? '';
-  form.jobTitle = employee.jobTitle ?? '';
+  form.name = formText(employee.name);
+  form.username = formText(employee.username);
+  form.email = formText(employee.email);
+  form.phone = formText(employee.phone);
+  form.nif = formText(employee.nif);
+  form.role = formText(employee.role);
+  form.status = employee.status ?? 'ACTIVE';
+  form.gender = formText(employee.gender);
+  form.address = formText(employee.address);
+  form.languages = formText(employee.languages);
+  form.employmentId = formText(employee.employmentId);
+  form.emergencyContact = formText(employee.emergencyContact);
+  form.jobTitle = formText(employee.jobTitle);
   submitted.value = false;
 };
 
@@ -91,37 +95,28 @@ const passwordsMatch = computed(
   () => form.password.trim() === form.passwordConfirmation.trim(),
 );
 
-const passwordFilled = computed(
-  () => Boolean(form.password.trim() || form.passwordConfirmation.trim()),
-);
-
 const hasEmergencyContact = computed(() => hasPhoneNumber(form.emergencyContact));
 
 const emergencyPhoneInvalid = computed(
   () => submitted.value && hasEmergencyContact.value && !isValidPhone(form.emergencyContact),
 );
 
-const passwordOk = computed(() =>
-  isEditMode.value
-    ? !passwordFilled.value || (passwordsMatch.value && form.password.trim().length >= 6)
-    : form.password.trim().length >= 6 && passwordsMatch.value,
+const passwordOk = computed(
+  () => form.password.trim().length >= 6 && passwordsMatch.value,
 );
 
 const missingRequired = computed(() => {
   const missing: string[] = [];
   if (form.name.trim().length <= 1) missing.push(t('Employees.form.name'));
+  if (!formText(form.username).trim().replace(/^@/, '')) missing.push(t('Employees.form.username'));
   if (!form.email.trim().includes('@')) missing.push(t('Employees.form.email'));
   if (!isValidPhone(form.phone)) missing.push(t('Employees.form.phone'));
   if (form.role.trim().length === 0) missing.push(t('Employees.form.permission'));
   if (hasEmergencyContact.value && !isValidPhone(form.emergencyContact)) {
     missing.push(t('Employees.form.emergencyContact'));
   }
-  if (!passwordOk.value) {
-    missing.push(
-      isEditMode.value
-        ? t('Employees.form.password')
-        : t('Employees.form.passwordAndConfirm'),
-    );
+  if (!isEditMode.value && !passwordOk.value) {
+    missing.push(t('Employees.form.passwordAndConfirm'));
   }
   return missing;
 });
@@ -142,36 +137,51 @@ const submitLabel = computed(() =>
   isEditMode.value ? t('Employees.form.editSubmit') : t('Employees.form.createSubmit'),
 );
 
+function omitBlank(value: string): string | undefined {
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
 const onSubmit = () => {
   if (props.submitting) return;
   submitted.value = true;
   if (!isValid.value) return;
 
-  const fields: Employee.UpdateCommand = {
-    name: form.name.trim(),
-    username: form.username.trim().replace(/^@/, ''),
-    email: form.email.trim(),
-    phone: form.phone.trim(),
-    nif: form.nif.trim(),
-    role: form.role,
+  const username = formText(form.username).trim().replace(/^@/, '');
+  const optionals = {
+    phone: omitBlank(form.phone),
+    nif: omitBlank(form.nif),
     status: form.status,
-    gender: form.gender,
-    address: form.address.trim(),
-    languages: form.languages.trim() || 'Português',
-    employmentId: form.employmentId.trim(),
-    emergencyContact: hasEmergencyContact.value ? form.emergencyContact.trim() : '',
-    jobTitle: form.jobTitle.trim(),
+    gender: omitBlank(form.gender),
+    address: omitBlank(form.address),
+    languages: omitBlank(form.languages),
+    emergencyContact: hasEmergencyContact.value
+      ? form.emergencyContact.trim()
+      : undefined,
+    employmentId: omitBlank(form.employmentId),
+    jobTitle: omitBlank(form.jobTitle),
   };
 
-  if (isEditMode.value) {
-    emit('update', fields);
+  if (isEditMode.value && props.employee) {
+    emit('update', {
+      id: props.employee.id,
+      name: form.name.trim(),
+      username,
+      email: form.email.trim(),
+      role: form.role,
+      ...optionals,
+    });
     return;
   }
 
   emit('create', {
-    ...fields,
+    name: form.name.trim(),
+    username,
+    email: form.email.trim(),
+    role: form.role,
     password: form.password.trim(),
     passwordConfirmation: form.passwordConfirmation.trim(),
+    ...optionals,
   });
 };
 
@@ -248,7 +258,7 @@ const fieldError = (value: string, min = 1) =>
 
             <div class="flex flex-col gap-1.5">
               <label for="create-username" class="text-xs text-gray-400">
-                {{ t('Employees.form.username') }}
+                {{ t('Employees.form.usernameRequired') }}
               </label>
               <input
                 id="create-username"
@@ -256,6 +266,7 @@ const fieldError = (value: string, min = 1) =>
                 type="text"
                 :placeholder="t('Employees.form.usernamePlaceholder')"
                 class="form-input"
+                :class="{ 'form-input-error': fieldError(formText(form.username).replace(/^@/, '')) }"
               />
             </div>
           </div>
@@ -390,7 +401,10 @@ const fieldError = (value: string, min = 1) =>
           </div>
         </section>
 
-        <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <section
+          v-if="!isEditMode"
+          class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
+        >
           <h3 class="mb-4 text-base font-semibold text-gray-900">
             {{ t('Employees.form.sectionAccess') }}
           </h3>
@@ -398,7 +412,7 @@ const fieldError = (value: string, min = 1) =>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="flex flex-col gap-1.5">
               <label for="create-password" class="text-xs text-gray-400">
-                {{ isEditMode ? t('Employees.form.password') : t('Employees.form.passwordRequired') }}
+                {{ t('Employees.form.passwordRequired') }}
               </label>
               <PasswordInput
                 id="create-password"
@@ -408,22 +422,13 @@ const fieldError = (value: string, min = 1) =>
                 :placeholder="t('Employees.form.passwordPlaceholder')"
                 :show-label="t('Employees.form.showPassword')"
                 :hide-label="t('Employees.form.hidePassword')"
-                :invalid="
-                  submitted &&
-                  (!isEditMode
-                    ? form.password.trim().length < 6
-                    : passwordFilled && form.password.trim().length < 6)
-                "
+                :invalid="submitted && form.password.trim().length < 6"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
               <label for="create-confirm-password" class="text-xs text-gray-400">
-                {{
-                  isEditMode
-                    ? t('Employees.form.confirmPassword')
-                    : t('Employees.form.confirmPasswordRequired')
-                }}
+                {{ t('Employees.form.confirmPasswordRequired') }}
               </label>
               <PasswordInput
                 id="create-confirm-password"
@@ -435,9 +440,7 @@ const fieldError = (value: string, min = 1) =>
                 :hide-label="t('Employees.form.hidePassword')"
                 :invalid="
                   submitted &&
-                  (!isEditMode
-                    ? !passwordsMatch || form.passwordConfirmation.trim().length < 6
-                    : passwordFilled && !passwordsMatch)
+                  (!passwordsMatch || form.passwordConfirmation.trim().length < 6)
                 "
               />
             </div>

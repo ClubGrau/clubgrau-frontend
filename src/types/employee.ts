@@ -43,6 +43,21 @@ export namespace Employee {
     jobTitle?: string;
   }
 
-  /** Payload do formulário de edição — CreateCommand sem senha. */
-  export type UpdateCommand = Omit<CreateCommand, 'password' | 'passwordConfirmation'>;
+  /** Payload do formulário de edição — alvo + dados; senha não entra. */
+  export interface UpdateCommand {
+    id: string;
+    name: string;
+    username: string;
+    email: string;
+    role: string;
+    phone?: string;
+    nif?: string;
+    status?: EmployeeStatus;
+    gender?: string;
+    address?: string;
+    languages?: string;
+    emergencyContact?: string;
+    employmentId?: string;
+    jobTitle?: string;
+  }
 }

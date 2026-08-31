@@ -52,7 +52,6 @@ const {
   permissionOptions,
   stats,
   total,
-  refetch,
 } = useEmployees(httpEmployeesApi);
 
 const {
@@ -235,12 +234,8 @@ const handleCreateEmployee = (payload: Employee.CreateCommand) => {
   createEmployee(payload);
 };
 
-const handleUpdateEmployee = (_payload: Employee.UpdateCommand) => {
-  const employeeId = activeEmployeeId.value;
-  if (employeeId === null) return;
-
-  openDetailDrawer(employeeId);
-  void refetch();
+const handleUpdateEmployee = (payload: Employee.UpdateCommand) => {
+  openDetailDrawer(payload.id);
 };
 
 const onEmployeeRowClick = (event: MouseEvent, id: string) => {
