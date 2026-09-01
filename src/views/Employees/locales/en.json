@@ -4,10 +4,10 @@
     "dashboard": "Dashboard",
     "employees": "Employees"
   },
-  "subtitle": "{total} people registered · {ativos} active · {ferias} on vacation",
+  "subtitle": "{total} people registered",
   "newEmployee": "New employee",
   "searchPlaceholder": "Search by name, contacts...",
-  "permissionFilterPlaceholder": "Filter by role",
+  "roleFilterPlaceholder": "Filter by role",
   "empty": "No employees found.",
   "tabs": {
     "all": "All",
@@ -18,26 +18,14 @@
   "stats": {
     "total": {
       "label": "Team total",
-      "description": "Registered in the system"
-    },
-    "active": {
-      "label": "Active",
-      "description": "Available for allocation"
-    },
-    "vacation": {
-      "label": "On vacation",
-      "description": "Registered in the system"
-    },
-    "inactive": {
-      "label": "Inactive",
-      "description": "No system access"
+      "description": "Results for the current filters"
     }
   },
   "table": {
     "name": "Employee name",
     "contacts": "Contacts",
     "nif": "Tax ID",
-    "permission": "Role",
+    "role": "Role",
     "status": "Status",
     "actions": "Actions"
   },
@@ -99,9 +87,9 @@
     "addressPlaceholder": "Street, city, country",
     "jobTitle": "Job title",
     "jobTitlePlaceholder": "E.g. UI Designer",
-    "permission": "Role",
-    "permissionRequired": "Role *",
-    "permissionPlaceholder": "Select role",
+    "role": "Role",
+    "roleRequired": "Role *",
+    "rolePlaceholder": "Select role",
     "status": "Status",
     "statusPlaceholder": "Select status",
     "employmentId": "Employee ID",
@@ -157,7 +145,7 @@
     "address": "Address",
     "employmentId": "Employee ID",
     "jobTitle": "Job title",
-    "permission": "Role",
+    "role": "Role",
     "status": "Status",
     "empty": "—"
   }

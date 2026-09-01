@@ -27,7 +27,7 @@ const { t } = useI18n();
 
 const isEditMode = computed(() => Boolean(props.employee));
 
-const permissionOptions = EMPLOYEE_ROLE_OPTIONS;
+const roleOptions = EMPLOYEE_ROLE_OPTIONS;
 
 const statusOptions = computed<SelectFilterOption[]>(() => [
   { id: 'ACTIVE', label: t('Employees.form.statusActive'), value: 'ACTIVE' },
@@ -111,7 +111,7 @@ const missingRequired = computed(() => {
   if (!formText(form.username).trim().replace(/^@/, '')) missing.push(t('Employees.form.username'));
   if (!form.email.trim().includes('@')) missing.push(t('Employees.form.email'));
   if (!isValidPhone(form.phone)) missing.push(t('Employees.form.phone'));
-  if (form.role.trim().length === 0) missing.push(t('Employees.form.permission'));
+  if (form.role.trim().length === 0) missing.push(t('Employees.form.role'));
   if (hasEmergencyContact.value && !isValidPhone(form.emergencyContact)) {
     missing.push(t('Employees.form.emergencyContact'));
   }
@@ -363,14 +363,14 @@ const fieldError = (value: string, min = 1) =>
 
             <div class="flex flex-col gap-1.5">
               <span class="text-xs text-gray-400">
-                {{ t('Employees.form.permissionRequired') }}
+                {{ t('Employees.form.roleRequired') }}
               </span>
               <SelectFilter
                 v-model="form.role"
-                :options="permissionOptions"
+                :options="roleOptions"
                 variant="field"
                 placement="top"
-                :placeholder="t('Employees.form.permissionPlaceholder')"
+                :placeholder="t('Employees.form.rolePlaceholder')"
               />
             </div>
 

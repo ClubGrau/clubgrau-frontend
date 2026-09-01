@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
@@ -16,53 +15,34 @@ import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
 import ModalLayout from '../../components/Modal/ModalLayout.vue';
 import { employeeStatusBadge } from '../../constants/employee-status';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
-import type { Employee } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
-import { useCreateEmployee } from '../../composables/useCreateEmployee';
-import { useDeactivateEmployee } from '../../composables/useDeactivateEmployee';
-import { useEmployeeDrawer } from '../../composables/useEmployeeDrawer';
-import { useEmployeeSelection } from '../../composables/useEmployeeSelection';
-import { useReactivateEmployee } from '../../composables/useReactivateEmployee';
-import { useRemoveEmployee } from '../../composables/useRemoveEmployee';
 import {
-  useEmployees,
+  useEmployeesScreen,
   type StatusFilter,
-} from '../../composables/useEmployees';
-import { httpEmployeesApi } from '../../services/api/employees/http-employees-api';
+} from '../../composables/useEmployeesScreen';
 import InactivateModal from '../../components/Modal/InactivateModal.vue';
 import RemoveEmployeeModal from '../../components/Modal/RemoveEmployeeModal.vue';
-import { useAuthStore } from '../../stores/auth';
-import {
-  lifecycleActions,
-  type LifecycleTarget,
-} from '../../domain/employee-lifecycle';
 
 const { t } = useI18n();
 
 const {
-  employees,
   filteredEmployees,
   pageSize,
   currentPage,
   statusFilter,
   setStatusFilter,
   searchQuery,
-  permissionFilter,
-  onPermissionFilterChange,
-  permissionOptions,
-  stats,
+  roleFilter,
+  onRoleFilterChange,
+  roleOptions,
   total,
-} = useEmployees(httpEmployeesApi);
-
-const {
+  canCreate,
   drawer,
   isCreateDrawerOpen,
   isEditDrawerOpen,
   activeEmployeeId,
-  selectedEmployee,
   detailEmployee,
   editEmployee,
-  targetSnapshot,
   isDeactivateModalOpen,
   isRemoveModalOpen,
   modalWidthClass,
@@ -70,106 +50,37 @@ const {
   canGoNextEmployee,
   drawerWidthClass,
   openCreateDrawer,
-  openDetailDrawer,
   openEditDrawer,
   openInactivateDrawer,
   openRemoveDrawer,
-  patchSnapshotStatus,
   closeDrawer,
   closeModal,
   closeFormDrawer,
   goToPreviousEmployee,
   goToNextEmployee,
-} = useEmployeeDrawer(employees, filteredEmployees);
-
-const authStore = useAuthStore();
-const router = useRouter();
-
-const { deactivate, isDeactivating } = useDeactivateEmployee(httpEmployeesApi, {
-  getActorId: () => authStore.actor?.id ?? null,
-  onStatusChanged: () => {
-    closeDrawer();
-  },
-  onSelfDeactivated: () => {
-    authStore.logout();
-    void router.push('/login');
-  },
-});
-
-const { reactivate, isReactivating } = useReactivateEmployee(httpEmployeesApi, {
-  onReactivated: (result) => {
-    if (activeEmployeeId.value !== result.id) openDetailDrawer(result.id);
-    patchSnapshotStatus(result.status);
-  },
-});
-
-const { remove, isRemoving, removeError } = useRemoveEmployee(httpEmployeesApi, {
-  onRemoved: () => {
-    closeDrawer();
-  },
-  onRemoveConflict: (id) => {
-    openDetailDrawer(id);
-  },
-});
-
-const removeEmployeeName = computed(
-  () => targetSnapshot.value?.name ?? selectedEmployee.value?.name ?? '',
-);
-
-watch(isRemoveModalOpen, (open) => {
-  if (open) removeError.value = null;
-});
-
-const {
   openActionsId,
   actionsMenuStyle,
-  isSelected,
-  toggleSelect,
   toggleActionsMenu,
   onEditAction,
   onDeactivateAction,
   onReactivateAction,
   onRemoveAction,
-} = useEmployeeSelection({
-  onEdit: openEditDrawer,
-  onDeactivate: openInactivateDrawer,
-  onReactivate: reactivate,
-  onRemove: openRemoveDrawer,
-});
-
-const toLifecycleTarget = (employee: Employee.ListItem): LifecycleTarget => ({
-  id: employee.id,
-  role: employee.role,
-  status: employee.status,
-});
-
-const menuEmployee = computed(() =>
-  openActionsId.value
-    ? employees.value.find((employee) => employee.id === openActionsId.value) ?? null
-    : null,
-);
-
-const noLifecycleActions = {
-  canDeactivate: false,
-  canReactivate: false,
-  canRemove: false,
-};
-
-const menuActions = computed(() =>
-  menuEmployee.value
-    ? lifecycleActions(authStore.actor, toLifecycleTarget(menuEmployee.value))
-    : noLifecycleActions,
-);
-
-const detailActions = computed(() =>
-  detailEmployee.value
-    ? lifecycleActions(authStore.actor, toLifecycleTarget(detailEmployee.value))
-    : noLifecycleActions,
-);
-
-const isSelfDeactivate = computed(
-  () => activeEmployeeId.value === authStore.actor?.id,
-);
+  isDeactivating,
+  reactivate,
+  isReactivating,
+  isRemoving,
+  removeError,
+  isCreating,
+  menuActions,
+  detailActions,
+  isSelfDeactivate,
+  removeEmployeeName,
+  handleCreateEmployee,
+  handleUpdateEmployee,
+  onEmployeeRowClick,
+  handleInactivateEmployee,
+  handleRemoveEmployee,
+} = useEmployeesScreen();
 
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => [
   { id: 'dashboard', label: t('Employees.breadcrumb.dashboard'), to: '/app/dashboard' },
@@ -177,42 +88,19 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => [
 ]);
 
 const informationSubtitle = computed(() =>
-  t('Employees.subtitle', {
-    total: stats.value.total,
-    ativos: stats.value.ativos,
-    ferias: stats.value.ferias,
-  }),
+  t('Employees.subtitle', { total: total.value }),
 );
 
-const employeePermission = (permission: string) => {
-  return permissionOptions.find((option) => option.value === permission)?.label
+const employeeRole = (role: string) => {
+  return roleOptions.find((option) => option.value === role)?.label;
 };
 
 const statCards = computed<StatCardItem[]>(() => [
   {
     id: 'total',
     label: t('Employees.stats.total.label'),
-    value: stats.value.total,
+    value: total.value,
     description: t('Employees.stats.total.description'),
-  },
-  {
-    id: 'active',
-    label: t('Employees.stats.active.label'),
-    value: stats.value.ativos,
-    description: t('Employees.stats.active.description'),
-  },
-  {
-    id: 'vacation',
-    label: t('Employees.stats.vacation.label'),
-    value: stats.value.ferias,
-    description: t('Employees.stats.vacation.description'),
-  },
-  {
-    id: 'inactive',
-    label: t('Employees.stats.inactive.label'),
-    value: stats.value.inativos,
-    description: t('Employees.stats.inactive.description'),
-    variant: 'danger',
   },
 ]);
 
@@ -222,36 +110,6 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
   { label: t('Employees.tabs.vacation'), value: 'VACATION' },
   { label: t('Employees.tabs.inactive'), value: 'INACTIVE' },
 ]);
-
-const { create: createEmployee, isCreating } = useCreateEmployee(httpEmployeesApi, {
-  onCreated: () => {
-    currentPage.value = 1;
-    closeDrawer();
-  },
-});
-
-const handleCreateEmployee = (payload: Employee.CreateCommand) => {
-  createEmployee(payload);
-};
-
-const handleUpdateEmployee = (payload: Employee.UpdateCommand) => {
-  openDetailDrawer(payload.id);
-};
-
-const onEmployeeRowClick = (event: MouseEvent, id: string) => {
-  const target = event.target as HTMLElement | null;
-  if (target?.closest('[data-row-action]')) return;
-  openDetailDrawer(id);
-};
-
-const handleInactivateEmployee = (employeeId: string) => {
-  if (!employeeId) return;
-  deactivate(employeeId);
-};
-
-const handleRemoveEmployee = (password: string) => {
-  remove({ id: activeEmployeeId.value ?? '', password });
-};
 </script>
 
 <template>
@@ -264,6 +122,7 @@ const handleRemoveEmployee = (password: string) => {
     >
       <template #actions>
         <button
+          v-if="canCreate"
           type="button"
           class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
           @click="openCreateDrawer"
@@ -274,7 +133,7 @@ const handleRemoveEmployee = (password: string) => {
       </template>
     </PageHeader>
 
-    <div class="mb-6 grid grid-cols-4 gap-4">
+    <div class="mb-6 max-w-xs">
       <StatCard
         v-for="card in statCards"
         :key="card.id"
@@ -316,11 +175,11 @@ const handleRemoveEmployee = (password: string) => {
         </div>
 
         <SelectFilter
-          v-model="permissionFilter"
-          :options="permissionOptions"
-          :placeholder="t('Employees.permissionFilterPlaceholder')"
+          v-model="roleFilter"
+          :options="roleOptions"
+          :placeholder="t('Employees.roleFilterPlaceholder')"
           variant="pill"
-          @change="onPermissionFilterChange"
+          @change="onRoleFilterChange"
         />
       </div>
 
@@ -328,11 +187,10 @@ const handleRemoveEmployee = (password: string) => {
         <table class="w-full min-w-225 border-collapse text-left">
           <thead>
             <tr class="border-b border-gray-100 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
-              <th class="w-10 py-3 pr-2 font-semibold"></th>
               <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.name') }}</th>
               <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.contacts') }}</th>
               <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.nif') }}</th>
-              <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.permission') }}</th>
+              <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.role') }}</th>
               <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.status') }}</th>
               <th class="py-3 pl-2 text-right font-semibold">{{ t('Employees.table.actions') }}</th>
             </tr>
@@ -344,24 +202,6 @@ const handleRemoveEmployee = (password: string) => {
               class="cursor-pointer border-b border-gray-50 last:border-b-0 hover:bg-gray-50/80"
               @click="onEmployeeRowClick($event, employee.id)"
             >
-              <td class="py-4 pr-2 align-middle" data-row-action>
-                <button
-                  type="button"
-                  class="flex size-4 cursor-pointer items-center justify-center rounded-full border transition-colors"
-                  :class="
-                    isSelected(employee.id)
-                      ? 'border-[#2f6f73] bg-[#2f6f73]'
-                      : 'border-[#2f6f73] bg-transparent'
-                  "
-                  @click="toggleSelect(employee.id)"
-                >
-                  <span
-                    v-if="isSelected(employee.id)"
-                    class="size-1.5 rounded-full bg-white"
-                  />
-                </button>
-              </td>
-
               <td class="py-4 pr-4 align-middle">
                 <div class="flex items-center gap-3">
                   <UserAvatar
@@ -396,7 +236,7 @@ const handleRemoveEmployee = (password: string) => {
               </td>
 
               <td class="py-4 pr-4 align-middle text-sm text-gray-700">
-                {{ employeePermission(employee.role) }}
+                {{ employeeRole(employee.role) }}
               </td>
 
               <td class="py-4 pr-4 align-middle">
@@ -424,7 +264,7 @@ const handleRemoveEmployee = (password: string) => {
             </tr>
 
             <tr v-if="filteredEmployees.length === 0">
-              <td colspan="7" class="py-12 text-center text-sm text-gray-400">
+              <td colspan="6" class="py-12 text-center text-sm text-gray-400">
                 {{ t('Employees.empty') }}
               </td>
             </tr>

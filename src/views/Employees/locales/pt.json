@@ -4,10 +4,10 @@
     "dashboard": "Dashboard",
     "employees": "Colaboradores"
   },
-  "subtitle": "{total} pessoas cadastradas · {ativos} ativas · {ferias} em férias",
+  "subtitle": "{total} pessoas cadastradas",
   "newEmployee": "Novo colaborador",
   "searchPlaceholder": "Busque por Nome, Contatos...",
-  "permissionFilterPlaceholder": "Filtrar por permissão",
+  "roleFilterPlaceholder": "Filtrar por função",
   "empty": "Nenhum colaborador encontrado.",
   "tabs": {
     "all": "Todos",
@@ -18,26 +18,14 @@
   "stats": {
     "total": {
       "label": "Total da equipe",
-      "description": "Cadastrados ativos no sistema"
-    },
-    "active": {
-      "label": "Em atividade",
-      "description": "Disponível para alocação"
-    },
-    "vacation": {
-      "label": "Em férias",
-      "description": "Cadastrados ativos no sistema"
-    },
-    "inactive": {
-      "label": "Inativos",
-      "description": "Sem acesso ao sistema"
+      "description": "Resultados para os filtros atuais"
     }
   },
   "table": {
     "name": "Nome do colaborador",
     "contacts": "Contatos",
     "nif": "Nif",
-    "permission": "Permissão",
+    "role": "Função",
     "status": "Status",
     "actions": "Ações"
   },
@@ -99,9 +87,9 @@
     "addressPlaceholder": "Rua, cidade, país",
     "jobTitle": "Cargo",
     "jobTitlePlaceholder": "Ex: UI Designer",
-    "permission": "Permissão",
-    "permissionRequired": "Permissão *",
-    "permissionPlaceholder": "Selecionar permissão",
+    "role": "Função",
+    "roleRequired": "Função *",
+    "rolePlaceholder": "Selecionar função",
     "status": "Status",
     "statusPlaceholder": "Selecionar status",
     "employmentId": "Matrícula",
@@ -157,7 +145,7 @@
     "address": "Morada",
     "employmentId": "Matrícula",
     "jobTitle": "Cargo",
-    "permission": "Permissão",
+    "role": "Função",
     "status": "Status",
     "empty": "—"
   }

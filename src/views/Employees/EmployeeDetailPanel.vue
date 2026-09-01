@@ -75,7 +75,7 @@ const professionalFields = computed(() => [
     value: optionalDisplay(props.employee.employmentId),
   },
   { label: t('Employees.detail.jobTitle'), value: optionalDisplay(props.employee.jobTitle) },
-  { label: t('Employees.detail.permission'), value: props.employee.role },
+  { label: t('Employees.detail.role'), value: props.employee.role },
   { label: t('Employees.detail.status'), value: employeeStatusBadge[props.employee.status].label },
 ]);
 </script>
@@ -195,7 +195,7 @@ const professionalFields = computed(() => [
               <span class="truncate">{{ employee.email }}</span>
             </div>
             <div class="text-sm">
-              <span class="text-gray-400">{{ t('Employees.detail.permission') }}: </span>
+              <span class="text-gray-400">{{ t('Employees.detail.role') }}: </span>
               <span class="font-medium text-gray-800">{{ employee.role }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-gray-700">

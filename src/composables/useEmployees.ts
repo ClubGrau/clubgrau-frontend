@@ -1,6 +1,5 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { mapApiEmployeesToEmployees } from '../services/api/employees/map-employee'
 import { employeeQueryKeys } from '../services/api/employees/query-keys'
 import type {
   EmployeeApiStatus,
@@ -28,7 +27,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
   const statusFilter = ref<StatusFilter>('todos')
   const searchQuery = ref('')
   const debouncedSearch = ref('')
-  const permissionFilter = ref('')
+  const roleFilter = ref('')
 
   let searchTimeout: ReturnType<typeof setTimeout> | undefined
 
@@ -54,7 +53,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     const status = toApiStatus(statusFilter.value)
     if (status) params.status = status
 
-    if (permissionFilter.value) params.role = permissionFilter.value
+    if (roleFilter.value) params.role = roleFilter.value
 
     const search = debouncedSearch.value.trim()
     if (search) params.search = search
@@ -67,9 +66,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     queryFn: () => getEmployeesApi.getEmployees(listParams.value),
   })
 
-  const employees = computed<Employee.ListItem[]>(() =>
-    mapApiEmployeesToEmployees(query.data.value?.data ?? []),
-  )
+  const employees = computed<Employee.ListItem[]>(() => query.data.value?.data ?? [])
 
   // Lista já vem filtrada/paginada do backend.
   const filteredEmployees = computed(() => employees.value)
@@ -85,19 +82,11 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     resetToFirstPage()
   }
 
-  const onPermissionFilterChange = () => {
+  const onRoleFilterChange = () => {
     resetToFirstPage()
   }
 
-  const permissionOptions = ROLE_FILTER_OPTIONS
-
-  const stats = computed(() => {
-    const ativos = employees.value.filter((e) => e.status === 'ACTIVE').length
-    const ferias = employees.value.filter((e) => e.status === 'VACATION').length
-    const inativos = employees.value.filter((e) => e.status === 'INACTIVE').length
-
-    return { total: total.value, ativos, ferias, inativos }
-  })
+  const roleOptions = ROLE_FILTER_OPTIONS
 
   return {
     employees,
@@ -107,10 +96,9 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     statusFilter,
     setStatusFilter,
     searchQuery,
-    permissionFilter,
-    onPermissionFilterChange,
-    permissionOptions,
-    stats,
+    roleFilter,
+    onRoleFilterChange,
+    roleOptions,
     total,
     isLoading: query.isLoading,
     isError: query.isError,

@@ -11,19 +11,8 @@ const ACTIONS_MENU_HEIGHT = 96
 const ACTIONS_MENU_GAP = 4
 
 export function useEmployeeSelection(options: UseEmployeeSelectionOptions = {}) {
-  const selectedIds = ref<string[]>([])
   const openActionsId = ref<string | null>(null)
   const actionsMenuStyle = ref<CSSProperties>({})
-
-  const isSelected = (id: string) => selectedIds.value.includes(id)
-
-  const toggleSelect = (id: string) => {
-    if (isSelected(id)) {
-      selectedIds.value = selectedIds.value.filter((selectedId) => selectedId !== id)
-      return
-    }
-    selectedIds.value = [...selectedIds.value, id]
-  }
 
   const closeActionsMenu = () => {
     openActionsId.value = null
@@ -99,11 +88,8 @@ export function useEmployeeSelection(options: UseEmployeeSelectionOptions = {}) 
   })
 
   return {
-    selectedIds,
     openActionsId,
     actionsMenuStyle,
-    isSelected,
-    toggleSelect,
     closeActionsMenu,
     toggleActionsMenu,
     onEditAction,
