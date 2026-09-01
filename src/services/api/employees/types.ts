@@ -16,7 +16,7 @@ export interface GetEmployeesParams extends Pagination.PaginationParams {
 export interface GetEmployeesApi {
   getEmployees(
     params: GetEmployeesParams,
-  ): Promise<Pagination.PaginationResponse<Employee.Entity>>
+  ): Promise<Pagination.PaginationResponse<Employee.ListItem>>
 }
 
 export interface UpdateEmployeeStatusParams {

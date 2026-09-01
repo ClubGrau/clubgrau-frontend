@@ -13,6 +13,7 @@ vi.mock('../config', () => ({
 describe('HttpEmployeesApi lifecycle commands', () => {
   beforeEach(() => {
     vi.mocked(api.post).mockReset()
+    vi.mocked(api.get).mockReset()
   })
 
   it('posts update-status with exactly id and status', async () => {
@@ -54,6 +55,47 @@ describe('HttpEmployeesApi lifecycle commands', () => {
     const body = vi.mocked(api.post).mock.calls[0]?.[1]
     expect(Object.keys(body as object)).toEqual(['id', 'password'])
     expect(result).toEqual({ id: 'emp-1' })
+  })
+
+  it('maps GET /api/employees to ListItem with initials', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        employees: [
+          {
+            id: 'emp-1',
+            name: 'João Silva',
+            username: 'joaosilva',
+            email: 'joao@grau.pt',
+            role: 'EMPLOYEE',
+            status: 'ACTIVE',
+            createdAt: '2026-01-01T00:00:00.000Z',
+          },
+        ],
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1,
+      },
+    })
+
+    const result = await httpEmployeesApi.getEmployees({ page: 1, limit: 10 })
+
+    expect(api.get).toHaveBeenCalledWith('/api/employees', {
+      params: { page: 1, limit: 10 },
+    })
+    expect(result.data).toEqual([
+      {
+        id: 'emp-1',
+        name: 'João Silva',
+        username: 'joaosilva',
+        email: 'joao@grau.pt',
+        role: 'EMPLOYEE',
+        status: 'ACTIVE',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        initials: 'JS',
+      },
+    ])
+    expect(result.total).toBe(1)
   })
 
   it('does not accept REMOVED as a sendable status', () => {

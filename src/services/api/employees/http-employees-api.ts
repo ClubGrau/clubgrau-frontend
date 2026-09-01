@@ -1,6 +1,7 @@
 import type { Employee } from '../../../types/employee'
 import type { Pagination } from '../../../types/pagination'
 import { api } from '../config'
+import { mapApiEmployeesToEmployees } from './map-employee'
 import type {
   CreateEmployeeApi,
   CreateEmployeeParams,
@@ -32,13 +33,13 @@ export class HttpEmployeesApi
 {
   async getEmployees(
     params: GetEmployeesParams,
-  ): Promise<Pagination.PaginationResponse<Employee.Entity>> {
+  ): Promise<Pagination.PaginationResponse<Employee.ListItem>> {
     const { data } = await api.get<EmployeesApiPayload>('/api/employees', {
       params,
     })
 
     return {
-      data: data.employees ?? [],
+      data: mapApiEmployeesToEmployees(data.employees ?? []),
       page: data.page,
       limit: data.limit,
       total: data.total,
