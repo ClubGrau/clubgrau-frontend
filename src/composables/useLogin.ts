@@ -4,7 +4,7 @@ import type { Account } from '../types/account'
 import { useAuthStore } from '../stores/auth'
 import { useMutation } from '@tanstack/vue-query'
 import type { AuthApi } from '../services/api/auth/types'
-import { toLifecycleError } from '../domain/lifecycle-error'
+import { toApiError } from '../domain/api-error'
 
 const LOGIN_ERROR_MESSAGE =
   'Não foi possível entrar. Verifique o e-mail e a palavra-passe.'
@@ -26,7 +26,7 @@ export function useLogin(authApi: AuthApi) {
       void router.push('/app')
     },
     onError: (error) => {
-      const mapped = toLifecycleError(error)
+      const mapped = toApiError(error)
       if (mapped.code === 'UNAUTHORIZED') {
         loginError.value = LOGIN_ERROR_MESSAGE
       }

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { t } from '../i18n'
-import { toLifecycleError } from '../domain/lifecycle-error'
+import { toApiError } from '../domain/api-error'
 import { employeeQueryKeys } from '../services/api/employees/query-keys'
 import type {
   CreateEmployeeApi,
@@ -38,7 +38,7 @@ export function toCreateEmployeeParams(
 }
 
 export function toastKeyForCreateError(error: unknown): string | null {
-  const mapped = toLifecycleError(error)
+  const mapped = toApiError(error)
   if (mapped.code === 'UNAUTHORIZED') return null
   if (mapped.code === 'FORBIDDEN') return 'Employees.toast.forbidden'
   if (mapped.code === 'CONFLICT') return 'Employees.toast.emailInUse'

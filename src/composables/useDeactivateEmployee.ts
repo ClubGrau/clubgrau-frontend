@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { t } from '../i18n'
-import { toLifecycleError } from '../domain/lifecycle-error'
+import { toApiError } from '../domain/api-error'
 import { employeeQueryKeys } from '../services/api/employees/query-keys'
 import type {
   UpdateEmployeeStatusApi,
@@ -9,7 +9,7 @@ import type {
 import { useToast } from './useToast'
 
 export function toastKeyForDeactivateError(error: unknown): string | null {
-  const mapped = toLifecycleError(error)
+  const mapped = toApiError(error)
   if (mapped.code === 'UNAUTHORIZED') return null
   if (mapped.code === 'LAST_ADMIN') return 'Employees.toast.lastAdmin'
   if (mapped.code === 'FORBIDDEN') return 'Employees.toast.forbidden'

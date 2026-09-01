@@ -1,4 +1,4 @@
-export type LifecycleErrorCode =
+export type ApiErrorCode =
   | 'BAD_REQUEST'
   | 'UNAUTHORIZED'
   | 'FORBIDDEN'
@@ -8,19 +8,19 @@ export type LifecycleErrorCode =
   | 'CONFLICT'
   | 'UNKNOWN'
 
-export interface LifecycleError {
-  code: LifecycleErrorCode
+export interface ApiError {
+  code: ApiErrorCode
   /** Raw English `error` string from the API, for diagnostics only. Never show this. */
   message: string
 }
 
-const CONFLICT_CODES: Record<string, LifecycleErrorCode> = {
+const CONFLICT_CODES: Record<string, ApiErrorCode> = {
   'Last Admin must stay ACTIVE until another Admin exists': 'LAST_ADMIN',
   'Employee is not inactive': 'NOT_INACTIVE',
   'Employee is already removed': 'ALREADY_REMOVED',
 }
 
-const STATUS_CODES: Record<number, LifecycleErrorCode> = {
+const STATUS_CODES: Record<number, ApiErrorCode> = {
   400: 'BAD_REQUEST',
   401: 'UNAUTHORIZED',
   403: 'FORBIDDEN',
@@ -47,8 +47,8 @@ function readHttpFailure(error: unknown): { status: number; message: string } | 
   return { status, message }
 }
 
-/** Maps an HTTP (or network) failure onto a lifecycle error the UI can branch on. */
-export function toLifecycleError(error: unknown): LifecycleError {
+/** Maps an HTTP (or network) failure onto an API error the UI can branch on. */
+export function toApiError(error: unknown): ApiError {
   const failure = readHttpFailure(error)
   if (!failure) {
     return { code: 'UNKNOWN', message: '' }

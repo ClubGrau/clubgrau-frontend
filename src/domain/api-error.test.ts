@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import en from '../i18n/locales/en.json'
 import pt from '../i18n/locales/pt.json'
-import { toLifecycleError, type LifecycleError, type LifecycleErrorCode } from './lifecycle-error'
+import { toApiError, type ApiError, type ApiErrorCode } from './api-error'
 
 function httpError(status: number, error?: string) {
   return {
@@ -12,7 +12,7 @@ function httpError(status: number, error?: string) {
   }
 }
 
-const LIFECYCLE_ERROR_CODES = {
+const API_ERROR_CODES = {
   BAD_REQUEST: true,
   UNAUTHORIZED: true,
   FORBIDDEN: true,
@@ -21,16 +21,15 @@ const LIFECYCLE_ERROR_CODES = {
   ALREADY_REMOVED: true,
   CONFLICT: true,
   UNKNOWN: true,
-} as const satisfies Record<LifecycleErrorCode, true>
+} as const satisfies Record<ApiErrorCode, true>
 
-function makeLifecycleError(code: number, message: string): LifecycleError {
-  const sut = toLifecycleError(httpError(code, message))
-  return sut
+function makeApiError(code: number, message: string): ApiError {
+  return toApiError(httpError(code, message))
 }
 
-describe('toLifecycleError', () => {
+describe('toApiError', () => {
   it('maps 400 to BAD_REQUEST', () => {
-    const error = makeLifecycleError(400, 'Invalid payload')
+    const error = makeApiError(400, 'Invalid payload')
     expect(error).toEqual({
       code: 'BAD_REQUEST',
       message: 'Invalid payload',
@@ -38,7 +37,7 @@ describe('toLifecycleError', () => {
   })
 
   it('maps 401 to UNAUTHORIZED', () => {
-    const error = makeLifecycleError(401, 'Authentication failed')
+    const error = makeApiError(401, 'Authentication failed')
     expect(error).toEqual({
       code: 'UNAUTHORIZED',
       message: 'Authentication failed',
@@ -46,7 +45,7 @@ describe('toLifecycleError', () => {
   })
 
   it('maps 403 to FORBIDDEN', () => {
-    const error = makeLifecycleError(403, 'Action not allowed')
+    const error = makeApiError(403, 'Action not allowed')
     expect(error).toEqual({
       code: 'FORBIDDEN',
       message: 'Action not allowed',
@@ -55,7 +54,7 @@ describe('toLifecycleError', () => {
 
   it('maps Last Admin 409 to LAST_ADMIN', () => {
     const message = 'Last Admin must stay ACTIVE until another Admin exists'
-    const error = makeLifecycleError(409, message)
+    const error = makeApiError(409, message)
     expect(error).toEqual({
       code: 'LAST_ADMIN',
       message,
@@ -63,7 +62,7 @@ describe('toLifecycleError', () => {
   })
 
   it('maps not-inactive 409 to NOT_INACTIVE', () => {
-    const error = makeLifecycleError(409, 'Employee is not inactive')
+    const error = makeApiError(409, 'Employee is not inactive')
     expect(error).toEqual({
       code: 'NOT_INACTIVE',
       message: 'Employee is not inactive',
@@ -71,7 +70,7 @@ describe('toLifecycleError', () => {
   })
 
   it('maps already-removed 409 to ALREADY_REMOVED', () => {
-    const error = makeLifecycleError(409, 'Employee is already removed')
+    const error = makeApiError(409, 'Employee is already removed')
     expect(error).toEqual({
       code: 'ALREADY_REMOVED',
       message: 'Employee is already removed',
@@ -79,7 +78,7 @@ describe('toLifecycleError', () => {
   })
 
   it('maps an unrecognised 409 to CONFLICT', () => {
-    const error = makeLifecycleError(409, 'Something else')
+    const error = makeApiError(409, 'Something else')
     expect(error).toEqual({
       code: 'CONFLICT',
       message: 'Something else',
@@ -87,22 +86,22 @@ describe('toLifecycleError', () => {
   })
 
   it('maps a missing response to UNKNOWN', () => {
-    expect(toLifecycleError(new Error('Network Error'))).toEqual({
+    expect(toApiError(new Error('Network Error'))).toEqual({
       code: 'UNKNOWN',
       message: '',
     })
   })
 
   it('maps an unmapped status to UNKNOWN', () => {
-    const error = makeLifecycleError(500, 'Internal')
+    const error = makeApiError(500, 'Internal')
     expect(error).toEqual({
       code: 'UNKNOWN',
       message: 'Internal',
     })
   })
 
-  it('has pt and en copy for every LifecycleErrorCode', () => {
-    for (const code of Object.keys(LIFECYCLE_ERROR_CODES) as LifecycleErrorCode[]) {
+  it('has pt and en copy for every ApiErrorCode', () => {
+    for (const code of Object.keys(API_ERROR_CODES) as ApiErrorCode[]) {
       const ptCopy = pt.lifecycleError[code]
       const enCopy = en.lifecycleError[code]
 
