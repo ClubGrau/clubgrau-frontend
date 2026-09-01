@@ -4,7 +4,7 @@
     "dashboard": "Dashboard",
     "employees": "Colaboradores"
   },
-  "subtitle": "{total} pessoas cadastradas",
+  "subtitle": "{total} pessoas cadastradas · {ativos} ativas · {ferias} em férias",
   "newEmployee": "Novo colaborador",
   "searchPlaceholder": "Busque por Nome, Contatos...",
   "roleFilterPlaceholder": "Filtrar por função",
@@ -18,7 +18,19 @@
   "stats": {
     "total": {
       "label": "Total da equipe",
-      "description": "Resultados para os filtros atuais"
+      "description": "Cadastrados ativos no sistema"
+    },
+    "active": {
+      "label": "Em atividade",
+      "description": "Disponível para alocação"
+    },
+    "vacation": {
+      "label": "Em férias",
+      "description": "Cadastrados ativos no sistema"
+    },
+    "inactive": {
+      "label": "Inativos",
+      "description": "Sem acesso ao sistema"
     }
   },
   "table": {

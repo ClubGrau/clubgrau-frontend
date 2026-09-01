@@ -35,6 +35,7 @@ const {
   roleFilter,
   onRoleFilterChange,
   roleOptions,
+  stats,
   total,
   canCreate,
   drawer,
@@ -88,7 +89,11 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => [
 ]);
 
 const informationSubtitle = computed(() =>
-  t('Employees.subtitle', { total: total.value }),
+  t('Employees.subtitle', {
+    total: stats.value.total,
+    ativos: stats.value.ativos,
+    ferias: stats.value.ferias,
+  }),
 );
 
 const employeeRole = (role: string) => {
@@ -99,8 +104,27 @@ const statCards = computed<StatCardItem[]>(() => [
   {
     id: 'total',
     label: t('Employees.stats.total.label'),
-    value: total.value,
+    value: stats.value.total,
     description: t('Employees.stats.total.description'),
+  },
+  {
+    id: 'active',
+    label: t('Employees.stats.active.label'),
+    value: stats.value.ativos,
+    description: t('Employees.stats.active.description'),
+  },
+  {
+    id: 'vacation',
+    label: t('Employees.stats.vacation.label'),
+    value: stats.value.ferias,
+    description: t('Employees.stats.vacation.description'),
+  },
+  {
+    id: 'inactive',
+    label: t('Employees.stats.inactive.label'),
+    value: stats.value.inativos,
+    description: t('Employees.stats.inactive.description'),
+    variant: 'danger',
   },
 ]);
 
@@ -133,7 +157,7 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
       </template>
     </PageHeader>
 
-    <div class="mb-6 max-w-xs">
+    <div class="mb-6 grid grid-cols-4 gap-4">
       <StatCard
         v-for="card in statCards"
         :key="card.id"

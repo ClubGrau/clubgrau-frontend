@@ -131,7 +131,7 @@ src/
 | Composable | Owns |
 |------------|------|
 | `useEmployeesScreen` | composition root: adapter once, injects ports, wires callbacks |
-| `useEmployees` | list query, filters, pagination |
+| `useEmployees` | list query, filters, pagination, stats |
 | `useEmployeeDrawer` | which panel/modal is open and which id is active |
 | `useEmployeeSelection` | overflow menu (edit / lifecycle) |
 | `useCreateEmployee` | Create mutation |

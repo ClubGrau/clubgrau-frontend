@@ -73,6 +73,14 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
 
   const total = computed(() => query.data.value?.total ?? 0)
 
+  const stats = computed(() => {
+    const ativos = employees.value.filter((e) => e.status === 'ACTIVE').length
+    const ferias = employees.value.filter((e) => e.status === 'VACATION').length
+    const inativos = employees.value.filter((e) => e.status === 'INACTIVE').length
+
+    return { total: total.value, ativos, ferias, inativos }
+  })
+
   const resetToFirstPage = () => {
     currentPage.value = 1
   }
@@ -99,6 +107,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     roleFilter,
     onRoleFilterChange,
     roleOptions,
+    stats,
     total,
     isLoading: query.isLoading,
     isError: query.isError,

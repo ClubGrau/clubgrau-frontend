@@ -55,6 +55,7 @@ export function useEmployeesScreen(
     roleFilter,
     onRoleFilterChange,
     roleOptions,
+    stats,
     total,
   } = list
 
@@ -179,6 +180,7 @@ export function useEmployeesScreen(
     roleFilter,
     onRoleFilterChange,
     roleOptions,
+    stats,
     total,
     canCreate,
     ...drawer,

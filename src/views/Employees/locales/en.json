@@ -4,7 +4,7 @@
     "dashboard": "Dashboard",
     "employees": "Employees"
   },
-  "subtitle": "{total} people registered",
+  "subtitle": "{total} people registered · {ativos} active · {ferias} on vacation",
   "newEmployee": "New employee",
   "searchPlaceholder": "Search by name, contacts...",
   "roleFilterPlaceholder": "Filter by role",
@@ -18,7 +18,19 @@
   "stats": {
     "total": {
       "label": "Team total",
-      "description": "Results for the current filters"
+      "description": "Registered in the system"
+    },
+    "active": {
+      "label": "Active",
+      "description": "Available for allocation"
+    },
+    "vacation": {
+      "label": "On vacation",
+      "description": "Registered in the system"
+    },
+    "inactive": {
+      "label": "Inactive",
+      "description": "No system access"
     }
   },
   "table": {
