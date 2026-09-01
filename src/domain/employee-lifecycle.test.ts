@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Actor, ActorRole } from '../types/actor'
 import type { EmployeeStatus } from '../types/employee'
 import {
+  canCreate,
   canDeactivate,
   canReactivate,
   canRemove,
@@ -109,6 +110,19 @@ describe('employee-lifecycle helper', () => {
   it('ADMIN self-Deactivate may still show', () => {
     const t = target('ADMIN', 'ACTIVE', 'same-id')
     expect(canDeactivate(actor('ADMIN', 'same-id'), t)).toBe(true)
+  })
+
+  describe('canCreate', () => {
+    it('ADMIN and MANAGER see Create', () => {
+      expect(canCreate(actor('ADMIN'))).toBe(true)
+      expect(canCreate(actor('MANAGER'))).toBe(true)
+    })
+
+    it('EMPLOYEE, missing role, or no actor do not see Create', () => {
+      expect(canCreate(actor('EMPLOYEE'))).toBe(false)
+      expect(canCreate(actor(null))).toBe(false)
+      expect(canCreate(null)).toBe(false)
+    })
   })
 
   describe('lifecycleActions aggregator', () => {

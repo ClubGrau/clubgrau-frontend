@@ -32,6 +32,10 @@ export function canRemove(actor: Actor | null, target: LifecycleTarget): boolean
   return target.status === 'INACTIVE'
 }
 
+export function canCreate(actor: Actor | null): boolean {
+  return actor?.role === 'ADMIN' || actor?.role === 'MANAGER'
+}
+
 export function lifecycleActions(actor: Actor | null, target: LifecycleTarget) {
   return {
     canDeactivate: canDeactivate(actor, target),
