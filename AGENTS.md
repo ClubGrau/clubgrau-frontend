@@ -158,7 +158,7 @@ Default locale `pt`. Shared strings in `src/i18n/locales/`. Screen-specific stri
 
 ### Auth session
 
-`useAuthStore` persists `token` in `localStorage`. `actor` (`id`, `role`, `status`) is a `computed` from the JWT payload and is never persisted on its own. Router `beforeEnter` on `/app` sends the operator to `/login` when there is no token. There is no `/me` endpoint in this app today.
+`useAuthStore` persists `token` in `localStorage`. `actor` (`id`, `role`, `status`) is a `computed` from the JWT payload and is never persisted on its own. Router `beforeEnter` on `/app` sends the operator to `/login` when there is no token. `beforeEnter` on `/login` sends them to `/app` when the store already has an Actor (a decodable token). There is no `/me` endpoint in this app today. `exp` is not checked on the client.
 
 ---
 

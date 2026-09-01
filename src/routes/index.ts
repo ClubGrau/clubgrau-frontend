@@ -1,5 +1,5 @@
 import { createWebHistory, createRouter } from 'vue-router'
-import { canAccessEmployees } from '../domain/actor-display'
+import { canAccessEmployees, canVisitLogin } from '../domain/actor-display'
 import { useAuthStore } from '../stores/auth'
 
 const authGuard = () => {
@@ -10,6 +10,14 @@ const authGuard = () => {
   return '/login'
 }
 
+const guestGuard = () => {
+  const authStore = useAuthStore()
+  if (canVisitLogin(authStore.actor)) {
+    return true
+  }
+  return { path: '/app', replace: true }
+}
+
 const canAccessEmployeesGuard = () => {
   const authStore = useAuthStore()
   if (canAccessEmployees(authStore.actor)) {
@@ -17,15 +25,19 @@ const canAccessEmployeesGuard = () => {
   }
   return '/app/dashboard'
 }
-  
+
 const routes = [
   {
     path: '/',
-    redirect: '/login',
+    redirect: () => {
+      const authStore = useAuthStore()
+      return canVisitLogin(authStore.actor) ? '/login' : '/app'
+    },
   },
-  { 
+  {
     path: '/login',
     component: () => import('../views/Login/Login.vue'),
+    beforeEnter: guestGuard,
   },
   {
     path: "/app",
