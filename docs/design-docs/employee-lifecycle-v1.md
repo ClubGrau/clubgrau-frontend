@@ -62,7 +62,7 @@ Use [`CONTEXT.md`](../../CONTEXT.md). Do not invent parallel terms.
 |------|-------------|
 | Deactivate / Reactivate / Remove / Anonymize / Actor / Target / Removed / Last Admin / Role / INACTIVE fork | [`CONTEXT.md`](../../CONTEXT.md) |
 | Inativar / Reativar / Remover | Portuguese **labels** for those terms. Code and helpers stay in English. |
-| `EmployeeShapped.permission` | The Target’s **Role** on the list today. Treat as Role. Do not introduce a second permission type. Rename is optional and not required to ship this feature. |
+| Role / `ListItem.role` | The Target’s **Role** on the list and detail. Not a permission field. Do not introduce a second permission type. |
 
 `VACATION` is a list status, not a command in this slice.
 

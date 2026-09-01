@@ -8,6 +8,18 @@ Operator UI for the Club Grau platform. This glossary is the ubiquitous language
 A person who works on the salon floor and has an identity on the platform. The list and profile screens show Collaborators.
 _Avoid_: user, account, victim
 
+**Create**:
+The registration of a Collaborator: a new identity on a free email. It is not Reactivate of an existing `employeeId`.
+_Avoid_: create again, undelete, Remove+Create
+
+**Identity (Create)**:
+What Create actually sends: name, username, email, Role, password and passwordConfirmation, with phone, nif and status optional. Extra profile fields the API may accept (`gender`, `address`, `languages`, `emergencyContact`, `employmentId`, `jobTitle`) are optional API fields, not terms of this context.
+_Avoid_: treating those profile fields as Employees concepts; inventing them in the mapper
+
+**List item**:
+What the list and detail show: identity plus `initials`, plus optional profile the GET already returns.
+_Avoid_: inventing fields the GET did not send
+
 **Deactivate**:
 Operational stop. Status becomes `INACTIVE`; identity and email remain. MANAGER may Deactivate only `EMPLOYEE`. ADMIN may Deactivate `EMPLOYEE`, `MANAGER`, and `ADMIN`, except the Last Admin.
 _Avoid_: delete, remove, excluir
@@ -26,7 +38,7 @@ _Avoid_: hard delete, erase identity, GDPR erase of the id
 
 **Role**:
 `EMPLOYEE` | `MANAGER` | `ADMIN` on an identity. The Actor’s Role is the switch that decides which operator actions the UI shows. Combined with the Target’s Role and status, it mirrors the authority matrix for visibility only.
-_Avoid_: permission catalog, ACL, permissão as a separate entity, `/me` as the source of Role
+_Avoid_: permission, “permissão” as a **field name** (the Portuguese UI label may be “Função”), permission catalog, ACL, permissão as a separate entity, `/me` as the source of Role
 
 **Actor**:
 The authenticated operator who executes a lifecycle command. Their Role comes from the session (JWT payload). For Remove, the modal asks only for their password (not the Target’s, not `passwordConfirmation`, not the Target’s name typed out).

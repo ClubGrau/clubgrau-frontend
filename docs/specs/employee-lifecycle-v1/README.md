@@ -37,12 +37,12 @@ Order is sequential: 0 → 1 → 2 → 3 → 4 → 5. Slices 3 and 4 are indepen
 
 These are shape calls the design doc left open. They are binding for the slices below.
 
-1. **New folder `src/domain/` for pure, framework-free modules.** `decode-jwt.ts`, `employee-lifecycle.ts` and `lifecycle-error.ts` are plain TypeScript with no Vue, no Axios, no Pinia. They do not fit `composables/` (orchestration), `services/api/` (HTTP), or `constants/` (UI maps). Slice 0 also amends the [`AGENTS.md`](../../../AGENTS.md) folder map to record the new folder.
+1. **New folder `src/domain/` for pure, framework-free modules.** `decode-jwt.ts`, `employee-lifecycle.ts` and `api-error.ts` are plain TypeScript with no Vue, no Axios, no Pinia. They do not fit `composables/` (orchestration), `services/api/` (HTTP), or `constants/` (UI maps). Slice 0 also amends the [`AGENTS.md`](../../../AGENTS.md) folder map to record the new folder.
 2. **Actor is derived, not persisted.** The auth store persists `token` only; `actor` is a `computed` over the token. Reload rehydrates the token and the Actor falls out of it, so a persisted Actor can never drift from the token that is actually being sent.
 3. **Toast infrastructure ships in slice 3.** The repo has no toast today and design doc §9.4 requires one for every lifecycle outcome. Slice 3 adds a minimal `useToast` + `ToastHost`; slices 4 and 5 consume it.
 4. **`InactivateModal.vue` keeps its filename.** It loses the `mode` prop and the Remove link instead of being renamed, so the [`AGENTS.md`](../../../AGENTS.md) reference stays valid. Remove gets its own component.
 
 ## Known gaps (not blocking)
 
-- There is no test runner in `package.json`. Acceptance criteria are written as observable operator behaviour and are verified manually. Adding Vitest for `src/domain/` is a good follow-up but is not part of this feature.
+- Vitest is the test runner (`npm run test`). Domain helpers, HTTP adapters, and command composables have unit tests. Operator-visible slice acceptance is still written as observable behaviour.
 - Token expiry (`exp`) is not checked on the client. A stale token is answered by the API with `401`.
