@@ -3,7 +3,6 @@ import { computed } from 'vue';
 import TemplateDefault from './TemplateDefault.vue';
 import SideBarContainer from '../components/SideBar/SideBarContainer.vue';
 import UserAvatar from '../components/UserAvatar/UserAvatar.vue';
-import ToastHost from '../components/Toast/ToastHost.vue';
 import { useAuthStore } from '../stores/auth';
 import { actorInitials, ROLE_LABEL } from '../domain/actor-display';
 
@@ -36,6 +35,5 @@ const initials = computed(() => actorInitials(actor.value?.name ?? null));
         <TemplateDefault />
       </main>
     </div>
-    <ToastHost />
   </div>
 </template>
