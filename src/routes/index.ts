@@ -70,6 +70,11 @@ const routes = [
         component: () => import('../views/Dashboard/Dashboard.vue'),
       },
       {
+        path: "customers",
+        name: "customers",
+        component: () => import('../views/Customers/Customers.vue'),
+      },
+      {
         path: "indications",
         name: "indications",
         component: () => import('../views/Indications/Indications.vue'),

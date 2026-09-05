@@ -14,7 +14,7 @@ export const navigationSections: NavigationSection[] = [
       },
       {
         id: 1,
-        router: '/app/clients',
+        router: '/app/customers',
         icon: 'carbon:user-multiple',
         description: 'Clientes',
         content: 'Clientes',
