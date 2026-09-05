@@ -21,7 +21,11 @@ function httpError(status: number, error: string) {
 }
 
 export class MockRequestPasswordResetApi implements RequestPasswordResetApi {
-  constructor(private readonly delayMs = NETWORK_DELAY_MS) {}
+  private readonly delayMs: number
+
+  constructor(delayMs = NETWORK_DELAY_MS) {
+    this.delayMs = delayMs
+  }
 
   async requestReset(params: RequestPasswordResetParams): Promise<void> {
     if (this.delayMs > 0) await delay(this.delayMs)

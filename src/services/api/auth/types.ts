@@ -11,3 +11,13 @@ export interface RequestPasswordResetParams {
 export interface RequestPasswordResetApi {
   requestReset(params: RequestPasswordResetParams): Promise<void>
 }
+
+export interface ResetPasswordParams {
+  token: string
+  password: string
+  passwordConfirmation: string
+}
+
+export interface ResetPasswordApi {
+  resetPassword(params: ResetPasswordParams): Promise<void>
+}
