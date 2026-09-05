@@ -1,0 +1,68 @@
+{
+  "title": "Clientes",
+  "breadcrumb": {
+    "dashboard": "Dashboard",
+    "customers": "Clientes"
+  },
+  "subtitle": "Carteira completa de contas e contatos comerciais.",
+  "newCustomer": "Novo cliente",
+  "searchPlaceholder": "Filtrar por nome, contato, apelido, NIF ou e-mail",
+  "empty": "Nenhum cliente encontrado.",
+  "emptyValue": "—",
+  "rank": {
+    "BRONZE": "Bronze",
+    "PRATA": "Prata",
+    "OURO": "Ouro"
+  },
+  "rankFilter": {
+    "label": "Filtrar por rank",
+    "apply": "Filtrar clientes {rank}",
+    "clear": "Mostrar todos os clientes"
+  },
+  "table": {
+    "customer": "Cliente",
+    "contact": "Contato",
+    "nif": "Nif",
+    "referral": "Indicação",
+    "rank": "Rank",
+    "registeredAt": "Cadastro",
+    "actions": "Ações"
+  },
+  "menu": {
+    "remove": "Remover"
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "remove": "Remover",
+    "close": "Fechar"
+  },
+  "toast": {
+    "created": "Cliente criado.",
+    "removed": "Cliente removido da carteira.",
+    "unexpected": "Não foi possível concluir a ação. Tente novamente."
+  },
+  "form": {
+    "createTitle": "Novo cliente",
+    "createSubtitle": "Preencha os dados para cadastrar um novo cliente",
+    "createSubmit": "Criar cliente",
+    "sectionMain": "Dados principais",
+    "nameRequired": "Nome completo *",
+    "namePlaceholder": "Ex: Marina Albuquerque",
+    "emailRequired": "E-mail *",
+    "emailPlaceholder": "nome{'@'}empresa.com",
+    "phoneRequired": "Telefone *",
+    "phonePlaceholder": "912 345 678",
+    "nif": "NIF",
+    "nifPlaceholder": "123456789",
+    "referral": "Indicação",
+    "referralPlaceholder": "Ex: Rafael Nunes",
+    "rank": "Rank",
+    "rankPlaceholder": "Selecionar rank",
+    "missingFields": "Preencha os campos obrigatórios: {fields}."
+  },
+  "modal": {
+    "removeTitle": "Remover cliente",
+    "removeBodyNamed": "Esta ação remove {name} da carteira. Os dados deixam de aparecer na lista.",
+    "removeBodyAnonymous": "Esta ação remove o cliente da carteira. Os dados deixam de aparecer na lista."
+  }
+}

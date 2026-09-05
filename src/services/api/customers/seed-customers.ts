@@ -1,0 +1,56 @@
+import type { Customer } from '../../../types/customer'
+
+export function seedCustomers(): Customer.Entity[] {
+  return [
+    {
+      id: 'cust-1',
+      name: 'Marina Albuquerque',
+      email: 'marina@nordeng.com.br',
+      phone: '(85) 98812-4410',
+      nif: '251847963',
+      referral: 'Rafael Nunes',
+      rank: 'OURO',
+      createdAt: '2026-01-14T00:00:00.000Z',
+    },
+    {
+      id: 'cust-2',
+      name: 'Rafael Nunes',
+      email: 'rafael@vertexlog.com',
+      phone: '(11) 99640-2233',
+      nif: '183920456',
+      referral: '',
+      rank: 'PRATA',
+      createdAt: '2026-02-03T00:00:00.000Z',
+    },
+    {
+      id: 'cust-3',
+      name: 'Camila Prado',
+      email: 'camila.prado@usinasol.com',
+      phone: '(31) 98220-7781',
+      nif: '294018573',
+      referral: 'Marina Albuquerque',
+      rank: 'BRONZE',
+      createdAt: '2026-03-22T00:00:00.000Z',
+    },
+    {
+      id: 'cust-4',
+      name: 'Diego Fontes',
+      email: 'diego@metalcorp.ind.br',
+      phone: '(47) 99114-0098',
+      nif: '176543210',
+      referral: 'Helena Cardoso',
+      rank: 'PRATA',
+      createdAt: '2025-11-08T00:00:00.000Z',
+    },
+    {
+      id: 'cust-5',
+      name: 'Helena Cardoso',
+      email: 'helena@brisatech.io',
+      phone: '(21) 98455-6612',
+      nif: '209876541',
+      referral: '',
+      rank: 'OURO',
+      createdAt: '2026-04-30T00:00:00.000Z',
+    },
+  ]
+}

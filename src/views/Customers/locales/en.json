@@ -1,0 +1,68 @@
+{
+  "title": "Customers",
+  "breadcrumb": {
+    "dashboard": "Dashboard",
+    "customers": "Customers"
+  },
+  "subtitle": "Full wallet of commercial accounts and contacts.",
+  "newCustomer": "New customer",
+  "searchPlaceholder": "Filter by name, contact, nickname, tax ID or email",
+  "empty": "No customers found.",
+  "emptyValue": "—",
+  "rank": {
+    "BRONZE": "Bronze",
+    "PRATA": "Silver",
+    "OURO": "Gold"
+  },
+  "rankFilter": {
+    "label": "Filter by rank",
+    "apply": "Filter {rank} customers",
+    "clear": "Show all customers"
+  },
+  "table": {
+    "customer": "Customer",
+    "contact": "Contact",
+    "nif": "Tax ID",
+    "referral": "Referral",
+    "rank": "Rank",
+    "registeredAt": "Registered",
+    "actions": "Actions"
+  },
+  "menu": {
+    "remove": "Remove"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "close": "Close"
+  },
+  "toast": {
+    "created": "Customer created.",
+    "removed": "Customer removed from the wallet.",
+    "unexpected": "Could not complete the action. Try again."
+  },
+  "form": {
+    "createTitle": "New customer",
+    "createSubtitle": "Fill in the details to add a new customer",
+    "createSubmit": "Create customer",
+    "sectionMain": "Main details",
+    "nameRequired": "Full name *",
+    "namePlaceholder": "E.g. Marina Albuquerque",
+    "emailRequired": "E-mail *",
+    "emailPlaceholder": "name{'@'}company.com",
+    "phoneRequired": "Phone *",
+    "phonePlaceholder": "912 345 678",
+    "nif": "Tax ID",
+    "nifPlaceholder": "123456789",
+    "referral": "Referral",
+    "referralPlaceholder": "E.g. Rafael Nunes",
+    "rank": "Rank",
+    "rankPlaceholder": "Select rank",
+    "missingFields": "Fill in the required fields: {fields}."
+  },
+  "modal": {
+    "removeTitle": "Remove customer",
+    "removeBodyNamed": "This action removes {name} from the wallet. They will no longer appear in the list.",
+    "removeBodyAnonymous": "This action removes the customer from the wallet. They will no longer appear in the list."
+  }
+}
