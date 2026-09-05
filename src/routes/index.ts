@@ -40,6 +40,11 @@ const routes = [
     beforeEnter: guestGuard,
   },
   {
+    path: '/forgot-password',
+    component: () => import('../views/ForgotPassword/SendEmail.vue'),
+    beforeEnter: guestGuard,
+  },
+  {
     path: "/app",
     name: "template",
     redirect: "/app/dashboard",

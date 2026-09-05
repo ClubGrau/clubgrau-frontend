@@ -1,0 +1,15 @@
+{
+  "title": "Forgot your password?",
+  "subtitle": "Enter the email address you use for your account and we will send you a password reset link.",
+  "email": "Email",
+  "emailPlaceholder": "email{'@'}domain.com",
+  "submit": "Request reset link",
+  "backToLogin": "Back to sign in",
+  "toast": {
+    "sent": "Reset link sent. Check your email.",
+    "notSent": "Could not send the reset link. Check the email and try again.",
+    "unexpected": "Could not complete the action. Try again.",
+    "emailRequired": "Enter the email for your account.",
+    "emailInvalid": "Enter a valid email address."
+  }
+}

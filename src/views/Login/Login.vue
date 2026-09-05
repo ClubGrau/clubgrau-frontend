@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import logoGrau from '../../assets/img/login-logo-grau.png'
 import PasswordInput from '../../components/PasswordInput/PasswordInput.vue'
 import { useLogin } from '../../composables/useLogin'
@@ -51,9 +52,9 @@ const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between">
                 <label for="password" class="text-sm text-gray-500">{{ t('Login.password') }}</label>
-                <a href="#" class="text-sm text-[#3B82F6] hover:underline">
+                <RouterLink to="/forgot-password" class="text-sm text-[#3B82F6] hover:underline">
                   {{ t('Login.forgotPassword') }}
-                </a>
+                </RouterLink>
               </div>
               <PasswordInput
                 id="password"
@@ -95,13 +96,14 @@ const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
         </div>
       </div>
 
-      <footer class="border-t border-gray-100 px-16 py-6">
+      <!-- <footer class="border-t border-gray-100 px-16 py-6">
+        politicas a serem definidas pelos domain experts
         <nav class="flex items-center justify-between text-xs font-medium tracking-wide text-[#3B82F6]">
           <a href="#" class="hover:underline">{{ t('Login.privacy') }}</a>
           <a href="#" class="hover:underline">{{ t('Login.terms') }}</a>
           <a href="#" class="hover:underline">{{ t('Login.support') }}</a>
         </nav>
-      </footer>
+      </footer> -->
     </div>
   </div>
 </template>
