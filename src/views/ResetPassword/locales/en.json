@@ -1,0 +1,30 @@
+{
+  "title": "Password recovery",
+  "subtitle": "Set a new password for your account.",
+  "generateTitle": "Generate a secure password",
+  "generateDescription": "Automatically create a strong, random password.",
+  "generateButton": "Generate new",
+  "customTitle": "Create my own password",
+  "customDescription": "Set a custom password with at least 8 characters.",
+  "newPassword": "New password",
+  "newPasswordPlaceholder": "Enter the new password",
+  "confirmPassword": "Confirm password",
+  "confirmPasswordPlaceholder": "Repeat the new password",
+  "submit": "Save new password",
+  "backToLogin": "Back to sign in",
+  "missingTokenTitle": "Invalid link",
+  "missingToken": "This reset link does not include a valid token. Request a new link to continue.",
+  "requestNewLink": "Request new link",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "toast": {
+    "saved": "New password saved. You can sign in now.",
+    "invalid": "This reset link is not valid. Request a new link.",
+    "expired": "This reset link has expired. Request a new link.",
+    "unexpected": "Could not complete the action. Try again.",
+    "missingToken": "This reset link does not include a valid token. Request a new link.",
+    "passwordRequired": "Enter the new password.",
+    "passwordTooShort": "The password must be at least 8 characters.",
+    "passwordMismatch": "The passwords do not match."
+  }
+}

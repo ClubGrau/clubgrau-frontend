@@ -1,0 +1,30 @@
+{
+  "title": "Recuperação de palavra-passe",
+  "subtitle": "Defina uma nova palavra-passe para a sua conta.",
+  "generateTitle": "Gerar palavra-passe segura",
+  "generateDescription": "Crie automaticamente uma palavra-passe forte e aleatória.",
+  "generateButton": "Gerar nova",
+  "customTitle": "Criar a minha própria palavra-passe",
+  "customDescription": "Defina uma palavra-passe personalizada com pelo menos 8 caracteres.",
+  "newPassword": "Nova palavra-passe",
+  "newPasswordPlaceholder": "Digite a nova palavra-passe",
+  "confirmPassword": "Confirmar palavra-passe",
+  "confirmPasswordPlaceholder": "Repita a nova palavra-passe",
+  "submit": "Guardar nova palavra-passe",
+  "backToLogin": "Voltar ao início de sessão",
+  "missingTokenTitle": "Link inválido",
+  "missingToken": "Este link de redefinição não inclui um token válido. Peça um novo link para continuar.",
+  "requestNewLink": "Pedir novo link",
+  "showPassword": "Mostrar palavra-passe",
+  "hidePassword": "Ocultar palavra-passe",
+  "toast": {
+    "saved": "Nova palavra-passe guardada. Já pode iniciar sessão.",
+    "invalid": "Este link de redefinição não é válido. Peça um novo link.",
+    "expired": "Este link de redefinição expirou. Peça um novo link.",
+    "unexpected": "Não foi possível concluir a ação. Tente novamente.",
+    "missingToken": "Este link de redefinição não inclui um token válido. Peça um novo link.",
+    "passwordRequired": "Indique a nova palavra-passe.",
+    "passwordTooShort": "A palavra-passe deve ter pelo menos 8 caracteres.",
+    "passwordMismatch": "As palavras-passe não coincidem."
+  }
+}

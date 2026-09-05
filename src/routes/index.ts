@@ -45,6 +45,11 @@ const routes = [
     beforeEnter: guestGuard,
   },
   {
+    path: '/reset-password',
+    component: () => import('../views/ResetPassword/ResetPassword.vue'),
+    beforeEnter: guestGuard,
+  },
+  {
     path: "/app",
     name: "template",
     redirect: "/app/dashboard",
