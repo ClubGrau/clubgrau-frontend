@@ -2,14 +2,14 @@ import { computed, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { t } from '../../i18n'
 import { generateSecurePassword, passwordIssue } from '../../domain/password-value'
-import { mockResetPasswordApi } from '../../services/api/auth/mock-reset-password-api'
+import { httpResetPasswordApi } from '../../services/api/auth/http-reset-password-api'
 import type { ResetPasswordApi } from '../../services/api/auth/types'
 import { useToast } from '../useToast'
 import { toastKeyForPasswordIssue, useResetPassword } from './useResetPassword'
 
 export function useResetPasswordScreen(
   token: Ref<string | undefined>,
-  api: ResetPasswordApi = mockResetPasswordApi,
+  api: ResetPasswordApi = httpResetPasswordApi,
 ) {
   const router = useRouter()
   const toast = useToast()

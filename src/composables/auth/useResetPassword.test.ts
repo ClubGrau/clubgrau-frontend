@@ -76,6 +76,20 @@ describe('toastKeyForResetPasswordError', () => {
     )
   })
 
+  it('maps the API combined invalid-or-expired link message to the invalid key', () => {
+    expect(toastKeyForResetPasswordError(httpError(400, 'Invalid or expired link'))).toBe(
+      'ResetPassword.toast.invalid',
+    )
+  })
+
+  it('maps a password mismatch reported by the API to the mismatch key', () => {
+    expect(
+      toastKeyForResetPasswordError(
+        httpError(400, 'Password and passwordConfirmation do not match'),
+      ),
+    ).toBe('ResetPassword.toast.passwordMismatch')
+  })
+
   it('maps unknown failures to the unexpected key', () => {
     expect(toastKeyForResetPasswordError(httpError(500, 'Internal error'))).toBe(
       'ResetPassword.toast.unexpected',

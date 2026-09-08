@@ -18,6 +18,11 @@ export function toastKeyForResetPasswordError(error: unknown): string | null {
     if (mapped.message === 'Reset token expired') {
       return 'ResetPassword.toast.expired'
     }
+    if (mapped.message === 'Password and passwordConfirmation do not match') {
+      return 'ResetPassword.toast.passwordMismatch'
+    }
+    // The API returns a single "Invalid or expired link" message for both an
+    // unknown and an expired token, so anything else on 400 is the invalid link.
     return 'ResetPassword.toast.invalid'
   }
   return 'ResetPassword.toast.unexpected'
