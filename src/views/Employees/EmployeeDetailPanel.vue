@@ -48,8 +48,8 @@ const tabs = computed(() => [
   { id: 'payroll' as const, label: t('Employees.detail.tabPayroll') },
 ]);
 
-function optionalDisplay(value: string | undefined): string {
-  if (value === undefined || value.trim() === '') return t('Employees.detail.empty');
+function optionalDisplay(value: string | null | undefined): string {
+  if (value == null || value.trim() === '') return t('Employees.detail.empty');
   return value;
 }
 
