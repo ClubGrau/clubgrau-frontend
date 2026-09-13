@@ -69,3 +69,48 @@ export type CreateEmployeeResult = { id: string }
 export interface CreateEmployeeApi {
   create(params: CreateEmployeeParams): Promise<CreateEmployeeResult>
 }
+
+export interface UpdateMainEmployeeDataParams {
+  id: string
+  name?: string
+  email?: string
+  phone?: string
+  /** `null` clears username on the server (sparse PATCH). */
+  username?: string | null
+}
+
+export interface UpdatePersonalEmployeeDataParams {
+  id: string
+  gender?: string
+  languages?: string
+  emergencyContact?: string
+  nif?: string
+  address?: string
+}
+
+export interface UpdateProfessionalEmployeeDataParams {
+  id: string
+  role: string
+  jobTitle?: string
+  employmentId?: string
+}
+
+export type UpdateEmployeeSectionResult = { id: string }
+
+export interface UpdateMainEmployeeDataApi {
+  updateMainData(
+    params: UpdateMainEmployeeDataParams,
+  ): Promise<UpdateEmployeeSectionResult>
+}
+
+export interface UpdatePersonalEmployeeDataApi {
+  updatePersonalData(
+    params: UpdatePersonalEmployeeDataParams,
+  ): Promise<UpdateEmployeeSectionResult>
+}
+
+export interface UpdateProfessionalEmployeeDataApi {
+  updateProfessionalData(
+    params: UpdateProfessionalEmployeeDataParams,
+  ): Promise<UpdateEmployeeSectionResult>
+}

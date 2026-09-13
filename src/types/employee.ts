@@ -43,21 +43,31 @@ export namespace Employee {
     jobTitle?: string;
   }
 
-  /** Payload do formulário de edição — alvo + dados; senha não entra. */
-  export interface UpdateCommand {
+  /** PATCH /api/employee/:id/main-data — Dados principais. */
+  export interface UpdateMainDataCommand {
     id: string;
     name: string;
-    username: string;
     email: string;
-    role: string;
-    phone?: string;
-    nif?: string;
-    status?: EmployeeStatus;
+    phone: string;
+    /** Empty string clears username on the server. */
+    username: string;
+  }
+
+  /** PATCH /api/employee/:id/personal-data — Informações pessoais. */
+  export interface UpdatePersonalDataCommand {
+    id: string;
     gender?: string;
-    address?: string;
     languages?: string;
     emergencyContact?: string;
-    employmentId?: string;
+    nif?: string;
+    address?: string;
+  }
+
+  /** PATCH /api/employee/:id/professional-data — Informações profissionais. */
+  export interface UpdateProfessionalDataCommand {
+    id: string;
+    role: string;
     jobTitle?: string;
+    employmentId?: string;
   }
 }

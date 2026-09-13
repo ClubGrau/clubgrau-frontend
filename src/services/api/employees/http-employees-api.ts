@@ -11,9 +11,16 @@ import type {
   RemoveEmployeeApi,
   RemoveEmployeeParams,
   RemoveEmployeeResult,
+  UpdateEmployeeSectionResult,
   UpdateEmployeeStatusApi,
   UpdateEmployeeStatusParams,
   UpdateEmployeeStatusResult,
+  UpdateMainEmployeeDataApi,
+  UpdateMainEmployeeDataParams,
+  UpdatePersonalEmployeeDataApi,
+  UpdatePersonalEmployeeDataParams,
+  UpdateProfessionalEmployeeDataApi,
+  UpdateProfessionalEmployeeDataParams,
 } from './types'
 
 type EmployeesApiPayload = {
@@ -29,7 +36,10 @@ export class HttpEmployeesApi
     GetEmployeesApi,
     UpdateEmployeeStatusApi,
     RemoveEmployeeApi,
-    CreateEmployeeApi
+    CreateEmployeeApi,
+    UpdateMainEmployeeDataApi,
+    UpdatePersonalEmployeeDataApi,
+    UpdateProfessionalEmployeeDataApi
 {
   async getEmployees(
     params: GetEmployeesParams,
@@ -70,6 +80,42 @@ export class HttpEmployeesApi
 
   async create(params: CreateEmployeeParams): Promise<CreateEmployeeResult> {
     const { data } = await api.post<CreateEmployeeResult>('/api/employee', params)
+    return data
+  }
+
+  async updateMainData(
+    params: UpdateMainEmployeeDataParams,
+  ): Promise<UpdateEmployeeSectionResult> {
+    const { id, ...fields } = params
+    const body = Object.fromEntries(
+      Object.entries(fields).filter(([, value]) => value !== undefined),
+    )
+    const { data } = await api.patch<UpdateEmployeeSectionResult>(
+      `/api/employee/${id}/main-data`,
+      body,
+    )
+    return data
+  }
+
+  async updatePersonalData(
+    params: UpdatePersonalEmployeeDataParams,
+  ): Promise<UpdateEmployeeSectionResult> {
+    const { id, ...body } = params
+    const { data } = await api.patch<UpdateEmployeeSectionResult>(
+      `/api/employee/${id}/personal-data`,
+      body,
+    )
+    return data
+  }
+
+  async updateProfessionalData(
+    params: UpdateProfessionalEmployeeDataParams,
+  ): Promise<UpdateEmployeeSectionResult> {
+    const { id, ...body } = params
+    const { data } = await api.patch<UpdateEmployeeSectionResult>(
+      `/api/employee/${id}/professional-data`,
+      body,
+    )
     return data
   }
 }

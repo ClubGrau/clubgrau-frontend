@@ -7,6 +7,7 @@ vi.mock('../config', () => ({
   api: {
     post: vi.fn(),
     get: vi.fn(),
+    patch: vi.fn(),
   },
 }))
 
@@ -14,6 +15,7 @@ describe('HttpEmployeesApi lifecycle commands', () => {
   beforeEach(() => {
     vi.mocked(api.post).mockReset()
     vi.mocked(api.get).mockReset()
+    vi.mocked(api.patch).mockReset()
   })
 
   it('posts update-status with exactly id and status', async () => {
@@ -102,6 +104,73 @@ describe('HttpEmployeesApi lifecycle commands', () => {
     // @ts-expect-error REMOVED is terminal and not a sendable lifecycle status
     const params: UpdateEmployeeStatusParams = { id: 'emp-1', status: 'REMOVED' }
     void params
+  })
+
+  it('patches main-data with id in the path and sparse body', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: { id: 'emp-1' } })
+
+    const result = await httpEmployeesApi.updateMainData({
+      id: 'emp-1',
+      name: 'João Silva',
+    })
+
+    expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/main-data', {
+      name: 'João Silva',
+    })
+
+    const body = vi.mocked(api.patch).mock.calls[0]?.[1] as object
+    expect(body).not.toHaveProperty('id')
+    expect(body).not.toHaveProperty('actorId')
+    expect(result).toEqual({ id: 'emp-1' })
+  })
+
+  it('patches main-data with null username to clear it', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: { id: 'emp-1' } })
+
+    await httpEmployeesApi.updateMainData({
+      id: 'emp-1',
+      username: null,
+    })
+
+    expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/main-data', {
+      username: null,
+    })
+  })
+
+  it('patches personal-data with id in the path', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: { id: 'emp-1' } })
+
+    const result = await httpEmployeesApi.updatePersonalData({
+      id: 'emp-1',
+      gender: 'Masculino',
+      languages: 'Português',
+      nif: '123456789',
+    })
+
+    expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/personal-data', {
+      gender: 'Masculino',
+      languages: 'Português',
+      nif: '123456789',
+    })
+    expect(result).toEqual({ id: 'emp-1' })
+  })
+
+  it('patches professional-data with id in the path', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: { id: 'emp-1' } })
+
+    const result = await httpEmployeesApi.updateProfessionalData({
+      id: 'emp-1',
+      role: 'EMPLOYEE',
+      jobTitle: 'Barbeiro',
+      employmentId: 'EMP-001',
+    })
+
+    expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/professional-data', {
+      role: 'EMPLOYEE',
+      jobTitle: 'Barbeiro',
+      employmentId: 'EMP-001',
+    })
+    expect(result).toEqual({ id: 'emp-1' })
   })
 
   it('posts create to /api/employee without actorId', async () => {
