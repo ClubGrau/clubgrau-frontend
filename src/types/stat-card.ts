@@ -1,9 +1,10 @@
-export type StatCardVariant = 'default' | 'danger';
+export type StatCardTone = 'neutral' | 'success' | 'warning' | 'danger';
 
 export interface StatCardItem {
   id?: string | number;
   label: string;
   value: string | number;
   description?: string;
-  variant?: StatCardVariant;
+  tone?: StatCardTone;
+  icon?: string;
 }

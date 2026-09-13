@@ -111,25 +111,32 @@ const statCards = computed<StatCardItem[]>(() => [
     label: t('Employees.stats.total.label'),
     value: stats.value.total,
     description: t('Employees.stats.total.description'),
+    icon: 'carbon:user-multiple',
+    tone: 'neutral',
   },
   {
     id: 'active',
     label: t('Employees.stats.active.label'),
     value: stats.value.ativos,
     description: t('Employees.stats.active.description'),
+    icon: 'carbon:checkmark-filled',
+    tone: 'success',
   },
   {
     id: 'vacation',
     label: t('Employees.stats.vacation.label'),
     value: stats.value.ferias,
     description: t('Employees.stats.vacation.description'),
+    icon: 'carbon:sun',
+    tone: 'warning',
   },
   {
     id: 'inactive',
     label: t('Employees.stats.inactive.label'),
     value: stats.value.inativos,
     description: t('Employees.stats.inactive.description'),
-    variant: 'danger',
+    icon: 'carbon:locked',
+    tone: 'danger',
   },
 ]);
 
