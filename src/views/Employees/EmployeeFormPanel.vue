@@ -10,9 +10,14 @@ import { EMPLOYEE_ROLE_OPTIONS } from '../../constants/employee-role';
 import type { SelectFilterOption } from '../../types/select-filter';
 import { hasPhoneNumber, isValidPhone } from '../../domain/phone-value';
 
+type FormSection = 'main' | 'personal' | 'professional';
+
 interface EmployeeFormPanelProps {
   employee?: Employee.ListItem;
   submitting?: boolean;
+  submittingMain?: boolean;
+  submittingPersonal?: boolean;
+  submittingProfessional?: boolean;
 }
 
 const props = defineProps<EmployeeFormPanelProps>();
@@ -20,7 +25,9 @@ const props = defineProps<EmployeeFormPanelProps>();
 const emit = defineEmits<{
   close: [];
   create: [payload: Employee.CreateCommand];
-  update: [payload: Employee.UpdateCommand];
+  updateMain: [payload: Employee.UpdateMainDataCommand];
+  updatePersonal: [payload: Employee.UpdatePersonalDataCommand];
+  updateProfessional: [payload: Employee.UpdateProfessionalDataCommand];
 }>();
 
 const { t } = useI18n();
@@ -61,6 +68,16 @@ const form = reactive({
 });
 
 const submitted = ref(false);
+const submittedMain = ref(false);
+const submittedPersonal = ref(false);
+const submittedProfessional = ref(false);
+
+const isSectionSubmitting = computed(
+  () =>
+    Boolean(props.submittingMain) ||
+    Boolean(props.submittingPersonal) ||
+    Boolean(props.submittingProfessional),
+);
 
 function formText(value: string | null | undefined): string {
   return value ?? '';
@@ -81,6 +98,9 @@ const fillForm = (employee: Employee.ListItem) => {
   form.emergencyContact = formText(employee.emergencyContact);
   form.jobTitle = formText(employee.jobTitle);
   submitted.value = false;
+  submittedMain.value = false;
+  submittedPersonal.value = false;
+  submittedProfessional.value = false;
 };
 
 watch(
@@ -96,10 +116,6 @@ const passwordsMatch = computed(
 );
 
 const hasEmergencyContact = computed(() => hasPhoneNumber(form.emergencyContact));
-
-const emergencyPhoneInvalid = computed(
-  () => submitted.value && hasEmergencyContact.value && !isValidPhone(form.emergencyContact),
-);
 
 const passwordOk = computed(
   () => form.password.trim().length >= 6 && passwordsMatch.value,
@@ -123,6 +139,32 @@ const missingRequired = computed(() => {
 
 const isValid = computed(() => missingRequired.value.length === 0);
 
+const mainMissingRequired = computed(() => {
+  const missing: string[] = [];
+  if (form.name.trim().length <= 1) missing.push(t('Employees.form.name'));
+  if (!form.email.trim().includes('@')) missing.push(t('Employees.form.email'));
+  if (!isValidPhone(form.phone)) missing.push(t('Employees.form.phone'));
+  return missing;
+});
+
+const personalMissingRequired = computed(() => {
+  const missing: string[] = [];
+  if (hasEmergencyContact.value && !isValidPhone(form.emergencyContact)) {
+    missing.push(t('Employees.form.emergencyContact'));
+  }
+  return missing;
+});
+
+const professionalMissingRequired = computed(() => {
+  const missing: string[] = [];
+  if (form.role.trim().length === 0) missing.push(t('Employees.form.role'));
+  return missing;
+});
+
+const isMainValid = computed(() => mainMissingRequired.value.length === 0);
+const isPersonalValid = computed(() => personalMissingRequired.value.length === 0);
+const isProfessionalValid = computed(() => professionalMissingRequired.value.length === 0);
+
 const title = computed(() =>
   isEditMode.value ? t('Employees.form.editTitle') : t('Employees.form.createTitle'),
 );
@@ -142,13 +184,23 @@ function omitBlank(value: string): string | undefined {
   return trimmed === '' ? undefined : trimmed;
 }
 
-const onSubmit = () => {
+function normalizeUsername(value: string): string {
+  return formText(value).trim().replace(/^@/, '');
+}
+
+const onSubmitCreate = () => {
   if (props.submitting) return;
   submitted.value = true;
   if (!isValid.value) return;
 
-  const username = formText(form.username).trim().replace(/^@/, '');
-  const optionals = {
+  const username = normalizeUsername(form.username);
+  emit('create', {
+    name: form.name.trim(),
+    username,
+    email: form.email.trim(),
+    role: form.role,
+    password: form.password.trim(),
+    passwordConfirmation: form.passwordConfirmation.trim(),
     phone: omitBlank(form.phone),
     nif: omitBlank(form.nif),
     status: form.status,
@@ -160,33 +212,67 @@ const onSubmit = () => {
       : undefined,
     employmentId: omitBlank(form.employmentId),
     jobTitle: omitBlank(form.jobTitle),
-  };
-
-  if (isEditMode.value && props.employee) {
-    emit('update', {
-      id: props.employee.id,
-      name: form.name.trim(),
-      username,
-      email: form.email.trim(),
-      role: form.role,
-      ...optionals,
-    });
-    return;
-  }
-
-  emit('create', {
-    name: form.name.trim(),
-    username,
-    email: form.email.trim(),
-    role: form.role,
-    password: form.password.trim(),
-    passwordConfirmation: form.passwordConfirmation.trim(),
-    ...optionals,
   });
 };
 
-const fieldError = (value: string, min = 1) =>
-  submitted.value && value.trim().length < min;
+function sectionSubmitGuard(section: FormSection): boolean {
+  if (isSectionSubmitting.value || !props.employee) return false;
+  if (section === 'main' && props.submittingMain) return false;
+  if (section === 'personal' && props.submittingPersonal) return false;
+  if (section === 'professional' && props.submittingProfessional) return false;
+  return true;
+}
+
+const onSubmitMain = () => {
+  if (!sectionSubmitGuard('main')) return;
+  submittedMain.value = true;
+  if (!isMainValid.value || !props.employee) return;
+
+  emit('updateMain', {
+    id: props.employee.id,
+    name: form.name.trim(),
+    email: form.email.trim(),
+    phone: form.phone.trim(),
+    username: normalizeUsername(form.username),
+  });
+};
+
+const onSubmitPersonal = () => {
+  if (!sectionSubmitGuard('personal')) return;
+  submittedPersonal.value = true;
+  if (!isPersonalValid.value || !props.employee) return;
+
+  emit('updatePersonal', {
+    id: props.employee.id,
+    gender: omitBlank(form.gender),
+    languages: omitBlank(form.languages),
+    emergencyContact: hasEmergencyContact.value
+      ? form.emergencyContact.trim()
+      : undefined,
+    nif: omitBlank(form.nif),
+    address: omitBlank(form.address),
+  });
+};
+
+const onSubmitProfessional = () => {
+  if (!sectionSubmitGuard('professional')) return;
+  submittedProfessional.value = true;
+  if (!isProfessionalValid.value || !props.employee) return;
+
+  emit('updateProfessional', {
+    id: props.employee.id,
+    role: form.role,
+    jobTitle: omitBlank(form.jobTitle),
+    employmentId: omitBlank(form.employmentId),
+  });
+};
+
+const fieldError = (value: string, min = 1, sectionSubmitted = submitted.value) =>
+  sectionSubmitted && value.trim().length < min;
+
+const onFormSubmit = () => {
+  if (!isEditMode.value) onSubmitCreate();
+};
 </script>
 
 <template>
@@ -208,7 +294,7 @@ const fieldError = (value: string, min = 1) =>
       </div>
     </header>
 
-    <form class="flex min-h-0 flex-1 flex-col" @submit.prevent="onSubmit">
+    <form class="flex min-h-0 flex-1 flex-col" @submit.prevent="onFormSubmit">
       <div class="flex-1 space-y-4 overflow-y-auto px-5 py-5">
         <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <h3 class="mb-4 text-base font-semibold text-gray-900">
@@ -226,7 +312,13 @@ const fieldError = (value: string, min = 1) =>
                 type="text"
                 :placeholder="t('Employees.form.namePlaceholder')"
                 class="form-input"
-                :class="{ 'form-input-error': fieldError(form.name, 2) }"
+                :class="{
+                  'form-input-error': fieldError(
+                    form.name,
+                    2,
+                    isEditMode ? submittedMain : submitted,
+                  ),
+                }"
               />
             </div>
 
@@ -240,7 +332,10 @@ const fieldError = (value: string, min = 1) =>
                 type="email"
                 :placeholder="t('Employees.form.emailPlaceholder')"
                 class="form-input"
-                :class="{ 'form-input-error': submitted && !form.email.includes('@') }"
+                :class="{
+                  'form-input-error':
+                    (isEditMode ? submittedMain : submitted) && !form.email.includes('@'),
+                }"
               />
             </div>
 
@@ -252,13 +347,17 @@ const fieldError = (value: string, min = 1) =>
                 id="create-phone"
                 v-model="form.phone"
                 :placeholder="t('Employees.form.phonePlaceholder')"
-                :invalid="submitted && !isValidPhone(form.phone)"
+                :invalid="(isEditMode ? submittedMain : submitted) && !isValidPhone(form.phone)"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
               <label for="create-username" class="text-xs text-gray-400">
-                {{ t('Employees.form.usernameRequired') }}
+                {{
+                  isEditMode
+                    ? t('Employees.form.username')
+                    : t('Employees.form.usernameRequired')
+                }}
               </label>
               <input
                 id="create-username"
@@ -266,9 +365,37 @@ const fieldError = (value: string, min = 1) =>
                 type="text"
                 :placeholder="t('Employees.form.usernamePlaceholder')"
                 class="form-input"
-                :class="{ 'form-input-error': fieldError(formText(form.username).replace(/^@/, '')) }"
+                :class="{
+                  'form-input-error':
+                    !isEditMode &&
+                    fieldError(formText(form.username).replace(/^@/, '')),
+                }"
               />
             </div>
+          </div>
+
+          <p
+            v-if="isEditMode && submittedMain && mainMissingRequired.length"
+            class="mt-4 text-sm text-red-500"
+          >
+            {{ t('Employees.form.missingFields', { fields: mainMissingRequired.join(', ') }) }}
+          </p>
+
+          <div v-if="isEditMode" class="mt-4 flex justify-end">
+            <button
+              type="button"
+              class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f] disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="isSectionSubmitting"
+              :aria-busy="submittingMain"
+              @click="onSubmitMain"
+            >
+              <Icon
+                v-if="submittingMain"
+                icon="carbon:circle-dash"
+                class="size-4 animate-spin"
+              />
+              {{ t('Employees.form.saveSection') }}
+            </button>
           </div>
         </section>
 
@@ -310,7 +437,11 @@ const fieldError = (value: string, min = 1) =>
                 id="create-emergency"
                 v-model="form.emergencyContact"
                 :placeholder="t('Employees.form.phonePlaceholder')"
-                :invalid="emergencyPhoneInvalid"
+                :invalid="
+                  (isEditMode ? submittedPersonal : submitted) &&
+                  hasEmergencyContact &&
+                  !isValidPhone(form.emergencyContact)
+                "
               />
             </div>
 
@@ -339,6 +470,34 @@ const fieldError = (value: string, min = 1) =>
                 class="form-input"
               />
             </div>
+          </div>
+
+          <p
+            v-if="isEditMode && submittedPersonal && personalMissingRequired.length"
+            class="mt-4 text-sm text-red-500"
+          >
+            {{
+              t('Employees.form.missingFields', {
+                fields: personalMissingRequired.join(', '),
+              })
+            }}
+          </p>
+
+          <div v-if="isEditMode" class="mt-4 flex justify-end">
+            <button
+              type="button"
+              class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f] disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="isSectionSubmitting"
+              :aria-busy="submittingPersonal"
+              @click="onSubmitPersonal"
+            >
+              <Icon
+                v-if="submittingPersonal"
+                icon="carbon:circle-dash"
+                class="size-4 animate-spin"
+              />
+              {{ t('Employees.form.saveSection') }}
+            </button>
           </div>
         </section>
 
@@ -399,6 +558,34 @@ const fieldError = (value: string, min = 1) =>
               />
             </div>
           </div>
+
+          <p
+            v-if="isEditMode && submittedProfessional && professionalMissingRequired.length"
+            class="mt-4 text-sm text-red-500"
+          >
+            {{
+              t('Employees.form.missingFields', {
+                fields: professionalMissingRequired.join(', '),
+              })
+            }}
+          </p>
+
+          <div v-if="isEditMode" class="mt-4 flex justify-end">
+            <button
+              type="button"
+              class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f] disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="isSectionSubmitting"
+              :aria-busy="submittingProfessional"
+              @click="onSubmitProfessional"
+            >
+              <Icon
+                v-if="submittingProfessional"
+                icon="carbon:circle-dash"
+                class="size-4 animate-spin"
+              />
+              {{ t('Employees.form.saveSection') }}
+            </button>
+          </div>
         </section>
 
         <section
@@ -447,12 +634,16 @@ const fieldError = (value: string, min = 1) =>
           </div>
         </section>
 
-        <p v-if="submitted && missingRequired.length" class="text-sm text-red-500">
+        <p
+          v-if="!isEditMode && submitted && missingRequired.length"
+          class="text-sm text-red-500"
+        >
           {{ t('Employees.form.missingFields', { fields: missingRequired.join(', ') }) }}
         </p>
       </div>
 
       <footer
+        v-if="!isEditMode"
         class="flex shrink-0 items-center justify-end gap-3 border-t border-gray-100 bg-white px-5 py-4"
       >
         <button

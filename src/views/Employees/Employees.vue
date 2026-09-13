@@ -72,12 +72,17 @@ const {
   isRemoving,
   removeError,
   isCreating,
+  isUpdatingMain,
+  isUpdatingPersonal,
+  isUpdatingProfessional,
   menuActions,
   detailActions,
   isSelfDeactivate,
   removeEmployeeName,
   handleCreateEmployee,
-  handleUpdateEmployee,
+  handleUpdateMainEmployee,
+  handleUpdatePersonalEmployee,
+  handleUpdateProfessionalEmployee,
   onEmployeeRowClick,
   handleInactivateEmployee,
   handleRemoveEmployee,
@@ -369,8 +374,13 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
       <EmployeeFormPanel
         v-else-if="isEditDrawerOpen && editEmployee"
         :employee="editEmployee"
+        :submitting-main="isUpdatingMain"
+        :submitting-personal="isUpdatingPersonal"
+        :submitting-professional="isUpdatingProfessional"
         @close="closeFormDrawer"
-        @update="handleUpdateEmployee"
+        @update-main="handleUpdateMainEmployee"
+        @update-personal="handleUpdatePersonalEmployee"
+        @update-professional="handleUpdateProfessionalEmployee"
       />
       <EmployeeDetailPanel
         v-else-if="detailEmployee"
