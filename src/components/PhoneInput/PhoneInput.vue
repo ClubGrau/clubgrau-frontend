@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { VueTelInput } from 'vue-tel-input';
 import type { PhoneObject } from 'vue-tel-input';
 import type { CountryCode } from 'libphonenumber-js';
-import { toNationalPhoneDisplay } from '../../domain/phone-value';
+import { normalizePhoneE164 } from '../../domain/phone-value';
 import 'vue-tel-input/vue-tel-input.css';
 
 const props = withDefaults(
@@ -45,22 +45,26 @@ const dropdownOptions = {
   searchBoxPlaceholder: 'Buscar país...',
 };
 
-const inputValue = ref('');
+const telValue = ref('');
 let lastEmitted = '';
 
 watch(
   () => props.modelValue,
   (value) => {
     if (value === lastEmitted) return;
-    inputValue.value = toNationalPhoneDisplay(value, props.defaultCountry as CountryCode);
+
+    telValue.value = normalizePhoneE164(value, props.defaultCountry as CountryCode);
     lastEmitted = value;
   },
   { immediate: true },
 );
 
 const onInput = (_number: string, phoneObject: PhoneObject) => {
-  lastEmitted = phoneObject.number || '';
-  emit('update:modelValue', lastEmitted);
+  const next = phoneObject.number || '';
+  if (next === lastEmitted) return;
+
+  lastEmitted = next;
+  emit('update:modelValue', next);
   emit('validate', Boolean(phoneObject.isValid));
 };
 
@@ -72,7 +76,7 @@ const onValidate = (phoneObject: PhoneObject) => {
 <template>
   <div class="phone-input-root" :class="{ 'is-invalid': invalid }">
     <VueTelInput
-      v-model="inputValue"
+      v-model="telValue"
       mode="national"
       :default-country="defaultCountry"
       :auto-default-country="false"
