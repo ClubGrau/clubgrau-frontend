@@ -31,6 +31,9 @@ vi.mock('../services/api/employees/http-employees-api', () => ({
     create: vi.fn(),
     updateStatus: vi.fn(),
     remove: vi.fn(),
+    updateMainData: vi.fn(),
+    updatePersonalData: vi.fn(),
+    updateProfessionalData: vi.fn(),
   },
 }))
 
@@ -60,6 +63,9 @@ function stubApi(item = listItem()) {
     create: vi.fn(),
     updateStatus: vi.fn(),
     remove: vi.fn(),
+    updateMainData: vi.fn(),
+    updatePersonalData: vi.fn(),
+    updateProfessionalData: vi.fn(),
   }
 }
 

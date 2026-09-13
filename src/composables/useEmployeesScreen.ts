@@ -7,6 +7,9 @@ import type {
   GetEmployeesApi,
   RemoveEmployeeApi,
   UpdateEmployeeStatusApi,
+  UpdateMainEmployeeDataApi,
+  UpdatePersonalEmployeeDataApi,
+  UpdateProfessionalEmployeeDataApi,
 } from '../services/api/employees/types'
 import { useAuthStore } from '../stores/auth'
 import type { Employee } from '../types/employee'
@@ -17,6 +20,9 @@ import { useEmployeeSelection } from './useEmployeeSelection'
 import { useEmployees, type StatusFilter } from './useEmployees'
 import { useReactivateEmployee } from './useReactivateEmployee'
 import { useRemoveEmployee } from './useRemoveEmployee'
+import { useUpdateMainEmployeeData } from './useUpdateMainEmployeeData'
+import { useUpdatePersonalEmployeeData } from './useUpdatePersonalEmployeeData'
+import { useUpdateProfessionalEmployeeData } from './useUpdateProfessionalEmployeeData'
 
 export type { StatusFilter }
 
@@ -38,7 +44,10 @@ export function useEmployeesScreen(
   api: GetEmployeesApi &
     CreateEmployeeApi &
     UpdateEmployeeStatusApi &
-    RemoveEmployeeApi = httpEmployeesApi,
+    RemoveEmployeeApi &
+    UpdateMainEmployeeDataApi &
+    UpdatePersonalEmployeeDataApi &
+    UpdateProfessionalEmployeeDataApi = httpEmployeesApi,
 ) {
   const authStore = useAuthStore()
   const router = useRouter()
@@ -64,6 +73,7 @@ export function useEmployeesScreen(
     activeEmployeeId,
     selectedEmployee,
     detailEmployee,
+    editEmployee,
     targetSnapshot,
     isRemoveModalOpen,
     openDetailDrawer,
@@ -108,6 +118,23 @@ export function useEmployeesScreen(
     },
   })
 
+  const onEmployeeSectionUpdated = (result: { id: string }) => {
+    openDetailDrawer(result.id)
+  }
+
+  const { updateMain, isUpdatingMain } = useUpdateMainEmployeeData(api, {
+    onUpdated: onEmployeeSectionUpdated,
+  })
+
+  const { updatePersonal, isUpdatingPersonal } = useUpdatePersonalEmployeeData(api, {
+    onUpdated: onEmployeeSectionUpdated,
+  })
+
+  const { updateProfessional, isUpdatingProfessional } = useUpdateProfessionalEmployeeData(
+    api,
+    { onUpdated: onEmployeeSectionUpdated },
+  )
+
   const selection = useEmployeeSelection({
     onEdit: openEditDrawer,
     onDeactivate: openInactivateDrawer,
@@ -151,8 +178,20 @@ export function useEmployeesScreen(
     createEmployee(payload)
   }
 
-  const handleUpdateEmployee = (payload: Employee.UpdateCommand) => {
-    openDetailDrawer(payload.id)
+  const handleUpdateMainEmployee = (payload: Employee.UpdateMainDataCommand) => {
+    const original = editEmployee.value
+    if (!original) return
+    updateMain({ command: payload, original })
+  }
+
+  const handleUpdatePersonalEmployee = (payload: Employee.UpdatePersonalDataCommand) => {
+    updatePersonal(payload)
+  }
+
+  const handleUpdateProfessionalEmployee = (
+    payload: Employee.UpdateProfessionalDataCommand,
+  ) => {
+    updateProfessional(payload)
   }
 
   const onEmployeeRowClick = (event: MouseEvent, id: string) => {
@@ -191,12 +230,17 @@ export function useEmployeesScreen(
     isRemoving,
     removeError,
     isCreating,
+    isUpdatingMain,
+    isUpdatingPersonal,
+    isUpdatingProfessional,
     menuActions,
     detailActions,
     isSelfDeactivate,
     removeEmployeeName,
     handleCreateEmployee,
-    handleUpdateEmployee,
+    handleUpdateMainEmployee,
+    handleUpdatePersonalEmployee,
+    handleUpdateProfessionalEmployee,
     onEmployeeRowClick,
     handleInactivateEmployee,
     handleRemoveEmployee,
