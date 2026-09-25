@@ -185,7 +185,9 @@ export function useEmployeesScreen(
   }
 
   const handleUpdatePersonalEmployee = (payload: Employee.UpdatePersonalDataCommand) => {
-    updatePersonal(payload)
+    const original = editEmployee.value
+    if (!original) return
+    updatePersonal({ command: payload, original })
   }
 
   const handleUpdateProfessionalEmployee = (
