@@ -142,17 +142,30 @@ describe('HttpEmployeesApi lifecycle commands', () => {
 
     const result = await httpEmployeesApi.updatePersonalData({
       id: 'emp-1',
-      gender: 'Masculino',
+      gender: 'male',
       languages: 'Português',
       nif: '123456789',
     })
 
     expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/personal-data', {
-      gender: 'Masculino',
+      gender: 'male',
       languages: 'Português',
       nif: '123456789',
     })
     expect(result).toEqual({ id: 'emp-1' })
+  })
+
+  it('patches personal-data with null nif to clear it', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: { id: 'emp-1' } })
+
+    await httpEmployeesApi.updatePersonalData({
+      id: 'emp-1',
+      nif: null,
+    })
+
+    expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/personal-data', {
+      nif: null,
+    })
   })
 
   it('patches professional-data with id in the path', async () => {

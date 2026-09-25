@@ -87,9 +87,7 @@ export class HttpEmployeesApi
     params: UpdateMainEmployeeDataParams,
   ): Promise<UpdateEmployeeSectionResult> {
     const { id, ...fields } = params
-    const body = Object.fromEntries(
-      Object.entries(fields).filter(([, value]) => value !== undefined),
-    )
+    const body = this.entries(fields)
     const { data } = await api.patch<UpdateEmployeeSectionResult>(
       `/api/employee/${id}/main-data`,
       body,
@@ -100,7 +98,8 @@ export class HttpEmployeesApi
   async updatePersonalData(
     params: UpdatePersonalEmployeeDataParams,
   ): Promise<UpdateEmployeeSectionResult> {
-    const { id, ...body } = params
+    const { id, ...fields } = params
+    const body = this.entries(fields)
     const { data } = await api.patch<UpdateEmployeeSectionResult>(
       `/api/employee/${id}/personal-data`,
       body,
@@ -117,6 +116,12 @@ export class HttpEmployeesApi
       body,
     )
     return data
+  }
+
+  private entries(params: Record<string, unknown>): Record<string, unknown> {
+    return Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value !== undefined),
+    )
   }
 }
 

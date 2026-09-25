@@ -79,13 +79,15 @@ export interface UpdateMainEmployeeDataParams {
   username?: string | null
 }
 
+export type EmployeeGenderApi = 'male' | 'female' | 'other'
+
 export interface UpdatePersonalEmployeeDataParams {
   id: string
-  gender?: string
-  languages?: string
-  emergencyContact?: string
-  nif?: string
-  address?: string
+  gender?: EmployeeGenderApi | null
+  languages?: string | null
+  emergencyContact?: string | null
+  nif?: string | null
+  address?: string | null
 }
 
 export interface UpdateProfessionalEmployeeDataParams {
