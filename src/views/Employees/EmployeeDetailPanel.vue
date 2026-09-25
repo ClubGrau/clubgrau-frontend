@@ -5,6 +5,7 @@ import { Icon } from '@iconify/vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import { employeeStatusBadge } from '../../constants/employee-status';
+import { genderDisplayKey, normalizeGenderToApi } from '../../domain/employee-gender';
 import type { Employee } from '../../types/employee';
 
 interface EmployeeDetailPanelProps {
@@ -53,10 +54,16 @@ function optionalDisplay(value: string | null | undefined): string {
   return value;
 }
 
+function genderDisplay(value: string | null | undefined): string {
+  const api = normalizeGenderToApi(value);
+  if (!api) return t('Employees.detail.empty');
+  return t(genderDisplayKey(api));
+}
+
 const personalFields = computed(() => [
   { label: t('Employees.detail.fullName'), value: props.employee.name },
   { label: t('Employees.detail.languages'), value: optionalDisplay(props.employee.languages) },
-  { label: t('Employees.detail.gender'), value: optionalDisplay(props.employee.gender) },
+  { label: t('Employees.detail.gender'), value: genderDisplay(props.employee.gender) },
   {
     label: t('Employees.detail.emergencyContact'),
     value: optionalDisplay(props.employee.emergencyContact),

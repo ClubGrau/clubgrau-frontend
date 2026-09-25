@@ -8,6 +8,7 @@ import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import type { Employee, EmployeeStatus } from '../../types/employee';
 import { EMPLOYEE_ROLE_OPTIONS } from '../../constants/employee-role';
 import type { SelectFilterOption } from '../../types/select-filter';
+import { genderToFormValue } from '../../domain/employee-gender';
 import { hasPhoneNumber, isValidPhone } from '../../domain/phone-value';
 
 type FormSection = 'main' | 'personal' | 'professional';
@@ -43,10 +44,10 @@ const statusOptions = computed<SelectFilterOption[]>(() => [
 ]);
 
 const genderOptions = computed<SelectFilterOption[]>(() => [
-  { id: 'feminino', label: t('Employees.form.genderFemale'), value: 'Feminino' },
-  { id: 'masculino', label: t('Employees.form.genderMale'), value: 'Masculino' },
-  { id: 'outro', label: t('Employees.form.genderOther'), value: 'Outro' },
-  { id: 'nao-informado', label: t('Employees.form.genderUnspecified'), value: 'Não informado' },
+  { id: 'nao-informado', label: t('Employees.form.genderUnspecified'), value: '' },
+  { id: 'feminino', label: t('Employees.form.genderFemale'), value: 'female' },
+  { id: 'masculino', label: t('Employees.form.genderMale'), value: 'male' },
+  { id: 'outro', label: t('Employees.form.genderOther'), value: 'other' },
 ]);
 
 const form = reactive({
@@ -57,7 +58,7 @@ const form = reactive({
   nif: '',
   role: 'ADMIN',
   status: 'ACTIVE' as EmployeeStatus,
-  gender: 'Não informado',
+  gender: '',
   address: '',
   languages: 'Português',
   employmentId: '',
@@ -91,7 +92,7 @@ const fillForm = (employee: Employee.ListItem) => {
   form.nif = formText(employee.nif);
   form.role = formText(employee.role);
   form.status = employee.status ?? 'ACTIVE';
-  form.gender = formText(employee.gender);
+  form.gender = genderToFormValue(employee.gender);
   form.address = formText(employee.address);
   form.languages = formText(employee.languages);
   form.employmentId = formText(employee.employmentId);
@@ -244,13 +245,11 @@ const onSubmitPersonal = () => {
 
   emit('updatePersonal', {
     id: props.employee.id,
-    gender: omitBlank(form.gender),
-    languages: omitBlank(form.languages),
-    emergencyContact: hasEmergencyContact.value
-      ? form.emergencyContact.trim()
-      : undefined,
-    nif: omitBlank(form.nif),
-    address: omitBlank(form.address),
+    gender: form.gender,
+    languages: form.languages,
+    emergencyContact: form.emergencyContact,
+    nif: form.nif,
+    address: form.address,
   });
 };
 

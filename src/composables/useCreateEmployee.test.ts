@@ -40,7 +40,7 @@ function payload(overrides: Partial<Employee.CreateCommand> = {}): Employee.Crea
     nif: '123456789',
     role: 'EMPLOYEE',
     status: 'ACTIVE',
-    gender: 'Masculino',
+    gender: 'male',
     address: 'Rua das Flores, 123',
     languages: 'Português',
     emergencyContact: '+351911000000',
