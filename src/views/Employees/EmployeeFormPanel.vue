@@ -261,8 +261,8 @@ const onSubmitProfessional = () => {
   emit('updateProfessional', {
     id: props.employee.id,
     role: form.role,
-    jobTitle: omitBlank(form.jobTitle),
-    employmentId: omitBlank(form.employmentId),
+    jobTitle: form.jobTitle,
+    status: form.status,
   });
 };
 
@@ -552,8 +552,10 @@ const onFormSubmit = () => {
                 id="create-matricula"
                 v-model="form.employmentId"
                 type="text"
+                :readonly="isEditMode"
                 :placeholder="t('Employees.form.employmentIdPlaceholder')"
                 class="form-input"
+                :class="{ 'form-input-readonly': isEditMode }"
               />
             </div>
           </div>
@@ -679,5 +681,9 @@ const onFormSubmit = () => {
 
 .form-input-error {
   @apply border-red-300 focus:border-red-400 focus:ring-red-200;
+}
+
+.form-input-readonly {
+  @apply cursor-default text-gray-500 focus:border-gray-200 focus:bg-[#f7f7f8] focus:ring-0;
 }
 </style>

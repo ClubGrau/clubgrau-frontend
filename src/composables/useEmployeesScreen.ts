@@ -132,7 +132,17 @@ export function useEmployeesScreen(
 
   const { updateProfessional, isUpdatingProfessional } = useUpdateProfessionalEmployeeData(
     api,
-    { onUpdated: onEmployeeSectionUpdated },
+    {
+      getActorId: () => authStore.actor?.id ?? null,
+      onUpdated: (result, status) => {
+        openDetailDrawer(result.id)
+        if (status) patchSnapshotStatus(status)
+      },
+      onSelfDeactivated: () => {
+        authStore.logout()
+        void router.push('/login')
+      },
+    },
   )
 
   const selection = useEmployeeSelection({
@@ -193,7 +203,9 @@ export function useEmployeesScreen(
   const handleUpdateProfessionalEmployee = (
     payload: Employee.UpdateProfessionalDataCommand,
   ) => {
-    updateProfessional(payload)
+    const original = editEmployee.value
+    if (!original) return
+    updateProfessional({ command: payload, original })
   }
 
   const onEmployeeRowClick = (event: MouseEvent, id: string) => {

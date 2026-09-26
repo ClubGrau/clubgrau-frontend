@@ -10,32 +10,75 @@ import type {
 import type { Employee } from '../types/employee'
 import { useToast } from './useToast'
 
-function omitBlank(value: string | undefined): string | undefined {
-  if (value === undefined || value.trim() === '') return
-  return value.trim()
+export type ProfessionalEmployeeDataSnapshot = Pick<
+  Employee.Entity,
+  'jobTitle' | 'role' | 'status'
+>
+
+function formText(value: string | null | undefined): string {
+  return value ?? ''
+}
+
+function nullableText(value: string): string | null {
+  const trimmed = value.trim()
+  return trimmed === '' ? null : trimmed
 }
 
 export function toUpdateProfessionalEmployeeDataParams(
   payload: Employee.UpdateProfessionalDataCommand,
+  original: ProfessionalEmployeeDataSnapshot,
 ): UpdateProfessionalEmployeeDataParams {
-  return {
-    id: payload.id,
-    role: payload.role.trim(),
-    jobTitle: omitBlank(payload.jobTitle),
-    employmentId: omitBlank(payload.employmentId),
+  const params: UpdateProfessionalEmployeeDataParams = { id: payload.id }
+
+  const nextJobTitle = nullableText(formText(payload.jobTitle))
+  const prevJobTitle = nullableText(formText(original.jobTitle))
+  if (nextJobTitle !== prevJobTitle) {
+    params.jobTitle = nextJobTitle
   }
+
+  const nextRole = payload.role.trim()
+  if (nextRole !== '' && nextRole !== original.role) {
+    params.role = nextRole
+  }
+
+  if (payload.status !== original.status) {
+    params.status = payload.status
+  }
+
+  return params
+}
+
+export function hasProfessionalEmployeeDataChanges(
+  params: UpdateProfessionalEmployeeDataParams,
+): boolean {
+  const changes = Object.keys(params).filter((field) => field !== 'id')
+  return changes.length > 0
 }
 
 export function toastKeyForUpdateProfessionalDataError(error: unknown): string | null {
   const mapped = toApiError(error)
   if (mapped.code === 'UNAUTHORIZED') return null
   if (mapped.code === 'FORBIDDEN') return 'Employees.toast.forbidden'
-  if (mapped.code === 'CONFLICT') return 'Employees.toast.updateConflict'
+  if (mapped.code === 'LAST_ADMIN') return 'Employees.toast.lastAdmin'
+  if (mapped.code === 'CONFLICT' || mapped.code === 'ALREADY_REMOVED') {
+    return 'Employees.toast.updateConflict'
+  }
   return 'Employees.toast.updateValidation'
 }
 
+export interface UpdateProfessionalEmployeeDataInput {
+  command: Employee.UpdateProfessionalDataCommand
+  original: ProfessionalEmployeeDataSnapshot
+}
+
 interface UpdateProfessionalEmployeeDataOptions {
-  onUpdated: (result: UpdateEmployeeSectionResult) => void
+  getActorId: () => string | null
+  /** `status` is set only when this save changed the Target status. */
+  onUpdated: (
+    result: UpdateEmployeeSectionResult,
+    status?: UpdateProfessionalEmployeeDataParams['status'],
+  ) => void
+  onSelfDeactivated: (result: UpdateEmployeeSectionResult) => void
 }
 
 export function useUpdateProfessionalEmployeeData(
@@ -46,13 +89,20 @@ export function useUpdateProfessionalEmployeeData(
   const toast = useToast()
 
   const mutation = useMutation({
-    mutationFn: (payload: Employee.UpdateProfessionalDataCommand) =>
-      api.updateProfessionalData(toUpdateProfessionalEmployeeDataParams(payload)),
+    mutationFn: (input: UpdateProfessionalEmployeeDataInput) =>
+      api.updateProfessionalData(
+        toUpdateProfessionalEmployeeDataParams(input.command, input.original),
+      ),
     retry: 0,
-    onSuccess: (result) => {
+    onSuccess: (result, input) => {
       void queryClient.invalidateQueries({ queryKey: employeeQueryKeys.all })
+      const params = toUpdateProfessionalEmployeeDataParams(input.command, input.original)
+      if (params.status === 'INACTIVE' && result.id === options.getActorId()) {
+        options.onSelfDeactivated(result)
+        return
+      }
       toast.push('success', t('Employees.toast.professionalDataUpdated'))
-      options.onUpdated(result)
+      options.onUpdated(result, params.status)
     },
     onError: (error) => {
       const key = toastKeyForUpdateProfessionalDataError(error)
@@ -60,9 +110,11 @@ export function useUpdateProfessionalEmployeeData(
     },
   })
 
-  const updateProfessional = (payload: Employee.UpdateProfessionalDataCommand) => {
+  const updateProfessional = (input: UpdateProfessionalEmployeeDataInput) => {
     if (mutation.isPending.value) return
-    mutation.mutate(payload)
+    const params = toUpdateProfessionalEmployeeDataParams(input.command, input.original)
+    if (!hasProfessionalEmployeeDataChanges(params)) return
+    mutation.mutate(input)
   }
 
   return {

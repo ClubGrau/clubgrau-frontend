@@ -49,6 +49,21 @@ describe('useEmployeeDrawer create', () => {
   })
 })
 
+describe('useEmployeeDrawer edit', () => {
+  it('closeFormDrawer from edit closes the drawer', () => {
+    const target = employee()
+    const employees = ref([target])
+    const drawer = useEmployeeDrawer(employees, employees)
+
+    drawer.openEditDrawer(target.id)
+    drawer.closeFormDrawer()
+
+    expect(drawer.isEditDrawerOpen.value).toBe(false)
+    expect(drawer.drawer.value).toEqual({ open: false })
+    expect(drawer.detailEmployee.value).toBeNull()
+  })
+})
+
 describe('useEmployeeDrawer snapshot', () => {
   it('captures the Target when opening Inativar, before the list drops the row', () => {
     const target = employee()

@@ -66,8 +66,11 @@ export namespace Employee {
   /** PATCH /api/employee/:id/professional-data — Informações profissionais. */
   export interface UpdateProfessionalDataCommand {
     id: string;
+    /** Cargo (`ADMIN` | `MANAGER` | `EMPLOYEE`). Echoed values are not sent. */
     role: string;
-    jobTitle?: string;
-    employmentId?: string;
+    /** Função. Empty string clears Job Title. */
+    jobTitle: string;
+    /** Operational status. Echoed values are not sent. */
+    status: EmployeeStatus;
   }
 }

@@ -126,10 +126,6 @@ export function useEmployeeDrawer(
   }
 
   const closeFormDrawer = () => {
-    if (isEditDrawerOpen.value && activeEmployeeId.value !== null) {
-      openDetailDrawer(activeEmployeeId.value)
-      return
-    }
     closeDrawer()
   }
 

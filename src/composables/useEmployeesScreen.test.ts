@@ -117,4 +117,30 @@ describe('useEmployeesScreen', () => {
 
     dispose()
   })
+
+  it('shows the new status on the detail card after a professional save', async () => {
+    const item = listItem({ status: 'VACATION', role: 'ADMIN', jobTitle: 'Barbeiro' })
+    const api = stubApi(item)
+    api.updateProfessionalData.mockResolvedValue({ id: 'emp-1' })
+    const { composable, dispose } = withScreen(api)
+
+    await vi.waitFor(() => {
+      expect(composable.filteredEmployees.value).toHaveLength(1)
+    })
+
+    composable.openEditDrawer('emp-1')
+    composable.handleUpdateProfessionalEmployee({
+      id: 'emp-1',
+      role: 'ADMIN',
+      jobTitle: 'Barbeiro',
+      status: 'ACTIVE',
+    })
+
+    await vi.waitFor(() => {
+      expect(composable.detailEmployee.value?.status).toBe('ACTIVE')
+    })
+    expect(composable.filteredEmployees.value[0]?.status).toBe('VACATION')
+
+    dispose()
+  })
 })

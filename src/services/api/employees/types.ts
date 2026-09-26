@@ -92,9 +92,12 @@ export interface UpdatePersonalEmployeeDataParams {
 
 export interface UpdateProfessionalEmployeeDataParams {
   id: string
-  role: string
-  jobTitle?: string
-  employmentId?: string
+  /** `null` clears Job Title. Omitted leaves it unchanged. */
+  jobTitle?: string | null
+  /** Sent only when Cargo actually changes. */
+  role?: string
+  /** Operational status. Sent only when it differs from the Target. */
+  status?: EmployeeApiStatus
 }
 
 export type UpdateEmployeeSectionResult = { id: string }

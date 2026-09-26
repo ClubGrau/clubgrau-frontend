@@ -110,7 +110,8 @@ export class HttpEmployeesApi
   async updateProfessionalData(
     params: UpdateProfessionalEmployeeDataParams,
   ): Promise<UpdateEmployeeSectionResult> {
-    const { id, ...body } = params
+    const { id, ...fields } = params
+    const body = this.entries(fields)
     const { data } = await api.patch<UpdateEmployeeSectionResult>(
       `/api/employee/${id}/professional-data`,
       body,

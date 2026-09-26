@@ -168,22 +168,38 @@ describe('HttpEmployeesApi lifecycle commands', () => {
     })
   })
 
-  it('patches professional-data with id in the path', async () => {
+  it('patches professional-data with id in the path and only present fields', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: { id: 'emp-1' } })
 
     const result = await httpEmployeesApi.updateProfessionalData({
       id: 'emp-1',
-      role: 'EMPLOYEE',
       jobTitle: 'Barbeiro',
-      employmentId: 'EMP-001',
+      role: 'MANAGER',
+      status: 'ACTIVE',
     })
 
     expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/professional-data', {
-      role: 'EMPLOYEE',
       jobTitle: 'Barbeiro',
-      employmentId: 'EMP-001',
+      role: 'MANAGER',
+      status: 'ACTIVE',
     })
+    const sent = vi.mocked(api.patch).mock.calls[0]?.[1] as object
+    expect(sent).not.toHaveProperty('actorId')
+    expect(sent).not.toHaveProperty('employmentId')
     expect(result).toEqual({ id: 'emp-1' })
+  })
+
+  it('patches professional-data with null jobTitle to clear it', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: { id: 'emp-1' } })
+
+    await httpEmployeesApi.updateProfessionalData({
+      id: 'emp-1',
+      jobTitle: null,
+    })
+
+    expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/professional-data', {
+      jobTitle: null,
+    })
   })
 
   it('posts create to /api/employee without actorId', async () => {
