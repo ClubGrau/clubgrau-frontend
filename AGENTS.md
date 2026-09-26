@@ -199,7 +199,7 @@ Put it in `src/components/<Name>/` when more than one view will use it. Keep fea
 | One port per verb | `type EmployeesApi = A & B` |
 | Map in the adapter | Map inside `useQuery` |
 | `toApiError` + i18n keys | Toast the English `{ error }` string |
-| Use Role / **Função** | Name a field `permission` / “Permissão” |
+| Use Role / **Cargo** and Job Title / **Função** | Name a field `permission` / “Permissão”, or label Job Title as “Cargo” |
 | Use `Deactivate` / `Reactivate` / `Remove` as in `CONTEXT.md` | Label Inativar as “Remover” in the overflow menu |
 | Handle `401` / `403` / `409` from lifecycle commands | Assume a hidden button means the request cannot happen |
 | Keep glossary changes in `CONTEXT.md` | Dump Vue folder trees into `CONTEXT.md` |

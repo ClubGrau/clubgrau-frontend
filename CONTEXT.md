@@ -38,7 +38,11 @@ _Avoid_: hard delete, erase identity, GDPR erase of the id
 
 **Role**:
 `EMPLOYEE` | `MANAGER` | `ADMIN` on an identity. The Actor’s Role is the switch that decides which operator actions the UI shows. Combined with the Target’s Role and status, it mirrors the authority matrix for visibility only.
-_Avoid_: permission, “permissão” as a **field name** (the Portuguese UI label may be “Função”), permission catalog, ACL, permissão as a separate entity, `/me` as the source of Role
+_Avoid_: permission, “permissão” as a **field name** (the Portuguese UI label is “Cargo”), permission catalog, ACL, permissão as a separate entity, `/me` as the source of Role, Job Title
+
+**Job Title**:
+Free-text function of a Collaborator (for example Barbeiro). Optional on Create and clearable on Update Professional Employee Data. Distinct from Role. The Portuguese UI label is “Função”.
+_Avoid_: Role, Cargo, permission
 
 **Actor**:
 The authenticated operator who executes a lifecycle command. Their Role comes from the session (JWT payload). For Remove, the modal asks only for their password (not the Target’s, not `passwordConfirmation`, not the Target’s name typed out).
