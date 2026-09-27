@@ -56,7 +56,8 @@ export namespace Employee {
   /** PATCH /api/employee/:id/personal-data — Informações pessoais. */
   export interface UpdatePersonalDataCommand {
     id: string;
-    gender?: string;
+    /** `null` clears gender. The API accepts only `male`, `female`, or `other`. */
+    gender?: string | null;
     languages?: string;
     emergencyContact?: string;
     nif?: string;

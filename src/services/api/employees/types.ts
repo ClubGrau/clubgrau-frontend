@@ -81,7 +81,8 @@ export interface UpdateMainEmployeeDataParams {
 
 export interface UpdatePersonalEmployeeDataParams {
   id: string
-  gender?: string
+  /** `null` clears gender. Allowed strings are `male`, `female`, and `other`. */
+  gender?: string | null
   languages?: string
   emergencyContact?: string
   nif?: string

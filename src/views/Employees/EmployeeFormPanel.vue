@@ -6,6 +6,11 @@ import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
 import PasswordInput from '../../components/PasswordInput/PasswordInput.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import type { Employee, EmployeeStatus } from '../../types/employee';
+import {
+  genderApiValue,
+  genderOptionValue,
+  toGenderSelectOptions,
+} from '../../constants/employee-gender';
 import { EMPLOYEE_ROLE_OPTIONS } from '../../constants/employee-role';
 import type { SelectFilterOption } from '../../types/select-filter';
 import { hasPhoneNumber, isValidPhone } from '../../domain/phone-value';
@@ -42,12 +47,7 @@ const statusOptions = computed<SelectFilterOption[]>(() => [
   { id: 'INACTIVE', label: t('Employees.form.statusInactive'), value: 'INACTIVE' },
 ]);
 
-const genderOptions = computed<SelectFilterOption[]>(() => [
-  { id: 'feminino', label: t('Employees.form.genderFemale'), value: 'Feminino' },
-  { id: 'masculino', label: t('Employees.form.genderMale'), value: 'Masculino' },
-  { id: 'outro', label: t('Employees.form.genderOther'), value: 'Outro' },
-  { id: 'nao-informado', label: t('Employees.form.genderUnspecified'), value: 'Não informado' },
-]);
+const genderOptions = computed<SelectFilterOption[]>(() => toGenderSelectOptions((key) => t(key)));
 
 const form = reactive({
   name: '',
@@ -57,7 +57,7 @@ const form = reactive({
   nif: '',
   role: 'ADMIN',
   status: 'ACTIVE' as EmployeeStatus,
-  gender: 'Não informado',
+  gender: '',
   address: '',
   languages: 'Português',
   employmentId: '',
@@ -91,7 +91,7 @@ const fillForm = (employee: Employee.ListItem) => {
   form.nif = formText(employee.nif);
   form.role = formText(employee.role);
   form.status = employee.status ?? 'ACTIVE';
-  form.gender = formText(employee.gender);
+  form.gender = genderOptionValue(employee?.gender ?? null);
   form.address = formText(employee.address);
   form.languages = formText(employee.languages);
   form.employmentId = formText(employee.employmentId);
@@ -204,7 +204,7 @@ const onSubmitCreate = () => {
     phone: omitBlank(form.phone),
     nif: omitBlank(form.nif),
     status: form.status,
-    gender: omitBlank(form.gender),
+    gender: genderApiValue(form.gender) ?? undefined,
     address: omitBlank(form.address),
     languages: omitBlank(form.languages),
     emergencyContact: hasEmergencyContact.value
@@ -244,7 +244,7 @@ const onSubmitPersonal = () => {
 
   emit('updatePersonal', {
     id: props.employee.id,
-    gender: omitBlank(form.gender),
+    gender: genderApiValue(form.gender),
     languages: omitBlank(form.languages),
     emergencyContact: hasEmergencyContact.value
       ? form.emergencyContact.trim()

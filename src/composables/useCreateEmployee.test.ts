@@ -40,7 +40,7 @@ function payload(overrides: Partial<Employee.CreateCommand> = {}): Employee.Crea
     nif: '123456789',
     role: 'EMPLOYEE',
     status: 'ACTIVE',
-    gender: 'Masculino',
+    gender: 'male',
     address: 'Rua das Flores, 123',
     languages: 'Português',
     emergencyContact: '+351911000000',
@@ -91,6 +91,7 @@ describe('toCreateEmployeeParams', () => {
     expect(params.role).toBe('EMPLOYEE')
     expect(params.password).toBe('senhaSegura123')
     expect(params.passwordConfirmation).toBe('senhaSegura123')
+    expect(params.gender).toBe('male')
     expect(params).not.toHaveProperty('permission')
     expect(params).not.toHaveProperty('confirmPassword')
   })
@@ -114,6 +115,9 @@ describe('toCreateEmployeeParams', () => {
     expect(params.emergencyContact).toBeUndefined()
     expect(params.employmentId).toBeUndefined()
     expect(params.jobTitle).toBeUndefined()
+    expect(
+      toCreateEmployeeParams(payload({ gender: 'Não informado' })).gender,
+    ).toBeUndefined()
   })
 })
 

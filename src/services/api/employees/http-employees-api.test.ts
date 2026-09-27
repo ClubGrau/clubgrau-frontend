@@ -142,13 +142,13 @@ describe('HttpEmployeesApi lifecycle commands', () => {
 
     const result = await httpEmployeesApi.updatePersonalData({
       id: 'emp-1',
-      gender: 'Masculino',
+      gender: 'male',
       languages: 'Português',
       nif: '123456789',
     })
 
     expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/personal-data', {
-      gender: 'Masculino',
+      gender: 'male',
       languages: 'Português',
       nif: '123456789',
     })

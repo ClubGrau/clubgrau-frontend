@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { t } from '../i18n'
+import { genderApiValue } from '../constants/employee-gender'
 import { toApiError } from '../domain/api-error'
 import { employeeQueryKeys } from '../services/api/employees/query-keys'
 import type {
@@ -28,7 +29,7 @@ export function toCreateEmployeeParams(
     phone: omitBlank(payload.phone),
     nif: omitBlank(payload.nif),
     status: payload.status,
-    gender: omitBlank(payload.gender),
+    gender: genderApiValue(payload.gender) ?? undefined,
     address: omitBlank(payload.address),
     languages: omitBlank(payload.languages),
     emergencyContact: omitBlank(payload.emergencyContact),
