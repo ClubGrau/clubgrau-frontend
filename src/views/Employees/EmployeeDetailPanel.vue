@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n';
 import { Icon } from '@iconify/vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
+import { genderLabelKey } from '../../constants/employee-gender';
+import { EMPLOYEE_ROLE_OPTIONS } from '../../constants/employee-role';
 import { employeeStatusBadge } from '../../constants/employee-status';
 import type { Employee } from '../../types/employee';
 
@@ -48,15 +50,43 @@ const tabs = computed(() => [
   { id: 'payroll' as const, label: t('Employees.detail.tabPayroll') },
 ]);
 
-function optionalDisplay(value: string | null | undefined): string {
-  if (value == null || value.trim() === '') return t('Employees.detail.empty');
-  return value;
+type DetailField = {
+  label: string;
+  value: string;
+  icon?: string;
+  fullWidth?: boolean;
+};
+
+function textOf(value: string | null | undefined): string {
+  return value?.trim() ?? '';
 }
 
-const personalFields = computed(() => [
+function hasText(value: string | null | undefined): boolean {
+  return textOf(value) !== '';
+}
+
+function optionalDisplay(value: string | null | undefined): string {
+  const text = textOf(value);
+  return text === '' ? t('Employees.detail.empty') : text;
+}
+
+function genderLabel(value: string | null): string {
+  const key = genderLabelKey(value);
+  return key ? t(key) : optionalDisplay(value);
+}
+
+const roleLabel = computed(() => {
+  const match = EMPLOYEE_ROLE_OPTIONS.find((option) => option.value === props.employee.role);
+  return match?.label ?? props.employee.role;
+});
+
+const hasEmail = computed(() => hasText(props.employee.email));
+const hasPhone = computed(() => hasText(props.employee.phone));
+
+const personalFields = computed<DetailField[]>(() => [
   { label: t('Employees.detail.fullName'), value: props.employee.name },
   { label: t('Employees.detail.languages'), value: optionalDisplay(props.employee.languages) },
-  { label: t('Employees.detail.gender'), value: optionalDisplay(props.employee.gender) },
+  { label: t('Employees.detail.gender'), value: genderLabel(props.employee?.gender ?? null) },
   {
     label: t('Employees.detail.emergencyContact'),
     value: optionalDisplay(props.employee.emergencyContact),
@@ -69,13 +99,13 @@ const personalFields = computed(() => [
   },
 ]);
 
-const professionalFields = computed(() => [
+const professionalFields = computed<DetailField[]>(() => [
   {
     label: t('Employees.detail.employmentId'),
     value: optionalDisplay(props.employee.employmentId),
   },
-  { label: t('Employees.detail.jobTitle'), value: optionalDisplay(props.employee.jobTitle) },
-  { label: t('Employees.detail.role'), value: props.employee.role },
+  { label: t('Employees.detail.role'), value: optionalDisplay(props.employee.jobTitle) },
+  { label: t('Employees.detail.jobTitle'), value: roleLabel.value },
   { label: t('Employees.detail.status'), value: employeeStatusBadge[props.employee.status].label },
 ]);
 </script>
@@ -182,25 +212,36 @@ const professionalFields = computed(() => [
               :variant="employeeStatusBadge[employee.status].variant"
               size="sm"
             />
-            <span class="text-sm text-gray-500">{{ optionalDisplay(employee.jobTitle) }}</span>
           </div>
 
           <div class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-            <div class="text-sm">
-              <span class="text-gray-400">{{ t('Employees.detail.employmentId') }}: </span>
-              <span class="font-medium text-gray-800">{{ optionalDisplay(employee.employmentId) }}</span>
+            <div class="space-y-2">
+              <div class="text-sm">
+                <span class="text-gray-400">{{ t('Employees.detail.employmentId') }}: </span>
+                <span class="font-medium text-gray-800">{{ optionalDisplay(employee.employmentId) }}</span>
+              </div>
+              <div class="text-sm">
+                <span class="text-gray-400">{{ t('Employees.detail.jobTitle') }}: </span>
+                <span class="font-medium text-gray-800">{{ roleLabel }}</span>
+              </div>
             </div>
-            <div class="flex items-center gap-2 text-sm text-gray-700">
-              <Icon icon="carbon:email" class="size-4 shrink-0 text-gray-400" />
-              <span class="truncate">{{ employee.email }}</span>
-            </div>
-            <div class="text-sm">
-              <span class="text-gray-400">{{ t('Employees.detail.role') }}: </span>
-              <span class="font-medium text-gray-800">{{ employee.role }}</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-700">
-              <Icon icon="carbon:phone" class="size-4 shrink-0 text-gray-400" />
-              <span>{{ optionalDisplay(employee.phone) }}</span>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2 text-sm text-gray-700">
+                <Icon
+                  v-if="hasEmail"
+                  icon="carbon:email"
+                  class="size-4 shrink-0 text-gray-400"
+                />
+                <span class="truncate">{{ optionalDisplay(employee.email) }}</span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-700">
+                <Icon
+                  v-if="hasPhone"
+                  icon="carbon:phone"
+                  class="size-4 shrink-0 text-gray-400"
+                />
+                <span>{{ optionalDisplay(employee.phone) }}</span>
+              </div>
             </div>
           </div>
         </div>
