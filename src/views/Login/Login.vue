@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
 import logoGrau from '../../assets/img/login-logo-grau.png'
 import PasswordInput from '../../components/PasswordInput/PasswordInput.vue'
 import { useBreakpoint } from '../../composables/useBreakpoint'
