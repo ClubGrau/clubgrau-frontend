@@ -150,7 +150,11 @@ A use-case composable takes the thin port it needs (`useEmployees(getEmployeesAp
 
 ### Tests
 
-Vitest (`npm run test`). A composable test stubs **only** the port that composable uses. Domain tests cover `lifecycleActions`, `canCreate`, `toApiError`. Mapper tests stay next to the mapper. HTTP adapter tests assert the list is already `ListItem` (including `initials`).
+Vitest (`npm run test`). A composable test stubs **only** the port that composable uses. Domain tests cover `lifecycleActions`, `canCreate`, `toApiError`, and viewport breakpoints. Mapper tests stay next to the mapper. HTTP adapter tests assert the list is already `ListItem` (including `initials`).
+
+### Viewport
+
+`useBreakpoint()` (`src/composables/useBreakpoint.ts`) is the hook for layout that depends on the viewport. It mirrors Tailwind’s default min-width queries. Tiers: **mobile** below `md`, **tablet** from `md` up to `lg`, **desktop** from `lg` up. `atLeast('lg')` is the same check as the `lg:` utility. The classification itself is `src/domain/breakpoints.ts` — do not hard-code a second set of widths.
 
 ### i18n
 
@@ -202,6 +206,7 @@ Put it in `src/components/<Name>/` when more than one view will use it. Keep fea
 | Use Role / **Função** | Name a field `permission` / “Permissão” |
 | Use `Deactivate` / `Reactivate` / `Remove` as in `CONTEXT.md` | Label Inativar as “Remover” in the overflow menu |
 | Handle `401` / `403` / `409` from lifecycle commands | Assume a hidden button means the request cannot happen |
+| `useBreakpoint()` when layout depends on the viewport | Hard-code a second set of pixel widths |
 | Keep glossary changes in `CONTEXT.md` | Dump Vue folder trees into `CONTEXT.md` |
 | Update this file when the composable/HTTP pattern changes | Log every CSS tweak here |
 
@@ -218,3 +223,4 @@ Put it in `src/components/<Name>/` when more than one view will use it. Keep fea
 | Axios instance | `src/services/api/config.ts` |
 | Query client | `src/query/index.ts` |
 | Router / auth guard | `src/routes/index.ts` |
+| Viewport breakpoints | `src/domain/breakpoints.ts` + `src/composables/useBreakpoint.ts` |
