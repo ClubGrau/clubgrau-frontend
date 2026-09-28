@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Vue Router usa history mode. Sem isso, /login e /app devolvem 404 no refresh.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
