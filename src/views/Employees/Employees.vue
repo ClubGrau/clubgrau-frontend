@@ -105,6 +105,10 @@ const employeeRole = (role: string) => {
   return roleOptions.find((option) => option.value === role)?.label;
 };
 
+const employeeUsername = (username: string) => {
+  return username && `@${username}`;
+};
+
 const statCards = computed<StatCardItem[]>(() => [
   {
     id: 'total',
@@ -249,7 +253,7 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
                     <p class="truncate text-sm font-semibold text-gray-900">
                       {{ employee.name }}
                     </p>
-                    <p class="truncate text-xs text-gray-400">@{{ employee.username }}</p>
+                    <p class="truncate text-xs text-gray-400">{{ employeeUsername(employee.username) }}</p>
                   </div>
                 </div>
               </td>
