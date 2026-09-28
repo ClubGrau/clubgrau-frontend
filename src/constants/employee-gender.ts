@@ -57,15 +57,17 @@ export function genderLabelKey(value: string | null): string | null {
 }
 
 /** Select value. API and older Portuguese records resolve to `male` | `female` | `other` | ''. */
-export function genderOptionValue(value: string | null): EmployeeGender | '' {
+export function genderOptionValue(value: string | null): string {
   const match = findGender(value)
-  return match?.value ?? ''
+  if (!match) return ''
+  return match.value
 }
 
 /** Body value for create/update. Unspecified is null so the API can clear the field. */
-export function genderApiValue(value: string | null): EmployeeGender | null {
+export function genderApiValue(value: string | null): string | null {
   const option = genderOptionValue(value)
-  return option === '' ? null : option
+  if (option === '') return null
+  return option
 }
 
 export function toGenderSelectOptions(
