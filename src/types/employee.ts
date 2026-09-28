@@ -27,14 +27,14 @@ export namespace Employee {
   /** Payload do formulário de criação — único lugar onde senha existe. */
   export interface CreateCommand {
     name: string;
-    username: string;
+    username?: string;
     email: string;
     role: string;
     password: string;
     passwordConfirmation: string;
-    phone?: string;
+    phone: string;
     nif?: string;
-    status?: EmployeeStatus;
+    status: EmployeeStatus;
     gender?: string;
     address?: string;
     languages?: string;

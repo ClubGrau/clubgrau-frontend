@@ -48,20 +48,20 @@ export interface RemoveEmployeeApi {
 
 export interface CreateEmployeeParams {
   name: string
-  username: string
+  username?: string | null
   email: string
   role: string
   password: string
   passwordConfirmation: string
-  phone?: string
-  nif?: string
-  status?: EmployeeApiStatus
-  gender?: string
-  address?: string
-  languages?: string
-  emergencyContact?: string
-  employmentId?: string
-  jobTitle?: string
+  phone: string
+  nif?: string | null
+  status: EmployeeApiStatus
+  gender?: string | null
+  address?: string | null
+  languages?: string | null
+  emergencyContact?: string | null
+  employmentId?: string | null
+  jobTitle?: string | null
 }
 
 export type CreateEmployeeResult = { id: string }

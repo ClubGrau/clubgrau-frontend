@@ -124,7 +124,6 @@ const passwordOk = computed(
 const missingRequired = computed(() => {
   const missing: string[] = [];
   if (form.name.trim().length <= 1) missing.push(t('Employees.form.name'));
-  if (!formText(form.username).trim().replace(/^@/, '')) missing.push(t('Employees.form.username'));
   if (!form.email.trim().includes('@')) missing.push(t('Employees.form.email'));
   if (!isValidPhone(form.phone)) missing.push(t('Employees.form.phone'));
   if (form.role.trim().length === 0) missing.push(t('Employees.form.role'));
@@ -196,12 +195,12 @@ const onSubmitCreate = () => {
   const username = normalizeUsername(form.username);
   emit('create', {
     name: form.name.trim(),
-    username,
+    username: omitBlank(username),
     email: form.email.trim(),
     role: form.role,
     password: form.password.trim(),
     passwordConfirmation: form.passwordConfirmation.trim(),
-    phone: omitBlank(form.phone),
+    phone: form.phone.trim(),
     nif: omitBlank(form.nif),
     status: form.status,
     gender: genderApiValue(form.gender) ?? undefined,
@@ -353,11 +352,7 @@ const onFormSubmit = () => {
 
             <div class="flex flex-col gap-1.5">
               <label for="create-username" class="text-xs text-gray-400">
-                {{
-                  isEditMode
-                    ? t('Employees.form.username')
-                    : t('Employees.form.usernameRequired')
-                }}
+                {{ t('Employees.form.username') }}
               </label>
               <input
                 id="create-username"
@@ -365,11 +360,6 @@ const onFormSubmit = () => {
                 type="text"
                 :placeholder="t('Employees.form.usernamePlaceholder')"
                 class="form-input"
-                :class="{
-                  'form-input-error':
-                    !isEditMode &&
-                    fieldError(formText(form.username).replace(/^@/, '')),
-                }"
               />
             </div>
           </div>

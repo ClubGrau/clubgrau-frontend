@@ -11,8 +11,8 @@ import type {
 import type { Employee } from '../types/employee'
 import { useToast } from './useToast'
 
-function omitBlank(value: string | undefined): string | undefined {
-  if (value === undefined || value === '') return
+function omitBlank(value?: string): string | null {
+  if (!value || value === '') return null
   return value
 }
 
@@ -21,15 +21,15 @@ export function toCreateEmployeeParams(
 ): CreateEmployeeParams {
   return {
     name: payload.name,
-    username: payload.username,
+    username: omitBlank(payload?.username),
     email: payload.email,
     role: payload.role,
     password: payload.password,
     passwordConfirmation: payload.passwordConfirmation,
-    phone: omitBlank(payload.phone),
+    phone: payload.phone,
     nif: omitBlank(payload.nif),
     status: payload.status,
-    gender: genderApiValue(payload.gender) ?? undefined,
+    gender: genderApiValue(payload.gender ?? null),
     address: omitBlank(payload.address),
     languages: omitBlank(payload.languages),
     emergencyContact: omitBlank(payload.emergencyContact),
