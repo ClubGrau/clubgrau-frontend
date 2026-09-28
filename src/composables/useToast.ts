@@ -8,7 +8,7 @@ export interface Toast {
   message: string
 }
 
-const AUTO_DISMISS_MS = 3000
+const AUTO_DISMISS_MS = 5000
 
 const toasts: Ref<Toast[]> = ref([])
 const timeouts = new Map<string, ReturnType<typeof setTimeout>>()
@@ -21,10 +21,9 @@ function createId(): string {
 
 function dismiss(id: string): void {
   const timeout = timeouts.get(id)
-  if (!timeout) {
+  if (timeout) {
     clearTimeout(timeout)
     timeouts.delete(id)
-    return
   }
   toasts.value = toasts.value.filter((toast) => toast.id !== id)
 }
