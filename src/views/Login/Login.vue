@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import logoGrau from '../../assets/img/login-logo-grau.png'
@@ -8,7 +9,7 @@ import { httpAuthApi } from '../../services/api/auth/http-auth-api'
 
 const { t } = useI18n()
 
-const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
+const { userCredentials, handleSubmit, isSubmitting } = useLogin(httpAuthApi)
 </script>
 
 <template>
@@ -45,6 +46,7 @@ const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
                 type="email"
                 :placeholder="t('Login.emailPlaceholder')"
                 autofocus
+                :disabled="isSubmitting"
                 class="styled-input"
               />
             </div>
@@ -64,6 +66,7 @@ const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
                 :placeholder="t('Login.passwordPlaceholder')"
                 :show-label="t('Login.showPassword')"
                 :hide-label="t('Login.hidePassword')"
+                :disabled="isSubmitting"
               />
             </div>
 
@@ -71,7 +74,8 @@ const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
               <input
                 v-model="userCredentials.remember"
                 type="checkbox"
-                class="size-4 shrink-0 appearance-none rounded-full border border-gray-400 checked:border-[#3B82F6] checked:bg-[#3B82F6] checked:shadow-[inset_0_0_0_3px_white]"
+                :disabled="isSubmitting"
+                class="size-4 shrink-0 appearance-none rounded-full border border-gray-400 checked:border-[#3B82F6] checked:bg-[#3B82F6] checked:shadow-[inset_0_0_0_3px_white] disabled:cursor-not-allowed disabled:opacity-60"
               />
               <span class="text-sm text-gray-500">
                 {{ t('Login.rememberDevice') }}
@@ -80,18 +84,17 @@ const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
 
             <button
               type="submit"
-              class="mt-2 w-full rounded-lg bg-[#F5A623] py-3.5 text-sm font-semibold text-[#092D4D] transition-colors hover:bg-[#e0981f] cursor-pointer"
+              class="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#F5A623] py-3.5 text-sm font-semibold text-[#092D4D] transition-colors hover:bg-[#e0981f] disabled:cursor-wait disabled:opacity-60"
+              :disabled="isSubmitting"
+              :aria-busy="isSubmitting"
             >
+              <Icon
+                v-if="isSubmitting"
+                icon="carbon:circle-dash"
+                class="size-4 animate-spin"
+              />
               {{ t('Login.submit') }}
             </button>
-
-            <p
-              v-if="loginError"
-              role="alert"
-              class="text-sm text-red-600"
-            >
-              {{ t('Login.error') }}
-            </p>
           </form>
         </div>
       </div>
@@ -119,6 +122,7 @@ const { userCredentials, handleSubmit, loginError } = useLogin(httpAuthApi)
     text-sm text-[#092D4D]
     outline-none
     placeholder:text-gray-400
-    focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30;
+    focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30
+    disabled:cursor-not-allowed disabled:opacity-60;
 }
 </style>

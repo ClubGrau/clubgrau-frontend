@@ -11,7 +11,13 @@
   "hidePassword": "Hide password",
   "rememberDevice": "Remember this device for 15 days",
   "submit": "Sign in to Grau System",
-  "error": "Could not sign in. Check your email and password.",
+  "toast": {
+    "emailRequired": "Enter your email.",
+    "emailInvalid": "Enter a valid email address.",
+    "passwordRequired": "Enter your password.",
+    "credentials": "Could not sign in. Check your email and password.",
+    "unexpected": "Could not complete the action. Try again."
+  },
   "privacy": "PRIVACY",
   "terms": "TERMS",
   "support": "CONTACT SUPPORT",

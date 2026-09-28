@@ -11,7 +11,13 @@
   "hidePassword": "Ocultar palavra-passe",
   "rememberDevice": "Lembrar deste dispositivo por 15 dias",
   "submit": "Entrar no Grau System",
-  "error": "Não foi possível entrar. Verifique o e-mail e a palavra-passe.",
+  "toast": {
+    "emailRequired": "Indique o e-mail.",
+    "emailInvalid": "Indique um e-mail válido.",
+    "passwordRequired": "Indique a palavra-passe.",
+    "credentials": "Não foi possível entrar. Verifique o e-mail e a palavra-passe.",
+    "unexpected": "Não foi possível concluir a ação. Tente novamente."
+  },
   "privacy": "PRIVACIDADE",
   "terms": "TERMO",
   "support": "FALAR AO SUPORTE",
