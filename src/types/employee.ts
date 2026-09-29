@@ -70,5 +70,7 @@ export namespace Employee {
     role: string;
     jobTitle?: string;
     employmentId?: string;
+    /** ACTIVE, VACATION ou INACTIVE. REMOVED não entra neste comando. */
+    status: EmployeeStatus;
   }
 }

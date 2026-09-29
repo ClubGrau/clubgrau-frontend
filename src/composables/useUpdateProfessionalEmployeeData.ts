@@ -7,7 +7,7 @@ import type {
   UpdateProfessionalEmployeeDataApi,
   UpdateProfessionalEmployeeDataParams,
 } from '../services/api/employees/types'
-import type { Employee } from '../types/employee'
+import type { Employee, EmployeeStatus } from '../types/employee'
 import { useToast } from './useToast'
 
 function omitBlank(value: string | undefined): string | undefined {
@@ -23,19 +23,23 @@ export function toUpdateProfessionalEmployeeDataParams(
     role: payload.role.trim(),
     jobTitle: omitBlank(payload.jobTitle),
     employmentId: omitBlank(payload.employmentId),
+    status: payload.status,
   }
 }
 
 export function toastKeyForUpdateProfessionalDataError(error: unknown): string | null {
   const mapped = toApiError(error)
   if (mapped.code === 'UNAUTHORIZED') return null
+  if (mapped.code === 'LAST_ADMIN') return 'Employees.toast.lastAdmin'
   if (mapped.code === 'FORBIDDEN') return 'Employees.toast.forbidden'
-  if (mapped.code === 'CONFLICT') return 'Employees.toast.updateConflict'
+  if (mapped.code === 'CONFLICT' || mapped.code === 'ALREADY_REMOVED') {
+    return 'Employees.toast.updateConflict'
+  }
   return 'Employees.toast.updateValidation'
 }
 
 interface UpdateProfessionalEmployeeDataOptions {
-  onUpdated: (result: UpdateEmployeeSectionResult) => void
+  onUpdated: (result: UpdateEmployeeSectionResult & { status: EmployeeStatus }) => void
 }
 
 export function useUpdateProfessionalEmployeeData(
@@ -49,10 +53,10 @@ export function useUpdateProfessionalEmployeeData(
     mutationFn: (payload: Employee.UpdateProfessionalDataCommand) =>
       api.updateProfessionalData(toUpdateProfessionalEmployeeDataParams(payload)),
     retry: 0,
-    onSuccess: (result) => {
+    onSuccess: (result, payload) => {
       void queryClient.invalidateQueries({ queryKey: employeeQueryKeys.all })
       toast.push('success', t('Employees.toast.professionalDataUpdated'))
-      options.onUpdated(result)
+      options.onUpdated({ id: result.id, status: payload.status })
     },
     onError: (error) => {
       const key = toastKeyForUpdateProfessionalDataError(error)

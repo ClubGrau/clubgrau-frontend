@@ -263,6 +263,7 @@ const onSubmitProfessional = () => {
     role: form.role,
     jobTitle: omitBlank(form.jobTitle),
     employmentId: omitBlank(form.employmentId),
+    status: form.status,
   });
 };
 

@@ -155,7 +155,7 @@ describe('HttpEmployeesApi lifecycle commands', () => {
     expect(result).toEqual({ id: 'emp-1' })
   })
 
-  it('patches professional-data with id in the path', async () => {
+  it('patches professional-data with role, job fields, and status', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: { id: 'emp-1' } })
 
     const result = await httpEmployeesApi.updateProfessionalData({
@@ -163,13 +163,19 @@ describe('HttpEmployeesApi lifecycle commands', () => {
       role: 'EMPLOYEE',
       jobTitle: 'Barbeiro',
       employmentId: 'EMP-001',
+      status: 'VACATION',
     })
 
     expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/professional-data', {
       role: 'EMPLOYEE',
       jobTitle: 'Barbeiro',
       employmentId: 'EMP-001',
+      status: 'VACATION',
     })
+
+    const body = vi.mocked(api.patch).mock.calls[0]?.[1] as object
+    expect(body).not.toHaveProperty('id')
+    expect(body).not.toHaveProperty('actorId')
     expect(result).toEqual({ id: 'emp-1' })
   })
 

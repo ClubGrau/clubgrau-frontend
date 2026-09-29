@@ -94,6 +94,8 @@ export interface UpdateProfessionalEmployeeDataParams {
   role: string
   jobTitle?: string
   employmentId?: string
+  /** ACTIVE, VACATION ou INACTIVE. A API só persiste quando a chave vem no body. */
+  status: EmployeeApiStatus
 }
 
 export type UpdateEmployeeSectionResult = { id: string }
