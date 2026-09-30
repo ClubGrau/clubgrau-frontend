@@ -27,8 +27,16 @@ function isNavItemVisible(item: NavigatePathsProps) {
   return canAccessEmployees(actor.value);
 }
 
+const emit = defineEmits<{
+  navigate: [];
+}>();
+
 const isRouteActive = (route: string) => {
   return router.path === route || matchedRouter(route);
+};
+
+const onNavigate = () => {
+  emit("navigate");
 };
 </script>
 
@@ -59,6 +67,7 @@ const isRouteActive = (route: string) => {
           <router-link
             :to="{ path: link.router }"
             class="flex items-center justify-start px-4 py-2.5"
+            @click="onNavigate"
           >
             <Icon :icon="link.icon" class="mr-2.5 h-5 w-5 text-white" />
             <span class="text-[15px] text-white">{{ link.description }}</span>
