@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Icon } from '@iconify/vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
@@ -150,10 +150,75 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
   { label: t('Employees.tabs.vacation'), value: 'VACATION' },
   { label: t('Employees.tabs.inactive'), value: 'INACTIVE' },
 ]);
+
+const statusTabsRef = ref<HTMLElement | null>(null);
+let statusTabsPointerId: number | null = null;
+let statusTabsStartX = 0;
+let statusTabsStartScroll = 0;
+let statusTabsDragged = false;
+
+const stopStatusTabsDrag = () => {
+  statusTabsPointerId = null;
+  window.removeEventListener('pointermove', onStatusTabsPointerMove);
+  window.removeEventListener('pointerup', onStatusTabsPointerUp);
+  window.removeEventListener('pointercancel', onStatusTabsPointerUp);
+};
+
+function onStatusTabsPointerMove(event: PointerEvent) {
+  if (statusTabsPointerId !== event.pointerId) return;
+  const scroller = statusTabsRef.value;
+  if (!scroller) return;
+  const delta = event.clientX - statusTabsStartX;
+  if (Math.abs(delta) <= 4) return;
+  if (scroller.scrollWidth <= scroller.clientWidth) return;
+  statusTabsDragged = true;
+  scroller.scrollLeft = statusTabsStartScroll - delta;
+}
+
+function onStatusTabsPointerUp(event: PointerEvent) {
+  if (statusTabsPointerId !== event.pointerId) return;
+  const dragged = statusTabsDragged;
+  stopStatusTabsDrag();
+  if (!dragged) return;
+
+  const swallowClick = (clickEvent: MouseEvent) => {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+    statusTabsDragged = false;
+  };
+  window.addEventListener('click', swallowClick, { capture: true, once: true });
+  requestAnimationFrame(() => {
+    window.removeEventListener('click', swallowClick, { capture: true });
+    statusTabsDragged = false;
+  });
+}
+
+function onStatusTabsPointerDown(event: PointerEvent) {
+  if (event.pointerType === 'touch' || event.button !== 0) return;
+  const scroller = statusTabsRef.value;
+  if (!scroller) return;
+  statusTabsPointerId = event.pointerId;
+  statusTabsStartX = event.clientX;
+  statusTabsStartScroll = scroller.scrollLeft;
+  statusTabsDragged = false;
+  window.addEventListener('pointermove', onStatusTabsPointerMove);
+  window.addEventListener('pointerup', onStatusTabsPointerUp);
+  window.addEventListener('pointercancel', onStatusTabsPointerUp);
+}
+
+function onStatusTabClick(value: StatusFilter) {
+  if (statusTabsDragged) {
+    statusTabsDragged = false;
+    return;
+  }
+  setStatusFilter(value);
+}
+
+onUnmounted(stopStatusTabsDrag);
 </script>
 
 <template>
-  <div class="min-h-full bg-[#f5f5f7] px-8 pb-8 pt-5">
+  <div class="min-h-full bg-[#f5f5f7] px-4 pb-8 pt-5">
     <Breadcrumb :items="breadcrumbItems" />
 
     <PageHeader
@@ -164,7 +229,7 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
         <button
           v-if="canCreate"
           type="button"
-          class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
+          class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f] md:w-auto"
           @click="openCreateDrawer"
         >
           {{ t('Employees.newEmployee') }}
@@ -173,35 +238,59 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
       </template>
     </PageHeader>
 
-    <div class="mb-6 grid grid-cols-4 gap-4">
+    <div
+      class="mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scrollbar-none md:grid md:snap-none md:grid-cols-4 md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden"
+    >
       <StatCard
         v-for="card in statCards"
         :key="card.id"
+        class="w-[calc(100%-3rem)] shrink-0 snap-start md:w-auto md:shrink md:snap-align-none"
         v-bind="card"
       />
     </div>
 
     <!-- Table card -->
     <section class="rounded-2xl bg-white p-5 shadow-sm">
-      <div class="mb-5 flex flex-wrap items-center gap-3">
-        <div class="flex items-center gap-1 rounded-full bg-[#f3f3f5] p-1">
-          <button
-            v-for="tab in tabs"
-            :key="tab.value"
-            type="button"
-            class="cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors"
-            :class="
-              statusFilter === tab.value
-                ? 'bg-[#5c5c66] font-medium text-white'
-                : 'text-gray-500 hover:text-gray-700'
-            "
-            @click="setStatusFilter(tab.value)"
+      <div class="mb-5 flex flex-col gap-3 md:flex-row md:items-center">
+        <div class="flex min-w-0 items-center gap-2 md:contents">
+          <div
+            ref="statusTabsRef"
+            class="min-w-0 shrink cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain rounded-full bg-[#f3f3f5] p-1 scrollbar-none select-none active:cursor-grabbing md:order-1 [&::-webkit-scrollbar]:hidden"
+            @pointerdown="onStatusTabsPointerDown"
           >
-            {{ tab.label }}
-          </button>
+            <div class="flex w-max items-center gap-1">
+              <button
+                v-for="tab in tabs"
+                :key="tab.value"
+                type="button"
+                class="shrink-0 cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors overflow-hidden"
+                :class="
+                  statusFilter === tab.value
+                    ? 'bg-[#5c5c66] font-medium text-white'
+                    : 'text-gray-500 hover:text-gray-700'
+                "
+                @click="onStatusTabClick(tab.value)"
+              >
+                {{ tab.label }}
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="w-[38%] max-w-44 min-w-26 shrink-0 md:order-3 md:w-auto md:max-w-none md:min-w-45 md:shrink [&_button]:min-w-0! md:[&_button]:min-w-45!"
+          >
+            <SelectFilter
+              v-model="roleFilter"
+              class="w-full md:w-auto"
+              :options="roleOptions"
+              :placeholder="t('Employees.roleFilterPlaceholder')"
+              variant="pill"
+              @change="onRoleFilterChange"
+            />
+          </div>
         </div>
 
-        <div class="relative min-w-70 flex-1">
+        <div class="relative w-full md:order-2 md:min-w-70 md:w-auto md:flex-1">
           <Icon
             icon="carbon:search"
             class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400"
@@ -213,14 +302,6 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
             class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
           />
         </div>
-
-        <SelectFilter
-          v-model="roleFilter"
-          :options="roleOptions"
-          :placeholder="t('Employees.roleFilterPlaceholder')"
-          variant="pill"
-          @change="onRoleFilterChange"
-        />
       </div>
 
       <div class="overflow-x-auto">
