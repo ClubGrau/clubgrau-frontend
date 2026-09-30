@@ -8,7 +8,9 @@
   "newEmployee": "Novo colaborador",
   "searchPlaceholder": "Busque por Nome, Contatos...",
   "roleFilterPlaceholder": "Filtrar por função",
+  "loading": "A carregar colaboradores",
   "empty": "Nenhum colaborador encontrado.",
+  "emptyVacation": "Nenhum colaborador está de férias.",
   "tabs": {
     "all": "Todos",
     "active": "Ativos",

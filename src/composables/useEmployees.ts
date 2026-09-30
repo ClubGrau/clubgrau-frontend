@@ -64,6 +64,7 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
   const query = useQuery({
     queryKey: employeeQueryKeys.list(listParams),
     queryFn: () => getEmployeesApi.getEmployees(listParams.value),
+    placeholderData: keepPreviousData,
   })
 
   const employees = computed<Employee.ListItem[]>(() => query.data.value?.data ?? [])
@@ -115,6 +116,13 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     }
   })
 
+  const isStatsLoading = computed(
+    () =>
+      activeCount.isLoading.value ||
+      vacationCount.isLoading.value ||
+      inactiveCount.isLoading.value,
+  )
+
   const resetToFirstPage = () => {
     currentPage.value = 1
   }
@@ -144,6 +152,8 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
     stats,
     total,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    isStatsLoading,
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,

@@ -13,6 +13,7 @@ import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import EmployeeFormPanel from './EmployeeFormPanel.vue';
 import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
 import ModalLayout from '../../components/Modal/ModalLayout.vue';
+import emptyListImage from '../../assets/img/empty-list.png';
 import { employeeStatusBadge } from '../../constants/employee-status';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
 import type { StatCardItem } from '../../types/stat-card';
@@ -37,6 +38,9 @@ const {
   roleOptions,
   stats,
   total,
+  isListLoading,
+  isListFetching,
+  isStatsLoading,
   canCreate,
   drawer,
   isCreateDrawerOpen,
@@ -144,6 +148,12 @@ const statCards = computed<StatCardItem[]>(() => [
   },
 ]);
 
+const emptyMessage = computed(() =>
+  statusFilter.value === 'VACATION'
+    ? t('Employees.emptyVacation')
+    : t('Employees.empty'),
+);
+
 const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
   { label: t('Employees.tabs.all'), value: 'todos' },
   { label: t('Employees.tabs.active'), value: 'ACTIVE' },
@@ -221,10 +231,15 @@ onUnmounted(stopStatusTabsDrag);
   <div class="min-h-full bg-[#f5f5f7] px-4 pb-8 pt-5">
     <Breadcrumb :items="breadcrumbItems" />
 
-    <PageHeader
-      :title="t('Employees.title')"
-      :subtitle="informationSubtitle"
-    >
+    <PageHeader :title="t('Employees.title')">
+      <template #subtitle>
+        <span
+          v-if="isStatsLoading"
+          class="block h-10 w-full max-w-sm animate-pulse rounded bg-gray-200 md:h-5 md:max-w-72"
+          aria-hidden="true"
+        />
+        <span v-else class="block min-h-10 md:min-h-5">{{ informationSubtitle }}</span>
+      </template>
       <template #actions>
         <button
           v-if="canCreate"
@@ -239,23 +254,30 @@ onUnmounted(stopStatusTabsDrag);
     </PageHeader>
 
     <div
-      class="mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scrollbar-none md:grid md:snap-none md:grid-cols-4 md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden"
+      class="mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scrollbar-none lg:grid lg:snap-none lg:grid-cols-4 lg:gap-4 lg:overflow-visible [&::-webkit-scrollbar]:hidden"
     >
       <StatCard
         v-for="card in statCards"
         :key="card.id"
-        class="w-[calc(100%-3rem)] shrink-0 snap-start md:w-auto md:shrink md:snap-align-none"
+        class="w-[calc(100%-3rem)] shrink-0 snap-start md:w-72 lg:w-auto lg:shrink lg:snap-align-none"
         v-bind="card"
-      />
+      >
+        <template v-if="isStatsLoading" #value>
+          <span
+            class="block h-9 w-12 animate-pulse rounded-md bg-current/20"
+            aria-hidden="true"
+          />
+        </template>
+      </StatCard>
     </div>
 
     <!-- Table card -->
     <section class="rounded-2xl bg-white p-5 shadow-sm">
-      <div class="mb-5 flex flex-col gap-3 md:flex-row md:items-center">
-        <div class="flex min-w-0 items-center gap-2 md:contents">
+      <div class="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div class="flex min-w-0 items-center gap-2 lg:contents">
           <div
             ref="statusTabsRef"
-            class="min-w-0 shrink cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain rounded-full bg-[#f3f3f5] p-1 scrollbar-none select-none active:cursor-grabbing md:order-1 [&::-webkit-scrollbar]:hidden"
+            class="min-w-0 shrink cursor-grab touch-pan-x overflow-x-auto overscroll-x-contain rounded-full bg-[#f3f3f5] p-1 scrollbar-none select-none active:cursor-grabbing lg:order-1 [&::-webkit-scrollbar]:hidden"
             @pointerdown="onStatusTabsPointerDown"
           >
             <div class="flex w-max items-center gap-1">
@@ -277,11 +299,11 @@ onUnmounted(stopStatusTabsDrag);
           </div>
 
           <div
-            class="w-[38%] max-w-44 min-w-26 shrink-0 md:order-3 md:w-auto md:max-w-none md:min-w-45 md:shrink [&_button]:min-w-0! md:[&_button]:min-w-45!"
+            class="w-[38%] max-w-44 min-w-26 shrink-0 lg:order-3 lg:w-auto lg:max-w-none lg:min-w-45 lg:shrink [&_button]:min-w-0! lg:[&_button]:min-w-45!"
           >
             <SelectFilter
               v-model="roleFilter"
-              class="w-full md:w-auto"
+              class="w-full lg:w-auto"
               :options="roleOptions"
               :placeholder="t('Employees.roleFilterPlaceholder')"
               variant="pill"
@@ -290,7 +312,7 @@ onUnmounted(stopStatusTabsDrag);
           </div>
         </div>
 
-        <div class="relative w-full md:order-2 md:min-w-70 md:w-auto md:flex-1">
+        <div class="relative w-full lg:order-2 lg:min-w-70 lg:w-auto lg:flex-1">
           <Icon
             icon="carbon:search"
             class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400"
@@ -304,7 +326,12 @@ onUnmounted(stopStatusTabsDrag);
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <div
+        v-if="isListLoading || filteredEmployees.length > 0"
+        class="overflow-x-auto"
+        :aria-busy="isListLoading || isListFetching"
+        :aria-label="isListLoading ? t('Employees.loading') : undefined"
+      >
         <table class="w-full min-w-225 border-collapse text-left">
           <thead>
             <tr class="border-b border-gray-100 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
@@ -316,7 +343,43 @@ onUnmounted(stopStatusTabsDrag);
               <th class="py-3 pl-2 text-right font-semibold">{{ t('Employees.table.actions') }}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody :class="isListFetching && !isListLoading ? 'opacity-60' : undefined">
+            <template v-if="isListLoading">
+            <tr
+              v-for="row in pageSize"
+              :key="`skeleton-${row}`"
+              class="border-b border-gray-50 last:border-b-0"
+            >
+              <td class="py-4 pr-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <div class="size-9 shrink-0 animate-pulse rounded-full bg-gray-100" />
+                  <div class="space-y-2">
+                    <div class="h-3.5 w-32 animate-pulse rounded bg-gray-100" />
+                    <div class="h-3 w-20 animate-pulse rounded bg-gray-100" />
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 pr-4 align-middle">
+                <div class="space-y-2">
+                  <div class="h-3 w-40 animate-pulse rounded bg-gray-100" />
+                  <div class="h-3 w-24 animate-pulse rounded bg-gray-100" />
+                </div>
+              </td>
+              <td class="py-4 pr-4 align-middle">
+                <div class="h-3.5 w-24 animate-pulse rounded bg-gray-100" />
+              </td>
+              <td class="py-4 pr-4 align-middle">
+                <div class="h-3.5 w-20 animate-pulse rounded bg-gray-100" />
+              </td>
+              <td class="py-4 pr-4 align-middle">
+                <div class="h-6 w-16 animate-pulse rounded-full bg-gray-100" />
+              </td>
+              <td class="py-4 pl-2 text-right align-middle">
+                <div class="ml-auto size-5 animate-pulse rounded bg-gray-100" />
+              </td>
+            </tr>
+            </template>
+            <template v-else>
             <tr
               v-for="employee in filteredEmployees"
               :key="employee.id"
@@ -383,14 +446,25 @@ onUnmounted(stopStatusTabsDrag);
                 </button>
               </td>
             </tr>
-
-            <tr v-if="filteredEmployees.length === 0">
-              <td colspan="6" class="py-12 text-center text-sm text-gray-400">
-                {{ t('Employees.empty') }}
-              </td>
-            </tr>
+            </template>
           </tbody>
         </table>
+      </div>
+
+      <div
+        v-else
+        class="flex min-h-72 flex-col items-center justify-center gap-4 px-4 py-10 text-center sm:min-h-80 sm:py-14"
+      >
+        <img
+          :src="emptyListImage"
+          alt=""
+          width="434"
+          height="260"
+          class="h-auto w-36 max-w-full sm:w-44"
+        />
+        <p class="max-w-md text-base text-gray-700 sm:text-lg">
+          {{ emptyMessage }}
+        </p>
       </div>
 
       <Pagination

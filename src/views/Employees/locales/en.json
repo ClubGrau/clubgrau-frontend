@@ -8,7 +8,9 @@
   "newEmployee": "New employee",
   "searchPlaceholder": "Search by name, contacts...",
   "roleFilterPlaceholder": "Filter by role",
+  "loading": "Loading employees",
   "empty": "No employees found.",
+  "emptyVacation": "No employee is on vacation.",
   "tabs": {
     "all": "All",
     "active": "Active",
