@@ -132,7 +132,12 @@ export function useEmployeesScreen(
 
   const { updateProfessional, isUpdatingProfessional } = useUpdateProfessionalEmployeeData(
     api,
-    { onUpdated: onEmployeeSectionUpdated },
+    {
+      onUpdated: (result) => {
+        openDetailDrawer(result.id)
+        patchSnapshotStatus(result.status)
+      },
+    },
   )
 
   const selection = useEmployeeSelection({

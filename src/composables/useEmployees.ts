@@ -1,5 +1,5 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { keepPreviousData, useQuery } from '@tanstack/vue-query'
 import { employeeQueryKeys } from '../services/api/employees/query-keys'
 import type {
   EmployeeApiStatus,
@@ -73,12 +73,46 @@ export function useEmployees(getEmployeesApi: GetEmployeesApi) {
 
   const total = computed(() => query.data.value?.total ?? 0)
 
-  const stats = computed(() => {
-    const ativos = employees.value.filter((e) => e.status === 'ACTIVE').length
-    const ferias = employees.value.filter((e) => e.status === 'VACATION').length
-    const inativos = employees.value.filter((e) => e.status === 'INACTIVE').length
+  // Totais dos cards: mesma busca e função da lista, sem a página nem a aba de status.
+  const countScope = computed(() => {
+    const scope: Pick<GetEmployeesParams, 'role' | 'search'> = {}
+    if (roleFilter.value) scope.role = roleFilter.value
+    const search = debouncedSearch.value.trim()
+    if (search) scope.search = search
+    return scope
+  })
 
-    return { total: total.value, ativos, ferias, inativos }
+  const statusTotal = (status: EmployeeApiStatus) => {
+    const params = computed<GetEmployeesParams>(() => ({
+      page: 1,
+      limit: 1,
+      status,
+      ...countScope.value,
+    }))
+
+    return useQuery({
+      queryKey: employeeQueryKeys.list(params),
+      queryFn: () => getEmployeesApi.getEmployees(params.value),
+      select: (response) => response.total,
+      placeholderData: keepPreviousData,
+    })
+  }
+
+  const activeCount = statusTotal('ACTIVE')
+  const vacationCount = statusTotal('VACATION')
+  const inactiveCount = statusTotal('INACTIVE')
+
+  const stats = computed(() => {
+    const ativos = activeCount.data.value ?? 0
+    const ferias = vacationCount.data.value ?? 0
+    const inativos = inactiveCount.data.value ?? 0
+
+    return {
+      total: ativos + ferias + inativos,
+      ativos,
+      ferias,
+      inativos,
+    }
   })
 
   const resetToFirstPage = () => {

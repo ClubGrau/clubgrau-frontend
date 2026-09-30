@@ -209,7 +209,6 @@ const onSubmitCreate = () => {
     emergencyContact: hasEmergencyContact.value
       ? form.emergencyContact.trim()
       : undefined,
-    employmentId: omitBlank(form.employmentId),
     jobTitle: omitBlank(form.jobTitle),
   });
 };
@@ -262,7 +261,7 @@ const onSubmitProfessional = () => {
     id: props.employee.id,
     role: form.role,
     jobTitle: omitBlank(form.jobTitle),
-    employmentId: omitBlank(form.employmentId),
+    status: form.status,
   });
 };
 
@@ -543,8 +542,9 @@ const onFormSubmit = () => {
                 id="create-matricula"
                 v-model="form.employmentId"
                 type="text"
+                disabled
                 :placeholder="t('Employees.form.employmentIdPlaceholder')"
-                class="form-input"
+                class="form-input cursor-not-allowed bg-gray-100 text-gray-500"
               />
             </div>
           </div>
