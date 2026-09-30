@@ -210,7 +210,7 @@ const tabs = computed<{ label: string; value: StatusFilter }[]>(() => [
             v-model="searchQuery"
             type="search"
             :placeholder="t('Employees.searchPlaceholder')"
-            class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-gray-300"
+            class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
           />
         </div>
 
