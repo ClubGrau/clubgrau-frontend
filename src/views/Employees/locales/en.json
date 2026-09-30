@@ -111,7 +111,7 @@
     "status": "Status",
     "statusPlaceholder": "Select status",
     "employmentId": "Employee ID",
-    "employmentIdPlaceholder": "123456789",
+    "employmentIdPlaceholder": "Generated automatically",
     "password": "Password",
     "passwordRequired": "Password *",
     "confirmPassword": "Confirm password",

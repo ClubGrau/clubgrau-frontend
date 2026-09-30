@@ -22,7 +22,6 @@ export function toUpdateProfessionalEmployeeDataParams(
     id: payload.id,
     role: payload.role.trim(),
     jobTitle: omitBlank(payload.jobTitle),
-    employmentId: omitBlank(payload.employmentId),
     status: payload.status,
   }
 }

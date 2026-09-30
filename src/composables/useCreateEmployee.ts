@@ -33,7 +33,6 @@ export function toCreateEmployeeParams(
     address: omitBlank(payload.address),
     languages: omitBlank(payload.languages),
     emergencyContact: omitBlank(payload.emergencyContact),
-    employmentId: omitBlank(payload.employmentId),
     jobTitle: omitBlank(payload.jobTitle),
   }
 }

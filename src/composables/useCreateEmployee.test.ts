@@ -44,7 +44,6 @@ function payload(overrides: Partial<Employee.CreateCommand> = {}): Employee.Crea
     address: 'Rua das Flores, 123',
     languages: 'Português',
     emergencyContact: '+351911000000',
-    employmentId: 'EMP-001',
     jobTitle: 'Barbeiro',
     password: 'senhaSegura123',
     passwordConfirmation: 'senhaSegura123',
@@ -103,7 +102,6 @@ describe('toCreateEmployeeParams', () => {
         nif: '',
         address: '',
         emergencyContact: '',
-        employmentId: '',
         jobTitle: '',
       }),
     )
@@ -113,7 +111,7 @@ describe('toCreateEmployeeParams', () => {
     expect(params.nif).toBeNull()
     expect(params.address).toBeNull()
     expect(params.emergencyContact).toBeNull()
-    expect(params.employmentId).toBeNull()
+    expect(params).not.toHaveProperty('employmentId')
     expect(params.jobTitle).toBeNull()
     expect(
       toCreateEmployeeParams(payload({ gender: 'Não informado' })).gender,

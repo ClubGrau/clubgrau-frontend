@@ -162,20 +162,19 @@ describe('HttpEmployeesApi lifecycle commands', () => {
       id: 'emp-1',
       role: 'EMPLOYEE',
       jobTitle: 'Barbeiro',
-      employmentId: 'EMP-001',
       status: 'VACATION',
     })
 
     expect(api.patch).toHaveBeenCalledWith('/api/employee/emp-1/professional-data', {
       role: 'EMPLOYEE',
       jobTitle: 'Barbeiro',
-      employmentId: 'EMP-001',
       status: 'VACATION',
     })
 
     const body = vi.mocked(api.patch).mock.calls[0]?.[1] as object
     expect(body).not.toHaveProperty('id')
     expect(body).not.toHaveProperty('actorId')
+    expect(body).not.toHaveProperty('employmentId')
     expect(result).toEqual({ id: 'emp-1' })
   })
 

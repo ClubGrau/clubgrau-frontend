@@ -39,7 +39,6 @@ export namespace Employee {
     address?: string;
     languages?: string;
     emergencyContact?: string;
-    employmentId?: string;
     jobTitle?: string;
   }
 
@@ -69,7 +68,6 @@ export namespace Employee {
     id: string;
     role: string;
     jobTitle?: string;
-    employmentId?: string;
     /** ACTIVE, VACATION ou INACTIVE. REMOVED não entra neste comando. */
     status: EmployeeStatus;
   }

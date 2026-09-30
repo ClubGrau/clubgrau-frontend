@@ -60,7 +60,6 @@ export interface CreateEmployeeParams {
   address?: string | null
   languages?: string | null
   emergencyContact?: string | null
-  employmentId?: string | null
   jobTitle?: string | null
 }
 
@@ -93,7 +92,6 @@ export interface UpdateProfessionalEmployeeDataParams {
   id: string
   role: string
   jobTitle?: string
-  employmentId?: string
   /** ACTIVE, VACATION ou INACTIVE. A API só persiste quando a chave vem no body. */
   status: EmployeeApiStatus
 }

@@ -111,7 +111,7 @@
     "status": "Status",
     "statusPlaceholder": "Selecionar status",
     "employmentId": "Matrícula",
-    "employmentIdPlaceholder": "123456789",
+    "employmentIdPlaceholder": "Gerada automaticamente",
     "password": "Senha",
     "passwordRequired": "Senha *",
     "confirmPassword": "Confirmar senha",

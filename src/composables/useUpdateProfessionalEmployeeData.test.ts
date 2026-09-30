@@ -41,7 +41,6 @@ function payload(
     id: 'emp-1',
     role: 'EMPLOYEE',
     jobTitle: 'Barbeiro',
-    employmentId: 'EMP-001',
     status: 'VACATION',
     ...overrides,
   }
@@ -85,9 +84,11 @@ describe('toUpdateProfessionalEmployeeDataParams', () => {
       id: 'emp-1',
       role: 'EMPLOYEE',
       jobTitle: 'Barbeiro',
-      employmentId: 'EMP-001',
       status: 'VACATION',
     })
+    expect(toUpdateProfessionalEmployeeDataParams(payload())).not.toHaveProperty(
+      'employmentId',
+    )
   })
 
   it('keeps ACTIVE and INACTIVE as sendable statuses', () => {
@@ -102,7 +103,7 @@ describe('toUpdateProfessionalEmployeeDataParams', () => {
   it('trims role and omits blank job fields', () => {
     expect(
       toUpdateProfessionalEmployeeDataParams(
-        payload({ role: '  MANAGER  ', jobTitle: '  ', employmentId: '' }),
+        payload({ role: '  MANAGER  ', jobTitle: '  ' }),
       ),
     ).toEqual({
       id: 'emp-1',
@@ -148,10 +149,10 @@ describe('useUpdateProfessionalEmployeeData', () => {
       id: 'emp-1',
       role: 'EMPLOYEE',
       jobTitle: 'Barbeiro',
-      employmentId: 'EMP-001',
       status: 'VACATION',
     })
     expect(updateProfessionalData.mock.calls[0][0]).not.toHaveProperty('actorId')
+    expect(updateProfessionalData.mock.calls[0][0]).not.toHaveProperty('employmentId')
     expect(onUpdated).toHaveBeenCalledWith({ id: 'emp-1', status: 'VACATION' })
 
     dispose()
