@@ -123,4 +123,59 @@ describe('useEmployees stats', () => {
 
     dispose()
   })
+
+  it('keeps the previous rows while the next list request is in flight', async () => {
+    let resolvePageTwo: ((value: Pagination.PaginationResponse<Employee.ListItem>) => void) | undefined
+
+    const getEmployees = vi.fn(async (params: GetEmployeesParams) => {
+      if (params.status) {
+        return page({
+          limit: params.limit,
+          total: STATUS_TOTALS[params.status],
+          totalPages: STATUS_TOTALS[params.status],
+        })
+      }
+
+      if (params.page === 2) {
+        return new Promise<Pagination.PaginationResponse<Employee.ListItem>>((resolve) => {
+          resolvePageTwo = resolve
+        })
+      }
+
+      return page({
+        data: [listItem({ id: '1' }), listItem({ id: '2' })],
+        page: 1,
+        total: 2,
+      })
+    })
+
+    const { composable, dispose } = withEmployees(getEmployees)
+
+    await vi.waitFor(() => {
+      expect(composable.filteredEmployees.value.map((employee) => employee.id)).toEqual(['1', '2'])
+    })
+
+    composable.currentPage.value = 2
+
+    await vi.waitFor(() => {
+      expect(composable.isFetching.value).toBe(true)
+    })
+
+    expect(composable.isLoading.value).toBe(false)
+    expect(composable.filteredEmployees.value.map((employee) => employee.id)).toEqual(['1', '2'])
+
+    resolvePageTwo?.(
+      page({
+        data: [listItem({ id: '3' })],
+        page: 2,
+        total: 2,
+      }),
+    )
+
+    await vi.waitFor(() => {
+      expect(composable.filteredEmployees.value.map((employee) => employee.id)).toEqual(['3'])
+    })
+
+    dispose()
+  })
 })

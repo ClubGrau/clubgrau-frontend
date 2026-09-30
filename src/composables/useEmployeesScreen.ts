@@ -66,6 +66,9 @@ export function useEmployeesScreen(
     roleOptions,
     stats,
     total,
+    isLoading: isListLoading,
+    isFetching: isListFetching,
+    isStatsLoading,
   } = list
 
   const drawer = useEmployeeDrawer(employees, filteredEmployees)
@@ -226,6 +229,9 @@ export function useEmployeesScreen(
     roleOptions,
     stats,
     total,
+    isListLoading,
+    isListFetching,
+    isStatsLoading,
     canCreate,
     ...drawer,
     ...selection,
