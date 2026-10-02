@@ -1,0 +1,43 @@
+{
+  "title": "Perfil",
+  "update": "Atualizar dados",
+  "logout": "Terminar sessão",
+  "empty": "—",
+  "form": {
+    "title": "Atualizar dados",
+    "subtitle": "Corrija o seu nome, telefone e informações pessoais.",
+    "close": "Fechar",
+    "sectionMain": "Dados principais",
+    "sectionPersonal": "Informações pessoais",
+    "name": "Nome completo",
+    "nameRequired": "Nome completo *",
+    "namePlaceholder": "Ex: Cameron Williamson",
+    "email": "E-mail",
+    "emailHint": "O e-mail não pode ser alterado aqui.",
+    "phone": "Telefone",
+    "phoneRequired": "Telefone *",
+    "phonePlaceholder": "912 345 678",
+    "username": "Username",
+    "usernamePlaceholder": "ex: cameronw",
+    "gender": "Gênero",
+    "genderPlaceholder": "Selecionar gênero",
+    "languages": "Idiomas",
+    "languagesPlaceholder": "Português, Inglês",
+    "emergencyContact": "Contato de emergência",
+    "nif": "NIF",
+    "nifPlaceholder": "123456789",
+    "address": "Morada",
+    "addressPlaceholder": "Rua, cidade, país",
+    "save": "Salvar alterações",
+    "cancel": "Cancelar",
+    "loading": "A carregar os seus dados…",
+    "loadError": "Não foi possível carregar os seus dados.",
+    "retry": "Tentar novamente",
+    "missingFields": "Preencha os campos obrigatórios: {fields}."
+  },
+  "toast": {
+    "updated": "Dados atualizados.",
+    "validation": "Não foi possível guardar. Verifique os campos e tente novamente.",
+    "unexpected": "Não foi possível concluir a ação. Tente novamente."
+  }
+}

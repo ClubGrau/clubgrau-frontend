@@ -10,6 +10,7 @@ import Pagination from '../../components/Pagination/Pagination.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
+import OwnEmployeeDataForm from '../../components/ProfileCard/OwnEmployeeDataForm.vue';
 import EmployeeFormPanel from './EmployeeFormPanel.vue';
 import EmployeeDetailPanel from './EmployeeDetailPanel.vue';
 import ModalLayout from '../../components/Modal/ModalLayout.vue';
@@ -90,6 +91,13 @@ const {
   onEmployeeRowClick,
   handleInactivateEmployee,
   handleRemoveEmployee,
+  isOwnFormOpen,
+  ownEmployee,
+  isOwnEmployeeLoadError,
+  isSavingOwnEmployee,
+  closeOwnForm,
+  retryOwnEmployeeLoad,
+  saveOwnEmployee,
 } = useEmployeesScreen();
 
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => [
@@ -527,12 +535,21 @@ onUnmounted(stopStatusTabsDrag);
     </Teleport>
 
     <Drawer
-      :open="drawer.open && !isDeactivateModalOpen && !isRemoveModalOpen"
-      :width-class="drawerWidthClass"
-      @close="closeDrawer"
+      :open="(drawer.open && !isDeactivateModalOpen && !isRemoveModalOpen) || isOwnFormOpen"
+      :width-class="isOwnFormOpen ? 'w-full max-w-3xl' : drawerWidthClass"
+      @close="isOwnFormOpen ? closeOwnForm() : closeDrawer()"
     >
+      <OwnEmployeeDataForm
+        v-if="isOwnFormOpen"
+        :employee="ownEmployee"
+        :load-failed="isOwnEmployeeLoadError"
+        :submitting="isSavingOwnEmployee"
+        @close="closeOwnForm"
+        @retry="retryOwnEmployeeLoad"
+        @save="saveOwnEmployee"
+      />
       <EmployeeFormPanel
-        v-if="isCreateDrawerOpen"
+        v-else-if="isCreateDrawerOpen"
         :submitting="isCreating"
         @close="closeFormDrawer"
         @create="handleCreateEmployee"

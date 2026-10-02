@@ -115,3 +115,31 @@ export interface UpdateProfessionalEmployeeDataApi {
     params: UpdateProfessionalEmployeeDataParams,
   ): Promise<UpdateEmployeeSectionResult>
 }
+
+export interface GetOwnEmployeeApi {
+  getOwnEmployee(): Promise<Employee.ListItem>
+}
+
+/** Sparse body for PATCH /api/employee/me. `null` clears a clearable field. */
+export interface UpdateOwnEmployeeDataParams {
+  name: string
+  phone: string
+  username: string | null
+  gender: string | null
+  languages: string | null
+  emergencyContact: string | null
+  nif: string | null
+  address: string | null
+}
+
+export interface UpdateOwnEmployeeDataResult {
+  employee: Employee.ListItem
+  /** Present only when the save included `name` and the API reissued the session. */
+  token?: string
+}
+
+export interface UpdateOwnEmployeeDataApi {
+  updateOwnEmployeeData(
+    params: UpdateOwnEmployeeDataParams,
+  ): Promise<UpdateOwnEmployeeDataResult>
+}
