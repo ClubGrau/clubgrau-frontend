@@ -63,6 +63,23 @@ export namespace Employee {
     address?: string;
   }
 
+  /**
+   * PATCH /api/employee/me — dados do próprio colaborador.
+   * E-mail, função, status e dados profissionais não entram neste comando.
+   */
+  export interface UpdateOwnDataCommand {
+    name: string;
+    phone: string;
+    /** Empty string clears username on the server. */
+    username: string;
+    /** `null` or empty clears gender. The API accepts only `male`, `female`, or `other`. */
+    gender?: string | null;
+    languages?: string;
+    emergencyContact?: string;
+    nif?: string;
+    address?: string;
+  }
+
   /** PATCH /api/employee/:id/professional-data — Informações profissionais. */
   export interface UpdateProfessionalDataCommand {
     id: string;

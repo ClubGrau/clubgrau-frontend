@@ -1,13 +1,17 @@
 import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useOwnEmployeeScreen } from './own-employee/useOwnEmployeeScreen'
 import { canCreate as actorCanCreate, lifecycleActions, type LifecycleTarget } from '../domain/employee-lifecycle'
 import { httpEmployeesApi } from '../services/api/employees/http-employees-api'
+import { httpOwnEmployeeApi } from '../services/api/employees/http-own-employee-api'
 import type {
   CreateEmployeeApi,
   GetEmployeesApi,
+  GetOwnEmployeeApi,
   RemoveEmployeeApi,
   UpdateEmployeeStatusApi,
   UpdateMainEmployeeDataApi,
+  UpdateOwnEmployeeDataApi,
   UpdatePersonalEmployeeDataApi,
   UpdateProfessionalEmployeeDataApi,
 } from '../services/api/employees/types'
@@ -48,6 +52,7 @@ export function useEmployeesScreen(
     UpdateMainEmployeeDataApi &
     UpdatePersonalEmployeeDataApi &
     UpdateProfessionalEmployeeDataApi = httpEmployeesApi,
+  ownApi: GetOwnEmployeeApi & UpdateOwnEmployeeDataApi = httpOwnEmployeeApi,
 ) {
   const authStore = useAuthStore()
   const router = useRouter()
@@ -143,8 +148,21 @@ export function useEmployeesScreen(
     },
   )
 
+  const ownEmployeeScreen = useOwnEmployeeScreen(ownApi)
+
+  const openEmployeeEditor = (employeeId: string) => {
+    if (authStore.actor?.id === employeeId) {
+      ownEmployeeScreen.openForm()
+      closeDrawer()
+      return
+    }
+
+    ownEmployeeScreen.closeForm()
+    openEditDrawer(employeeId)
+  }
+
   const selection = useEmployeeSelection({
-    onEdit: openEditDrawer,
+    onEdit: openEmployeeEditor,
     onDeactivate: openInactivateDrawer,
     onReactivate: reactivate,
     onRemove: openRemoveDrawer,
@@ -234,7 +252,15 @@ export function useEmployeesScreen(
     isStatsLoading,
     canCreate,
     ...drawer,
+    openEditDrawer: openEmployeeEditor,
     ...selection,
+    isOwnFormOpen: ownEmployeeScreen.isFormOpen,
+    ownEmployee: ownEmployeeScreen.employee,
+    isOwnEmployeeLoadError: ownEmployeeScreen.isLoadError,
+    isSavingOwnEmployee: ownEmployeeScreen.isSaving,
+    closeOwnForm: ownEmployeeScreen.closeForm,
+    retryOwnEmployeeLoad: ownEmployeeScreen.retryLoad,
+    saveOwnEmployee: ownEmployeeScreen.save,
     isDeactivating,
     reactivate,
     isReactivating,

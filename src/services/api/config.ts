@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../../stores/auth'
+import { unwrapSuccessEnvelope } from './unwrap-success-envelope'
 
 export const apiConfig = {
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -21,6 +22,6 @@ api.interceptors.request.use((config) => {
 })
 
 api.interceptors.response.use((response) => {
-  response.data = response.data?.data ?? response.data
+  response.data = unwrapSuccessEnvelope(response.data)
   return response
 })

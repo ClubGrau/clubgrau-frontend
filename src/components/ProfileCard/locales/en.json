@@ -1,0 +1,43 @@
+{
+  "title": "Profile",
+  "update": "Update details",
+  "logout": "Sign out",
+  "empty": "—",
+  "form": {
+    "title": "Update details",
+    "subtitle": "Correct your name, phone, and personal information.",
+    "close": "Close",
+    "sectionMain": "Main details",
+    "sectionPersonal": "Personal information",
+    "name": "Full name",
+    "nameRequired": "Full name *",
+    "namePlaceholder": "E.g. Cameron Williamson",
+    "email": "Email",
+    "emailHint": "Email cannot be changed here.",
+    "phone": "Phone",
+    "phoneRequired": "Phone *",
+    "phonePlaceholder": "912 345 678",
+    "username": "Username",
+    "usernamePlaceholder": "e.g. cameronw",
+    "gender": "Gender",
+    "genderPlaceholder": "Select gender",
+    "languages": "Languages",
+    "languagesPlaceholder": "Portuguese, English",
+    "emergencyContact": "Emergency contact",
+    "nif": "Tax number",
+    "nifPlaceholder": "123456789",
+    "address": "Address",
+    "addressPlaceholder": "Street, city, country",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "loading": "Loading your details…",
+    "loadError": "Could not load your details.",
+    "retry": "Try again",
+    "missingFields": "Fill in the required fields: {fields}."
+  },
+  "toast": {
+    "updated": "Details updated.",
+    "validation": "Could not save. Check the fields and try again.",
+    "unexpected": "Could not complete the action. Try again."
+  }
+}
