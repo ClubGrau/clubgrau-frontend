@@ -26,11 +26,12 @@ function actorFromToken(token: string | null): Actor | null {
     return null
   }
 
-  const { name, role, status } = payload
+  const { name, email, role, status } = payload
 
   return {
     id,
     name: name as string | null,
+    email: typeof email === 'string' ? email : null,
     role: isActorRole(role) ? role : null,
     status: status as EmployeeStatus | null,
   } satisfies Actor

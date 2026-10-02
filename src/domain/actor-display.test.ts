@@ -3,7 +3,7 @@ import type { Actor, ActorRole } from '../types/actor'
 import { canAccessEmployees, canVisitLogin } from './actor-display'
 
 function actor(role: ActorRole | null = 'ADMIN'): Actor {
-  return { id: 'actor-1', name: null, role, status: 'ACTIVE' }
+  return { id: 'actor-1', name: null, email: null, role, status: 'ACTIVE' }
 }
 
 describe('canVisitLogin', () => {
