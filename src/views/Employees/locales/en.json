@@ -167,6 +167,7 @@
     "jobTitle": "Job title",
     "role": "Role",
     "status": "Status",
-    "empty": "—"
+    "empty": "...",
+    "nif": "NIF"
   }
 }

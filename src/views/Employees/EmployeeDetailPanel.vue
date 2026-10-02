@@ -85,6 +85,7 @@ const hasPhone = computed(() => hasText(props.employee.phone));
 
 const personalFields = computed<DetailField[]>(() => [
   { label: t('Employees.detail.fullName'), value: props.employee.name },
+  { label: t('Employees.detail.nif'), value: optionalDisplay(props.employee.nif) },
   { label: t('Employees.detail.languages'), value: optionalDisplay(props.employee.languages) },
   { label: t('Employees.detail.gender'), value: genderLabel(props.employee?.gender ?? null) },
   {
