@@ -16,6 +16,8 @@ function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem
     rank: 'OURO',
     createdAt: '2026-01-14T00:00:00.000Z',
     initials: 'MA',
+    referralCustomerId: 'cust-2',
+    referredCount: 1,
     ...overrides,
   }
 }
@@ -88,6 +90,38 @@ describe('useCustomers', () => {
     expect(composable.rankFilter.value).toBe('PRATA')
     composable.toggleRankFilter('OURO')
     expect(composable.rankFilter.value).toBe('OURO')
+
+    dispose()
+  })
+
+  it('sorts by newest registration and toggles the active column', async () => {
+    const { composable, api, dispose } = withCustomers()
+
+    await vi.waitFor(() => {
+      expect(api.getCustomers).toHaveBeenCalledWith(
+        expect.objectContaining({ sort: 'createdAt', direction: 'desc' }),
+      )
+    })
+
+    composable.toggleSort('name')
+    await vi.waitFor(() => {
+      expect(api.getCustomers).toHaveBeenCalledWith(
+        expect.objectContaining({ sort: 'name', direction: 'asc', page: 1 }),
+      )
+    })
+
+    composable.toggleSort('name')
+    await vi.waitFor(() => {
+      expect(api.getCustomers).toHaveBeenCalledWith(
+        expect.objectContaining({ sort: 'name', direction: 'desc' }),
+      )
+    })
+
+    composable.currentPage.value = 3
+    composable.toggleSort('rank')
+    expect(composable.sortKey.value).toBe('rank')
+    expect(composable.sortDirection.value).toBe('asc')
+    expect(composable.currentPage.value).toBe(1)
 
     dispose()
   })

@@ -5,7 +5,13 @@ import type {
   GetCustomersApi,
   GetCustomersParams,
 } from '../../services/api/customers/types'
-import type { Customer, CustomerRank } from '../../types/customer'
+import { emptyCustomerWalletSummary } from '../../domain/customer-wallet'
+import type {
+  Customer,
+  CustomerRank,
+  CustomerSortDirection,
+  CustomerSortKey,
+} from '../../types/customer'
 
 export function useCustomers(getCustomersApi: GetCustomersApi) {
   const pageSize = ref(10)
@@ -13,6 +19,8 @@ export function useCustomers(getCustomersApi: GetCustomersApi) {
   const searchQuery = ref('')
   const debouncedSearch = ref('')
   const rankFilter = ref<CustomerRank | null>(null)
+  const sortKey = ref<CustomerSortKey>('createdAt')
+  const sortDirection = ref<CustomerSortDirection>('desc')
 
   let searchTimeout: ReturnType<typeof setTimeout> | undefined
 
@@ -40,6 +48,9 @@ export function useCustomers(getCustomersApi: GetCustomersApi) {
 
     if (rankFilter.value) params.rank = rankFilter.value
 
+    params.sort = sortKey.value
+    params.direction = sortDirection.value
+
     return params
   })
 
@@ -51,9 +62,24 @@ export function useCustomers(getCustomersApi: GetCustomersApi) {
   const customers = computed<Customer.ListItem[]>(() => query.data.value?.data ?? [])
   const filteredCustomers = computed(() => customers.value)
   const total = computed(() => query.data.value?.total ?? 0)
+  const summary = computed(
+    () => query.data.value?.summary ?? emptyCustomerWalletSummary(),
+  )
 
   const toggleRankFilter = (rank: CustomerRank) => {
     rankFilter.value = rankFilter.value === rank ? null : rank
+    currentPage.value = 1
+  }
+
+  const toggleSort = (key: CustomerSortKey) => {
+    if (sortKey.value === key) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+      currentPage.value = 1
+      return
+    }
+
+    sortKey.value = key
+    sortDirection.value = key === 'createdAt' ? 'desc' : 'asc'
     currentPage.value = 1
   }
 
@@ -65,6 +91,10 @@ export function useCustomers(getCustomersApi: GetCustomersApi) {
     searchQuery,
     rankFilter,
     toggleRankFilter,
+    sortKey,
+    sortDirection,
+    toggleSort,
+    summary,
     total,
     isLoading: query.isLoading,
     isError: query.isError,

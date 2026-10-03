@@ -30,7 +30,7 @@ export function seedCustomers(): Customer.Entity[] {
       nif: '294018573',
       referral: 'Marina Albuquerque',
       rank: 'BRONZE',
-      createdAt: '2026-03-22T00:00:00.000Z',
+      createdAt: '2026-09-22T00:00:00.000Z',
     },
     {
       id: 'cust-4',
@@ -52,5 +52,35 @@ export function seedCustomers(): Customer.Entity[] {
       rank: 'OURO',
       createdAt: '2026-04-30T00:00:00.000Z',
     },
-  ]
+    {
+      id: 'cust-6',
+      name: 'João da Silva',
+      email: 'joao@example.com',
+      phone: '(11) 99640-2233',
+      nif: '183920456',
+      referral: '',
+      rank: 'PRATA',
+      createdAt: '2026-05-01T00:00:00.000Z',
+    },
+    {
+      id: 'cust-7',
+      name: 'Maria Oliveira',
+      email: 'maria@example.com',
+      phone: '(11) 99640-2233',
+      nif: '183920456',
+      referral: '',
+      rank: 'PRATA',
+      createdAt: '2026-10-01T00:00:00.000Z',
+    },
+    {
+      id: 'cust-8',
+      name: 'Pedro Santos',
+      email: 'pedro@example.com',
+      phone: '(11) 99640-2233',
+      nif: '183920456',
+      referral: '',
+      rank: 'PRATA',
+      createdAt: '2026-10-02T00:00:00.000Z',
+    },
+  ];
 }

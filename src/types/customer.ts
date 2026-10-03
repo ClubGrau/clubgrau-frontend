@@ -1,5 +1,9 @@
 export type CustomerRank = 'BRONZE' | 'PRATA' | 'OURO';
 
+export type CustomerSortKey = 'name' | 'rank' | 'createdAt';
+
+export type CustomerSortDirection = 'asc' | 'desc';
+
 export namespace Customer {
   /** Shape the list understands. Swap the adapter; keep this. */
   export interface Entity {
@@ -13,8 +17,12 @@ export namespace Customer {
     createdAt: string;
   }
 
-  /** Table row: Entity + computed initials. */
-  export type ListItem = Entity & { initials: string };
+  /** Table row: Entity, initials, and referral links resolved from the wallet. */
+  export type ListItem = Entity & {
+    initials: string;
+    referralCustomerId: string | null;
+    referredCount: number;
+  };
 
   export interface CreateCommand {
     name: string;

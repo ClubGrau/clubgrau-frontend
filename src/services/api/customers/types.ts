@@ -1,15 +1,30 @@
-import type { Customer, CustomerRank } from '../../../types/customer'
+import type { CustomerWalletSummary } from '../../../domain/customer-wallet'
+import type {
+  Customer,
+  CustomerRank,
+  CustomerSortDirection,
+  CustomerSortKey,
+} from '../../../types/customer'
 import type { Pagination } from '../../../types/pagination'
 
 export interface GetCustomersParams extends Pagination.PaginationParams {
   search?: string
   rank?: CustomerRank
+  sort?: CustomerSortKey
+  direction?: CustomerSortDirection
+}
+
+export interface GetCustomersResult
+  extends Pagination.PaginationResponse<Customer.ListItem> {
+  summary: CustomerWalletSummary
 }
 
 export interface GetCustomersApi {
-  getCustomers(
-    params: GetCustomersParams,
-  ): Promise<Pagination.PaginationResponse<Customer.ListItem>>
+  getCustomers(params: GetCustomersParams): Promise<GetCustomersResult>
+}
+
+export interface GetCustomerApi {
+  getCustomer(id: string): Promise<Customer.ListItem | null>
 }
 
 export interface CreateCustomerParams {

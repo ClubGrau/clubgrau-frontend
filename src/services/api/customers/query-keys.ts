@@ -4,4 +4,5 @@ import type { GetCustomersParams } from './types'
 export const customerQueryKeys = {
   all: ['customers'] as const,
   list: (params: MaybeRef<GetCustomersParams>) => ['customers', params] as const,
+  detail: (id: string) => ['customers', 'detail', id] as const,
 }

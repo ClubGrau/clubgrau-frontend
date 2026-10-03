@@ -1,13 +1,19 @@
+import {
+  referralLinks,
+  sortCustomers,
+  summarizeCustomers,
+} from '../../../domain/customer-wallet'
 import type { Customer } from '../../../types/customer'
-import type { Pagination } from '../../../types/pagination'
-import { mapCustomersToListItems } from './map-customer'
+import { mapCustomerToListItem } from './map-customer'
 import { seedCustomers } from './seed-customers'
 import type {
   CreateCustomerApi,
   CreateCustomerParams,
   CreateCustomerResult,
+  GetCustomerApi,
   GetCustomersApi,
   GetCustomersParams,
+  GetCustomersResult,
   RemoveCustomerApi,
   RemoveCustomerParams,
   RemoveCustomerResult,
@@ -18,12 +24,13 @@ function matchesSearch(customer: Customer.Entity, search: string): boolean {
   return (
     customer.name.toLowerCase().includes(query) ||
     customer.nif.toLowerCase().includes(query) ||
-    customer.email.toLowerCase().includes(query)
+    customer.email.toLowerCase().includes(query) ||
+    customer.phone.toLowerCase().includes(query)
   )
 }
 
 export class HardcodedCustomersApi
-  implements GetCustomersApi, CreateCustomerApi, RemoveCustomerApi
+  implements GetCustomersApi, GetCustomerApi, CreateCustomerApi, RemoveCustomerApi
 {
   private items: Customer.Entity[]
 
@@ -31,18 +38,30 @@ export class HardcodedCustomersApi
     this.items = items
   }
 
-  async getCustomers(
-    params: GetCustomersParams,
-  ): Promise<Pagination.PaginationResponse<Customer.ListItem>> {
-    let filtered = this.items
+  async getCustomers(params: GetCustomersParams): Promise<GetCustomersResult> {
+    let matched = this.items
 
     const search = params.search?.trim()
     if (search) {
-      filtered = filtered.filter((customer) => matchesSearch(customer, search))
+      matched = matched.filter((customer) => matchesSearch(customer, search))
     }
+
+    const now = new Date()
+    const platform = summarizeCustomers(this.items, now)
+    const searched = summarizeCustomers(matched, now)
+    const summary = {
+      total: platform.total,
+      joinedThisMonth: platform.joinedThisMonth,
+      byRank: searched.byRank,
+    }
+    let filtered = matched
 
     if (params.rank) {
       filtered = filtered.filter((customer) => customer.rank === params.rank)
+    }
+
+    if (params.sort) {
+      filtered = sortCustomers(filtered, params.sort, params.direction ?? 'asc')
     }
 
     const total = filtered.length
@@ -52,12 +71,28 @@ export class HardcodedCustomersApi
     const slice = filtered.slice(start, start + params.limit)
 
     return {
-      data: mapCustomersToListItems(slice),
+      data: this.toListItems(slice),
       page,
       limit: params.limit,
       total,
       totalPages,
+      summary,
     }
+  }
+
+  async getCustomer(id: string): Promise<Customer.ListItem | null> {
+    const entity = this.items.find((customer) => customer.id === id)
+    if (!entity) return null
+    return this.toListItems([entity])[0] ?? null
+  }
+
+  private toListItems(entities: Customer.Entity[]): Customer.ListItem[] {
+    const links = referralLinks(this.items)
+    return entities.map((entity) => ({
+      ...mapCustomerToListItem(entity),
+      referralCustomerId: links.get(entity.id)?.referralCustomerId ?? null,
+      referredCount: links.get(entity.id)?.referredCount ?? 0,
+    }))
   }
 
   async create(params: CreateCustomerParams): Promise<CreateCustomerResult> {

@@ -6,7 +6,7 @@
   },
   "subtitle": "Carteira completa de contas e contatos comerciais.",
   "newCustomer": "Novo cliente",
-  "searchPlaceholder": "Filtrar por nome, contato, apelido, NIF ou e-mail",
+  "searchPlaceholder": "Buscar cliente",
   "empty": "Nenhum cliente encontrado.",
   "emptyValue": "—",
   "rank": {
@@ -16,8 +16,34 @@
   },
   "rankFilter": {
     "label": "Filtrar por rank",
-    "apply": "Filtrar clientes {rank}",
+    "apply": "Filtrar clientes {rank}, {count}",
     "clear": "Mostrar todos os clientes"
+  },
+  "summary": {
+    "customer": "cliente",
+    "customers": "clientes"
+  },
+  "stats": {
+    "total": {
+      "label": "Total na plataforma",
+      "description": "Clientes cadastrados"
+    },
+    "joinedThisMonth": {
+      "label": "Novos este mês",
+      "description": "{percent}% da carteira"
+    }
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Próximo",
+    "of": "de"
+  },
+  "nif": {
+    "copy": "Copiar NIF"
+  },
+  "referral": {
+    "open": "Abrir {name}",
+    "referred": "Indicou {count}"
   },
   "table": {
     "customer": "Cliente",
@@ -26,7 +52,11 @@
     "referral": "Indicação",
     "rank": "Rank",
     "registeredAt": "Cadastro",
-    "actions": "Ações"
+    "actions": "Ações",
+    "sort": "Ordenar por {column}"
+  },
+  "detail": {
+    "loading": "Carregando cliente…"
   },
   "menu": {
     "remove": "Remover"
@@ -39,6 +69,7 @@
   "toast": {
     "created": "Cliente criado.",
     "removed": "Cliente removido da carteira.",
+    "nifCopied": "NIF copiado.",
     "unexpected": "Não foi possível concluir a ação. Tente novamente."
   },
   "form": {

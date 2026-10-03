@@ -6,7 +6,7 @@
   },
   "subtitle": "Full wallet of commercial accounts and contacts.",
   "newCustomer": "New customer",
-  "searchPlaceholder": "Filter by name, contact, nickname, tax ID or email",
+  "searchPlaceholder": "Search customers",
   "empty": "No customers found.",
   "emptyValue": "—",
   "rank": {
@@ -16,8 +16,34 @@
   },
   "rankFilter": {
     "label": "Filter by rank",
-    "apply": "Filter {rank} customers",
+    "apply": "Filter {rank} customers, {count}",
     "clear": "Show all customers"
+  },
+  "summary": {
+    "customer": "customer",
+    "customers": "customers"
+  },
+  "stats": {
+    "total": {
+      "label": "Platform total",
+      "description": "Registered customers"
+    },
+    "joinedThisMonth": {
+      "label": "New this month",
+      "description": "{percent}% of the wallet"
+    }
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "of": "of"
+  },
+  "nif": {
+    "copy": "Copy tax ID"
+  },
+  "referral": {
+    "open": "Open {name}",
+    "referred": "Referred {count}"
   },
   "table": {
     "customer": "Customer",
@@ -26,7 +52,11 @@
     "referral": "Referral",
     "rank": "Rank",
     "registeredAt": "Registered",
-    "actions": "Actions"
+    "actions": "Actions",
+    "sort": "Sort by {column}"
+  },
+  "detail": {
+    "loading": "Loading customer…"
   },
   "menu": {
     "remove": "Remove"
@@ -39,6 +69,7 @@
   "toast": {
     "created": "Customer created.",
     "removed": "Customer removed from the wallet.",
+    "nifCopied": "Tax ID copied.",
     "unexpected": "Could not complete the action. Try again."
   },
   "form": {
