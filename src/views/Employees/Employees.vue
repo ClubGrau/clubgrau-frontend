@@ -24,6 +24,7 @@ import {
 } from '../../composables/useEmployeesScreen';
 import InactivateModal from '../../components/Modal/InactivateModal.vue';
 import RemoveEmployeeModal from '../../components/Modal/RemoveEmployeeModal.vue';
+import PageContainer from '../../Layout/PageContainer.vue';
 
 const { t } = useI18n();
 
@@ -236,7 +237,7 @@ onUnmounted(stopStatusTabsDrag);
 </script>
 
 <template>
-  <div class="min-h-full bg-[#f5f5f7] px-4 pb-8 pt-5">
+  <PageContainer class="min-h-full bg-[#f5f5f7] px-4 pb-8 pt-5">
     <Breadcrumb :items="breadcrumbItems" />
 
     <PageHeader :title="t('Employees.title')">
@@ -631,5 +632,5 @@ onUnmounted(stopStatusTabsDrag);
         @cancel="closeModal"
       />
     </ModalLayout>
-  </div>
+  </PageContainer>
 </template>
