@@ -15,6 +15,8 @@ const props = withDefaults(
     nextLabel?: string;
     showingLabel?: string;
     resultsLabel?: string;
+    ofLabel?: string;
+    summaryMode?: 'size' | 'range';
   }>(),
   {
     pageSizeOptions: () => [
@@ -27,6 +29,8 @@ const props = withDefaults(
     nextLabel: 'Próximo',
     showingLabel: 'Exibindo',
     resultsLabel: 'resultados',
+    ofLabel: 'de',
+    summaryMode: 'size',
   },
 );
 
@@ -38,6 +42,19 @@ const emit = defineEmits<{
 
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(props.totalItems / props.pageSize)),
+);
+
+const rangeStart = computed(() => {
+  if (props.totalItems === 0) return 0;
+  return (props.currentPage - 1) * props.pageSize + 1;
+});
+
+const rangeEnd = computed(() =>
+  Math.min(props.currentPage * props.pageSize, props.totalItems),
+);
+
+const showPager = computed(
+  () => props.summaryMode === 'size' || totalPages.value > 1,
 );
 
 const pageNumbers = computed<PaginationPageItem[]>(() => {
@@ -68,11 +85,20 @@ const onPageSizeChange = (value: string | number) => {
     class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4"
   >
     <div class="flex items-center gap-2 text-sm text-gray-500">
-      <slot name="showing-label">
-        <span>{{ showingLabel }}</span>
-      </slot>
+      <template v-if="summaryMode === 'range'">
+        <span v-if="totalPages === 1">{{ totalItems }} {{ resultsLabel }}</span>
+        <span v-else>
+          {{ rangeStart }}–{{ rangeEnd }} {{ ofLabel }} {{ totalItems }} {{ resultsLabel }}
+        </span>
+      </template>
+      <template v-else>
+        <slot name="showing-label">
+          <span>{{ showingLabel }}</span>
+        </slot>
+      </template>
 
       <SelectFilter
+        v-if="summaryMode === 'size' || totalPages > 1"
         :model-value="pageSize"
         :options="pageSizeOptions"
         variant="compact"
@@ -80,12 +106,12 @@ const onPageSizeChange = (value: string | number) => {
         @update:model-value="onPageSizeChange"
       />
 
-      <slot name="results-label" :total="totalItems">
-        <span>de {{ totalItems }} {{ resultsLabel }}</span>
+      <slot v-if="summaryMode === 'size'" name="results-label" :total="totalItems">
+        <span>{{ ofLabel }} {{ totalItems }} {{ resultsLabel }}</span>
       </slot>
     </div>
 
-    <div class="flex items-center gap-1 text-sm">
+    <div v-if="showPager" class="flex items-center gap-1 text-sm">
       <button
         type="button"
         class="cursor-pointer px-2 py-1 text-gray-500 transition-colors hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
