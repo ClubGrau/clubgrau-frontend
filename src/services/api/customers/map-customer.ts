@@ -7,13 +7,17 @@ function buildInitials(name: string): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-export function mapCustomerToListItem(entity: Customer.Entity): Customer.ListItem {
+export function mapCustomerToListItem(
+  entity: Customer.Entity,
+): Omit<Customer.ListItem, 'referralCustomerId' | 'referredCount'> {
   return {
     ...entity,
     initials: buildInitials(entity.name),
   }
 }
 
-export function mapCustomersToListItems(entities: Customer.Entity[]): Customer.ListItem[] {
+export function mapCustomersToListItems(
+  entities: Customer.Entity[],
+): Omit<Customer.ListItem, 'referralCustomerId' | 'referredCount'>[] {
   return entities.map(mapCustomerToListItem)
 }

@@ -2,17 +2,22 @@ import { computed, ref } from 'vue'
 import { hardcodedCustomersApi } from '../../services/api/customers/hardcoded-customers-api'
 import type {
   CreateCustomerApi,
+  GetCustomerApi,
   GetCustomersApi,
   RemoveCustomerApi,
 } from '../../services/api/customers/types'
 import type { Customer } from '../../types/customer'
 import { useCreateCustomer } from './useCreateCustomer'
+import { useCustomerDetail } from './useCustomerDetail'
 import { useCustomerSelection } from './useCustomerSelection'
 import { useCustomers } from './useCustomers'
 import { useRemoveCustomer } from './useRemoveCustomer'
 
 export function useCustomersScreen(
-  api: GetCustomersApi & CreateCustomerApi & RemoveCustomerApi = hardcodedCustomersApi,
+  api: GetCustomersApi &
+    GetCustomerApi &
+    CreateCustomerApi &
+    RemoveCustomerApi = hardcodedCustomersApi,
 ) {
   const {
     filteredCustomers,
@@ -21,8 +26,14 @@ export function useCustomersScreen(
     searchQuery,
     rankFilter,
     toggleRankFilter,
+    sortKey,
+    sortDirection,
+    toggleSort,
+    summary,
     total,
   } = useCustomers(api)
+
+  const detail = useCustomerDetail(api)
 
   const isCreateDrawerOpen = ref(false)
   const isRemoveModalOpen = ref(false)
@@ -36,9 +47,10 @@ export function useCustomersScreen(
   })
 
   const { remove, isRemoving } = useRemoveCustomer(api, {
-    onRemoved: () => {
+    onRemoved: (result) => {
       isRemoveModalOpen.value = false
       activeCustomerId.value = null
+      if (detail.customerId.value === result.id) detail.close()
     },
   })
 
@@ -51,7 +63,23 @@ export function useCustomersScreen(
   })
 
   const openCreateDrawer = () => {
+    detail.close()
     isCreateDrawerOpen.value = true
+  }
+
+  const openCustomer = (id: string) => {
+    isCreateDrawerOpen.value = false
+    detail.open(id)
+  }
+
+  const closeCustomer = () => {
+    detail.close()
+  }
+
+  const onCustomerRowClick = (event: MouseEvent, id: string) => {
+    const target = event.target as HTMLElement | null
+    if (target?.closest('[data-row-action]')) return
+    openCustomer(id)
   }
 
   const closeCreateDrawer = () => {
@@ -88,7 +116,17 @@ export function useCustomersScreen(
     searchQuery,
     rankFilter,
     toggleRankFilter,
+    sortKey,
+    sortDirection,
+    toggleSort,
+    summary,
     total,
+    detailCustomerId: detail.customerId,
+    detailCustomer: detail.customer,
+    isDetailLoading: detail.isLoading,
+    openCustomer,
+    closeCustomer,
+    onCustomerRowClick,
     isCreateDrawerOpen,
     isRemoveModalOpen,
     activeCustomerId,

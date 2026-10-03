@@ -11,6 +11,7 @@ const props = withDefaults(
     interactive?: boolean;
     variant?: 'filter' | 'table';
     ariaLabel?: string;
+    count?: number;
   }>(),
   {
     selected: false,
@@ -56,5 +57,6 @@ const iconClass = computed(() => {
   >
     <Icon :icon="config.icon" :class="iconClass" />
     {{ config.label }}
+    <span v-if="count != null" class="tabular-nums">{{ count }}</span>
   </component>
 </template>

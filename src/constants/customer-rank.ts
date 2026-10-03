@@ -3,6 +3,9 @@ import type { SelectFilterOption } from '../types/select-filter'
 
 export const CUSTOMER_RANKS: CustomerRank[] = ['BRONZE', 'PRATA', 'OURO']
 
+/** Filter chips and rank sort: Ouro, then Prata, then Bronze. */
+export const CUSTOMER_RANK_LADDER: CustomerRank[] = ['OURO', 'PRATA', 'BRONZE']
+
 export interface CustomerRankPatchConfig {
   label: string
   icon: string

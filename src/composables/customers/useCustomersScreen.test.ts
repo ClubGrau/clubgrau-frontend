@@ -15,6 +15,8 @@ function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem
     rank: 'OURO',
     createdAt: '2026-01-14T00:00:00.000Z',
     initials: 'MA',
+    referralCustomerId: 'cust-2',
+    referredCount: 1,
     ...overrides,
   }
 }
@@ -30,6 +32,7 @@ function stubApi(item = listItem()) {
     }),
     create: vi.fn().mockResolvedValue({ id: 'cust-new' }),
     remove: vi.fn().mockResolvedValue({ id: item.id }),
+    getCustomer: vi.fn().mockResolvedValue(item),
   }
 }
 
@@ -117,6 +120,32 @@ describe('useCustomersScreen', () => {
     expect(composable.openActionsId.value).toBeNull()
     expect(composable.isRemoveModalOpen.value).toBe(true)
     expect(composable.removeCustomerName.value).toBe('Marina Albuquerque')
+
+    dispose()
+  })
+
+  it('opens a customer and ignores clicks that belong to the row actions', async () => {
+    const { composable, api, dispose } = withScreen()
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+
+    const actionEvent = {
+      target: { closest: () => ({}) },
+    } as unknown as MouseEvent
+    composable.onCustomerRowClick(actionEvent, 'cust-1')
+    expect(api.getCustomer).not.toHaveBeenCalled()
+
+    composable.openCustomer('cust-1')
+    await vi.waitFor(() => {
+      expect(api.getCustomer).toHaveBeenCalledWith('cust-1')
+      expect(composable.detailCustomer.value?.name).toBe('Marina Albuquerque')
+    })
+
+    composable.closeCustomer()
+    expect(composable.detailCustomerId.value).toBeNull()
+    expect(composable.detailCustomer.value).toBeNull()
 
     dispose()
   })
