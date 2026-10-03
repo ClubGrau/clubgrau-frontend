@@ -48,7 +48,7 @@ const toneClasses: Record<
 </script>
 
 <template>
-  <div class="rounded-xl px-5 py-4" :class="toneClasses[tone].root">
+  <div class="rounded-xl border-[0.5px] border-black/10 px-5 py-4" :class="toneClasses[tone].root">
     <div class="flex items-start justify-between gap-3">
       <p
         class="text-[11px] font-semibold tracking-wide uppercase"
