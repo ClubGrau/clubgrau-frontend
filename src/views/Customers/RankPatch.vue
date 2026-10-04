@@ -25,7 +25,7 @@ const config = computed(() => customerRankPatch[props.rank]);
 const rootClass = computed(() => {
   if (props.variant === 'filter') {
     return [
-      'inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors',
+      'inline-flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors max-[429px]:gap-1 max-[429px]:overflow-hidden max-[429px]:px-2 max-[429px]:py-1.5 max-[429px]:text-xs min-[1100px]:flex-none min-[1100px]:justify-start',
       props.selected
         ? [config.value.tone, 'border-transparent']
         : ['border-gray-200 bg-white text-gray-700', config.value.hoverTone],
@@ -40,7 +40,8 @@ const rootClass = computed(() => {
 
 const iconClass = computed(() => {
   if (props.variant === 'filter') {
-    return props.selected ? 'size-4 shrink-0' : ['size-4 shrink-0', config.value.iconTone];
+    const size = 'size-4 shrink-0 max-[429px]:size-3';
+    return props.selected ? size : [size, config.value.iconTone];
   }
 
   return 'size-3 shrink-0';
