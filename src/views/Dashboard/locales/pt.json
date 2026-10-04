@@ -1,0 +1,54 @@
+{
+  "title": "Dashboard",
+  "subtitle": "O dia do salão: carteira, agenda e o que precisa de atenção.",
+  "breadcrumb": "Dashboard",
+  "context": {
+    "salon": "Club Grau",
+    "today": "Hoje"
+  },
+  "kpi": {
+    "clients": {
+      "label": "Clientes ativos",
+      "joined": "+{count}",
+      "description": "{percent}% da carteira este mês"
+    },
+    "appointments": {
+      "label": "Marcações de hoje",
+      "description": "Atendimentos previstos"
+    },
+    "revenue": {
+      "label": "Receita do mês",
+      "description": "Total faturado este mês"
+    },
+    "newMetric": "Novo indicador"
+  },
+  "appointments": {
+    "title": "Marcações de hoje",
+    "chair": "Cadeira {chair}"
+  },
+  "service": {
+    "cut": "Corte",
+    "beard": "Barba",
+    "color": "Coloração"
+  },
+  "revenue": {
+    "title": "Receita"
+  },
+  "treatment": {
+    "title": "Serviços de hoje",
+    "caption": "{completed}/{total} serviços concluídos"
+  },
+  "stock": {
+    "title": "Stock de produtos",
+    "remaining": "{count} un. restantes",
+    "pomade": "Pomada",
+    "shaveCream": "Creme de barbear",
+    "balm": "Bálsamo",
+    "gel": "Gel"
+  },
+  "recent": {
+    "title": "Clientes recentes",
+    "viewAll": "Ver tudo",
+    "empty": "Ainda não há clientes na carteira."
+  }
+}

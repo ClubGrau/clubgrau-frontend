@@ -1,0 +1,54 @@
+{
+  "title": "Dashboard",
+  "subtitle": "The salon day: wallet, schedule and what needs attention.",
+  "breadcrumb": "Dashboard",
+  "context": {
+    "salon": "Club Grau",
+    "today": "Today"
+  },
+  "kpi": {
+    "clients": {
+      "label": "Active clients",
+      "joined": "+{count}",
+      "description": "{percent}% of the wallet this month"
+    },
+    "appointments": {
+      "label": "Today's appointments",
+      "description": "Visits scheduled"
+    },
+    "revenue": {
+      "label": "Monthly revenue",
+      "description": "Billed this month"
+    },
+    "newMetric": "New metric"
+  },
+  "appointments": {
+    "title": "Today's appointments",
+    "chair": "Chair {chair}"
+  },
+  "service": {
+    "cut": "Cut",
+    "beard": "Beard",
+    "color": "Color"
+  },
+  "revenue": {
+    "title": "Revenue"
+  },
+  "treatment": {
+    "title": "Today's services",
+    "caption": "{completed}/{total} services completed"
+  },
+  "stock": {
+    "title": "Product stock",
+    "remaining": "{count} units left",
+    "pomade": "Pomade",
+    "shaveCream": "Shaving cream",
+    "balm": "Aftershave balm",
+    "gel": "Hair gel"
+  },
+  "recent": {
+    "title": "Recent customers",
+    "viewAll": "View all",
+    "empty": "No customers in the wallet yet."
+  }
+}
