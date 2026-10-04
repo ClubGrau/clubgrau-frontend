@@ -2,7 +2,9 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Icon } from '@iconify/vue';
+import ActionsMenu from '../../components/ActionsMenu/ActionsMenu.vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
+import DataTable from '../../components/DataTable/DataTable.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
@@ -10,7 +12,8 @@ import Pagination from '../../components/Pagination/Pagination.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import ModalLayout from '../../components/Modal/ModalLayout.vue';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
-import type { CustomerSortKey } from '../../types/customer';
+import type { Customer, CustomerSortKey } from '../../types/customer';
+import type { DataTableColumn } from '../../types/data-table';
 import type { StatCardItem } from '../../types/stat-card';
 import { CUSTOMER_RANK_LADDER } from '../../constants/customer-rank';
 import { formatRegistrationDate, joinedSharePercent } from '../../domain/customer-wallet';
@@ -101,6 +104,26 @@ const sortIcon = (key: CustomerSortKey) => {
   return sortDirection.value === 'asc' ? 'carbon:caret-sort-up' : 'carbon:caret-sort-down';
 };
 
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'name', label: t('Customers.table.customer'), ariaSort: ariaSort('name') },
+  { key: 'contact', label: t('Customers.table.contact') },
+  { key: 'nif', label: t('Customers.table.nif') },
+  { key: 'referral', label: t('Customers.table.referral') },
+  { key: 'rank', label: t('Customers.table.rank'), ariaSort: ariaSort('rank') },
+  { key: 'createdAt', label: t('Customers.table.registeredAt'), ariaSort: ariaSort('createdAt') },
+  {
+    key: 'actions',
+    label: t('Customers.table.actions'),
+    align: 'right',
+    stopsRowClick: true,
+    actionsTrigger: true,
+  },
+]);
+
+const onCustomerTableRowClick = (event: MouseEvent, customer: Customer.ListItem) => {
+  onCustomerRowClick(event, customer.id);
+};
+
 const copyNif = async (nif: string) => {
   try {
     await navigator.clipboard.writeText(nif);
@@ -112,7 +135,7 @@ const copyNif = async (nif: string) => {
 </script>
 
 <template>
-  <PageContainer class="min-h-full bg-[#f5f5f7] px-8 pb-8 pt-5">
+  <PageContainer>
     <Breadcrumb :items="breadcrumbItems" />
 
     <PageHeader
@@ -122,26 +145,29 @@ const copyNif = async (nif: string) => {
       <template #actions>
         <button
           type="button"
-          class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
+          class="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f] md:w-auto"
           @click="openCreateDrawer"
         >
-          <Icon icon="carbon:add" class="size-4" />
           {{ t('Customers.newCustomer') }}
+          <span class="text-lg leading-none">+</span> 
         </button>
       </template>
     </PageHeader>
 
-    <div class="mb-6 grid w-full max-w-1/2 grid-cols-1 gap-4 sm:grid-cols-2">
+    <div
+      class="mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scrollbar-none md:grid md:snap-none md:grid-cols-2 md:gap-4 md:overflow-visible lg:w-[75%] [&::-webkit-scrollbar]:hidden"
+    >
       <StatCard
         v-for="card in statCards"
         :key="card.id"
+        class="w-[calc(100%-3rem)] shrink-0 snap-start md:w-auto md:min-w-0 md:shrink md:snap-align-none"
         v-bind="card"
       />
     </div>
 
     <section class="rounded-2xl bg-white p-5 shadow-sm">
-      <div class="mb-5 flex flex-wrap items-center gap-3">
-        <div class="relative min-w-70 w-full max-w-2/3">
+      <div class="mb-5 flex flex-col gap-3 min-[1100px]:flex-row min-[1100px]:items-center">
+        <div class="relative w-full min-w-0 min-[1100px]:max-w-2/3 min-[1100px]:flex-1">
           <Icon
             icon="carbon:search"
             class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400"
@@ -150,11 +176,11 @@ const copyNif = async (nif: string) => {
             v-model="searchQuery"
             type="search"
             :placeholder="t('Customers.searchPlaceholder')"
-            class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-gray-300"
+           class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
           />
         </div>
 
-        <div class="flex items-center gap-2" role="group" :aria-label="t('Customers.rankFilter.label')">
+        <div class="flex w-full min-w-0 items-center gap-2 max-[429px]:gap-1 min-[1100px]:w-auto min-[1100px]:shrink-0" role="group" :aria-label="t('Customers.rankFilter.label')">
           <RankPatch
             v-for="rank in CUSTOMER_RANK_LADDER"
             :key="rank"
@@ -176,154 +202,141 @@ const copyNif = async (nif: string) => {
         </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-225 border-collapse text-left">
-          <thead>
-            <tr class="border-b border-gray-100 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
-              <th class="py-3 pr-4 font-semibold" :aria-sort="ariaSort('name')">
-                <button
-                  type="button"
-                  class="inline-flex cursor-pointer items-center gap-1"
-                  :aria-label="t('Customers.table.sort', { column: t('Customers.table.customer') })"
-                  @click="toggleSort('name')"
-                >
-                  {{ t('Customers.table.customer') }}
-                  <Icon :icon="sortIcon('name')" class="size-3.5" :class="sortKey === 'name' ? 'text-gray-700' : 'text-gray-300'" />
-                </button>
-              </th>
-              <th class="py-3 pr-4 font-semibold">{{ t('Customers.table.contact') }}</th>
-              <th class="py-3 pr-4 font-semibold">{{ t('Customers.table.nif') }}</th>
-              <th class="py-3 pr-4 font-semibold">{{ t('Customers.table.referral') }}</th>
-              <th class="py-3 pr-4 font-semibold" :aria-sort="ariaSort('rank')">
-                <button
-                  type="button"
-                  class="inline-flex cursor-pointer items-center gap-1"
-                  :aria-label="t('Customers.table.sort', { column: t('Customers.table.rank') })"
-                  @click="toggleSort('rank')"
-                >
-                  {{ t('Customers.table.rank') }}
-                  <Icon :icon="sortIcon('rank')" class="size-3.5" :class="sortKey === 'rank' ? 'text-gray-700' : 'text-gray-300'" />
-                </button>
-              </th>
-              <th class="py-3 pr-4 font-semibold" :aria-sort="ariaSort('createdAt')">
-                <button
-                  type="button"
-                  class="inline-flex cursor-pointer items-center gap-1"
-                  :aria-label="t('Customers.table.sort', { column: t('Customers.table.registeredAt') })"
-                  @click="toggleSort('createdAt')"
-                >
-                  {{ t('Customers.table.registeredAt') }}
-                  <Icon :icon="sortIcon('createdAt')" class="size-3.5" :class="sortKey === 'createdAt' ? 'text-gray-700' : 'text-gray-300'" />
-                </button>
-              </th>
-              <th class="py-3 pl-2 text-right font-semibold">{{ t('Customers.table.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="customer in filteredCustomers"
-              :key="customer.id"
-              class="cursor-pointer border-b border-gray-50 last:border-b-0 hover:bg-gray-50/80"
-              @click="onCustomerRowClick($event, customer.id)"
+      <DataTable
+        :columns="columns"
+        :rows="filteredCustomers"
+        row-key="id"
+        @row-click="onCustomerTableRowClick"
+      >
+        <template #header-name="{ column }">
+          <button
+            type="button"
+            class="inline-flex cursor-pointer items-center gap-1"
+            :aria-label="t('Customers.table.sort', { column: column.label })"
+            @click="toggleSort('name')"
+          >
+            {{ column.label }}
+            <Icon :icon="sortIcon('name')" class="size-3.5" :class="sortKey === 'name' ? 'text-gray-700' : 'text-gray-300'" />
+          </button>
+        </template>
+
+        <template #header-rank="{ column }">
+          <button
+            type="button"
+            class="inline-flex cursor-pointer items-center gap-1"
+            :aria-label="t('Customers.table.sort', { column: column.label })"
+            @click="toggleSort('rank')"
+          >
+            {{ column.label }}
+            <Icon :icon="sortIcon('rank')" class="size-3.5" :class="sortKey === 'rank' ? 'text-gray-700' : 'text-gray-300'" />
+          </button>
+        </template>
+
+        <template #header-createdAt="{ column }">
+          <button
+            type="button"
+            class="inline-flex cursor-pointer items-center gap-1"
+            :aria-label="t('Customers.table.sort', { column: column.label })"
+            @click="toggleSort('createdAt')"
+          >
+            {{ column.label }}
+            <Icon :icon="sortIcon('createdAt')" class="size-3.5" :class="sortKey === 'createdAt' ? 'text-gray-700' : 'text-gray-300'" />
+          </button>
+        </template>
+
+        <template #cell-name="{ row }">
+          <div class="flex items-center gap-3">
+            <UserAvatar
+              :initials="row.initials"
+              size="sm"
+              :alt="row.name"
+            />
+            <button
+              type="button"
+              class="truncate text-left text-sm font-semibold text-gray-900 hover:underline"
+              @click="openCustomer(row.id)"
             >
-              <td class="py-4 pr-4 align-middle">
-                <div class="flex items-center gap-3">
-                  <UserAvatar
-                    :initials="customer.initials"
-                    size="sm"
-                    :alt="customer.name"
-                  />
-                  <button
-                    type="button"
-                    class="truncate text-left text-sm font-semibold text-gray-900 hover:underline"
-                    @click="openCustomer(customer.id)"
-                  >
-                    {{ customer.name }}
-                  </button>
-                </div>
-              </td>
+              {{ row.name }}
+            </button>
+          </div>
+        </template>
 
-              <td class="py-4 pr-4 align-middle">
-                <div class="space-y-1">
-                  <div class="flex items-center gap-2 text-xs text-gray-500">
-                    <Icon icon="carbon:email" class="size-3.5 shrink-0 text-gray-400" />
-                    <span class="truncate font-semibold">{{ customer.email }}</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs text-gray-500">
-                    <Icon icon="carbon:phone" class="size-3.5 shrink-0 text-gray-400" />
-                    <span>{{ customer.phone }}</span>
-                  </div>
-                </div>
-              </td>
+        <template #cell-contact="{ row }">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+              <Icon icon="carbon:email" class="size-3.5 shrink-0 text-gray-400" />
+              <span class="truncate font-semibold">{{ row.email }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+              <Icon icon="carbon:phone" class="size-3.5 shrink-0 text-gray-400" />
+              <span>{{ row.phone }}</span>
+            </div>
+          </div>
+        </template>
 
-              <td class="py-4 pr-4 align-middle text-sm text-gray-500">
-                <div v-if="customer.nif.trim()" class="flex items-center gap-1.5">
-                  <span>{{ customer.nif }}</span>
-                  <button
-                    type="button"
-                    data-row-action
-                    class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-                    :aria-label="t('Customers.nif.copy')"
-                    @click="copyNif(customer.nif)"
-                  >
-                    <Icon icon="carbon:copy" class="size-3.5" />
-                  </button>
-                </div>
-                <span v-else class="text-gray-400">{{ t('Customers.emptyValue') }}</span>
-              </td>
-
-              <td class="py-4 pr-4 align-middle text-sm text-gray-700">
-                <button
-                  v-if="customer.referralCustomerId"
-                  type="button"
-                  data-row-action
-                  class="cursor-pointer font-medium text-gray-900 underline-offset-2 hover:underline"
-                  :aria-label="t('Customers.referral.open', { name: customer.referral })"
-                  @click="openCustomer(customer.referralCustomerId)"
-                >
-                  {{ customer.referral }}
-                </button>
-                <span v-else>{{ optionalDisplay(customer.referral) }}</span>
-                <p v-if="customer.referredCount > 0" class="mt-0.5 text-xs text-gray-400">
-                  {{ t('Customers.referral.referred', { count: customer.referredCount }) }}
-                </p>
-              </td>
-
-              <td class="py-4 pr-4 align-middle">
-                <RankPatch v-if="customer.rank" variant="table" :rank="customer.rank" />
-                <span v-else class="text-sm text-gray-400">{{ t('Customers.emptyValue') }}</span>
-              </td>
-
-              <td class="py-4 pr-4 align-middle text-sm text-gray-700">
-                {{ formatRegistrationDate(customer.createdAt) }}
-              </td>
-
-              <td
-                class="py-4 pl-2 text-right align-middle"
+        <template #cell-nif="{ row }">
+          <div class="text-sm text-gray-500">
+            <div v-if="row.nif.trim()" class="flex items-center gap-1.5">
+              <span>{{ row.nif }}</span>
+              <button
+                type="button"
                 data-row-action
-                data-actions-menu
+                class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                :aria-label="t('Customers.nif.copy')"
+                @click="copyNif(row.nif)"
               >
-                <button
-                  type="button"
-                  class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                  :aria-expanded="openActionsId === customer.id"
-                  :aria-label="t('Customers.table.actions')"
-                  aria-haspopup="menu"
-                  @click.stop="toggleActionsMenu(customer.id, $event.currentTarget)"
-                >
-                  <Icon icon="carbon:overflow-menu-vertical" class="size-5" />
-                </button>
-              </td>
-            </tr>
+                <Icon icon="carbon:copy" class="size-3.5" />
+              </button>
+            </div>
+            <span v-else class="text-gray-400">{{ t('Customers.emptyValue') }}</span>
+          </div>
+        </template>
 
-            <tr v-if="filteredCustomers.length === 0">
-              <td colspan="7" class="py-12 text-center text-sm text-gray-400">
-                {{ t('Customers.empty') }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <template #cell-referral="{ row }">
+          <div class="text-sm text-gray-700">
+            <button
+              v-if="row.referralCustomerId"
+              type="button"
+              data-row-action
+              class="cursor-pointer font-medium text-gray-900 underline-offset-2 hover:underline"
+              :aria-label="t('Customers.referral.open', { name: row.referral })"
+              @click="openCustomer(row.referralCustomerId)"
+            >
+              {{ row.referral }}
+            </button>
+            <span v-else>{{ optionalDisplay(row.referral) }}</span>
+            <p v-if="row.referredCount > 0" class="mt-0.5 text-xs text-gray-400">
+              {{ t('Customers.referral.referred', { count: row.referredCount }) }}
+            </p>
+          </div>
+        </template>
+
+        <template #cell-rank="{ row }">
+          <RankPatch v-if="row.rank" variant="table" :rank="row.rank" />
+          <span v-else class="text-sm text-gray-400">{{ t('Customers.emptyValue') }}</span>
+        </template>
+
+        <template #cell-createdAt="{ row }">
+          <span class="text-sm text-gray-700">{{ formatRegistrationDate(row.createdAt) }}</span>
+        </template>
+
+        <template #cell-actions="{ row }">
+          <button
+            type="button"
+            class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            :aria-expanded="openActionsId === row.id"
+            :aria-label="t('Customers.table.actions')"
+            aria-haspopup="menu"
+            @click.stop="toggleActionsMenu(row.id, $event.currentTarget)"
+          >
+            <Icon icon="carbon:overflow-menu-vertical" class="size-5" />
+          </button>
+        </template>
+
+        <template #empty>
+          {{ t('Customers.empty') }}
+        </template>
+      </DataTable>
 
       <Pagination
         v-model:current-page="currentPage"
@@ -338,25 +351,18 @@ const copyNif = async (nif: string) => {
       />
     </section>
 
-    <Teleport to="body">
-      <div
+    <ActionsMenu :open="openActionsId !== null" :menu-style="actionsMenuStyle">
+      <button
         v-if="openActionsId"
-        data-actions-menu
-        role="menu"
-        class="fixed z-50 min-w-40 rounded-xl border border-gray-100 bg-white p-1.5 shadow-[0_12px_32px_rgba(16,22,37,0.12)]"
-        :style="actionsMenuStyle"
+        type="button"
+        role="menuitem"
+        class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+        @click.stop="onRemoveAction(openActionsId)"
       >
-        <button
-          type="button"
-          role="menuitem"
-          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
-          @click.stop="onRemoveAction(openActionsId)"
-        >
-          <Icon icon="carbon:trash-can" class="size-4" />
-          {{ t('Customers.menu.remove') }}
-        </button>
-      </div>
-    </Teleport>
+        <Icon icon="carbon:trash-can" class="size-4" />
+        {{ t('Customers.menu.remove') }}
+      </button>
+    </ActionsMenu>
 
     <Drawer
       :open="detailCustomerId !== null"
