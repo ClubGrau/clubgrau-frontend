@@ -296,7 +296,7 @@ onUnmounted(stopStatusTabsDrag);
       >
         <template v-if="isStatsLoading" #value>
           <span
-            class="block h-9 w-12 animate-pulse rounded-md bg-current/20"
+            class="block h-8 w-12 animate-pulse rounded-md bg-current/20"
             aria-hidden="true"
           />
         </template>
