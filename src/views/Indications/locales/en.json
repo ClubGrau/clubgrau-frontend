@@ -1,0 +1,61 @@
+{
+  "title": "Referrals",
+  "subtitle": "Canal and Campanha start empty. The name stays in the catalog after it is ended.",
+  "breadcrumb": {
+    "dashboard": "Dashboard",
+    "indications": "Referrals"
+  },
+  "newOrigin": "New origin",
+  "loading": "Loading the catalog",
+  "group": {
+    "none": "No origins",
+    "one": "1 origin",
+    "many": "{count} origins",
+    "empty": "No origin in this category.",
+    "friendEmpty": "Friend does not take names. A referrer arrives with the customer.",
+    "collapse": "Collapse {name}",
+    "expand": "Expand {name}"
+  },
+  "status": {
+    "active": "Active",
+    "ended": "Ended"
+  },
+  "menu": {
+    "correct": "Correct name",
+    "end": "End",
+    "reopen": "Reopen"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "form": {
+    "createTitle": "New origin",
+    "createSubtitle": "Appended to Canal or Campanha",
+    "createSubmit": "Create origin",
+    "correctTitle": "Correct name",
+    "correctSubtitle": "The record and the category stay the same",
+    "correctSubmit": "Save name",
+    "name": "Name *",
+    "namePlaceholder": "E.g. Facebook",
+    "category": "Category *",
+    "categoryPlaceholder": "Select the category",
+    "missingCategory": "Select Canal or Campanha.",
+    "short": "Enter a name with at least 2 characters.",
+    "long": "The name can have at most 100 characters."
+  },
+  "error": {
+    "load": "Could not load the catalog.",
+    "forbidden": "You do not have permission to view the catalog."
+  },
+  "toast": {
+    "created": "Origin created.",
+    "corrected": "Name corrected.",
+    "ended": "Origin ended.",
+    "reopened": "Origin reopened.",
+    "nameTaken": "This category already has an origin with that name.",
+    "invalid": "Could not save this name.",
+    "forbidden": "You do not have permission to change the catalog.",
+    "unexpected": "Could not complete the action. Try again."
+  }
+}

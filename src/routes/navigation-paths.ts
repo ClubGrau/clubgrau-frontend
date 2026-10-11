@@ -20,6 +20,14 @@ export const navigationSections: NavigationSection[] = [
         content: 'Clientes',
       },
       {
+        id: 3,
+        router: '/app/indications',
+        icon: 'carbon:connect',
+        description: 'Indicações',
+        content: 'Indicações',
+        roles: ['MANAGER', 'ADMIN'],
+      },
+      {
         id: 2,
         router: '/app/employees',
         icon: 'clarity:employee-line',

@@ -1,0 +1,61 @@
+{
+  "title": "Indicações",
+  "subtitle": "Canal e Campanha começam vazios. O nome fica no catálogo mesmo depois de encerrar.",
+  "breadcrumb": {
+    "dashboard": "Dashboard",
+    "indications": "Indicações"
+  },
+  "newOrigin": "Nova origem",
+  "loading": "A carregar o catálogo",
+  "group": {
+    "none": "Nenhuma origem",
+    "one": "1 origem",
+    "many": "{count} origens",
+    "empty": "Nenhuma origem nesta categoria.",
+    "friendEmpty": "Amigo não recebe nomes. Quem indicou entra com o cliente.",
+    "collapse": "Recolher {name}",
+    "expand": "Expandir {name}"
+  },
+  "status": {
+    "active": "Ativa",
+    "ended": "Encerrada"
+  },
+  "menu": {
+    "correct": "Corrigir nome",
+    "end": "Encerrar",
+    "reopen": "Reabrir"
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "close": "Fechar"
+  },
+  "form": {
+    "createTitle": "Nova origem",
+    "createSubtitle": "Entra no fim de Canal ou de Campanha",
+    "createSubmit": "Criar origem",
+    "correctTitle": "Corrigir nome",
+    "correctSubtitle": "O registo e a categoria ficam os mesmos",
+    "correctSubmit": "Guardar nome",
+    "name": "Nome *",
+    "namePlaceholder": "Ex: Facebook",
+    "category": "Categoria *",
+    "categoryPlaceholder": "Selecione a categoria",
+    "missingCategory": "Selecione Canal ou Campanha.",
+    "short": "Indique um nome com pelo menos 2 caracteres.",
+    "long": "O nome pode ter no máximo 100 caracteres."
+  },
+  "error": {
+    "load": "Não foi possível carregar o catálogo.",
+    "forbidden": "Não tem permissão para ver o catálogo."
+  },
+  "toast": {
+    "created": "Origem criada.",
+    "corrected": "Nome corrigido.",
+    "ended": "Origem encerrada.",
+    "reopened": "Origem reaberta.",
+    "nameTaken": "Já existe uma origem com esse nome nesta categoria.",
+    "invalid": "Não foi possível guardar este nome.",
+    "forbidden": "Não tem permissão para alterar o catálogo.",
+    "unexpected": "Não foi possível concluir a ação. Tente novamente."
+  }
+}
