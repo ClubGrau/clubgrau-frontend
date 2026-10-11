@@ -1,5 +1,5 @@
 import { createWebHistory, createRouter } from 'vue-router'
-import { canAccessEmployees, canVisitLogin } from '../domain/actor-display'
+import { canAccessEmployees, canAccessIndications, canVisitLogin } from '../domain/actor-display'
 import { useAuthStore } from '../stores/auth'
 
 const authGuard = () => {
@@ -21,6 +21,14 @@ const guestGuard = () => {
 const canAccessEmployeesGuard = () => {
   const authStore = useAuthStore()
   if (canAccessEmployees(authStore.actor)) {
+    return true
+  }
+  return '/app/dashboard'
+}
+
+const canAccessIndicationsGuard = () => {
+  const authStore = useAuthStore()
+  if (canAccessIndications(authStore.actor)) {
     return true
   }
   return '/app/dashboard'
@@ -60,6 +68,12 @@ const routes = [
         path: "dashboard",
         name: "dashboard",
         component: () => import('../views/Dashboard/Dashboard.vue'),
+      },
+      {
+        path: "indications",
+        name: "indications",
+        component: () => import('../views/Indications/Indications.vue'),
+        beforeEnter: canAccessIndicationsGuard,
       },
       {
         path: "employees",

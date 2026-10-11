@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Actor, ActorRole } from '../types/actor'
-import { canAccessEmployees, canVisitLogin } from './actor-display'
+import { canAccessEmployees, canAccessIndications, canVisitLogin } from './actor-display'
 
 function actor(role: ActorRole | null = 'ADMIN'): Actor {
   return { id: 'actor-1', name: null, email: null, role, status: 'ACTIVE' }
@@ -29,5 +29,18 @@ describe('canAccessEmployees', () => {
     expect(canAccessEmployees(actor('EMPLOYEE'))).toBe(false)
     expect(canAccessEmployees(actor(null))).toBe(false)
     expect(canAccessEmployees(null)).toBe(false)
+  })
+})
+
+describe('canAccessIndications', () => {
+  it('allows MANAGER and ADMIN', () => {
+    expect(canAccessIndications(actor('ADMIN'))).toBe(true)
+    expect(canAccessIndications(actor('MANAGER'))).toBe(true)
+  })
+
+  it('hides the catalog for EMPLOYEE or no Actor', () => {
+    expect(canAccessIndications(actor('EMPLOYEE'))).toBe(false)
+    expect(canAccessIndications(actor(null))).toBe(false)
+    expect(canAccessIndications(null)).toBe(false)
   })
 })

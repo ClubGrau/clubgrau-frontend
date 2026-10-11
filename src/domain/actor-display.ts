@@ -19,6 +19,11 @@ export function canAccessEmployees(actor: Actor | null): boolean {
   return actor?.role === 'MANAGER' || actor?.role === 'ADMIN'
 }
 
+/** Catalog read and writes are refused for EMPLOYEE. Hiding the screen matches that gate. */
+export function canAccessIndications(actor: Actor | null): boolean {
+  return actor?.role === 'MANAGER' || actor?.role === 'ADMIN'
+}
+
 /** Login is only for operators without a session. A decodable JWT yields an Actor. */
 export function canVisitLogin(actor: Actor | null): boolean {
   return actor === null
