@@ -1,12 +1,15 @@
 export type IndicationCategoryId = 'canal' | 'campanha' | 'amigo'
 
+/** Canal and Campanha. Amigo does not hold catalog origins. */
+export type IndicationOriginCategoryId = Exclude<IndicationCategoryId, 'amigo'>
+
 /** Category code for Amigo. A friend row points at a customer, not a catalog origin. */
 export const FRIEND_CATEGORY_ID: IndicationCategoryId = 'amigo'
 
 export namespace Indication {
   export interface Origin {
     id: string
-    categoryId: 'canal' | 'campanha'
+    categoryId: IndicationOriginCategoryId
     name: string
     active: boolean
   }
