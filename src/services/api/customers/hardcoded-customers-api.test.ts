@@ -135,6 +135,9 @@ describe('HardcodedCustomersApi', () => {
       nif: '123456789',
       referral: 'Marina Albuquerque',
       rank: 'BRONZE',
+      wasReferred: true,
+      indicationCategoryId: 'canal',
+      indicationOriginId: 'origin-1',
     })
     const result = await customers.getCustomers({ page: 1, limit: 10 })
 
@@ -146,6 +149,8 @@ describe('HardcodedCustomersApi', () => {
       referral: 'Marina Albuquerque',
       rank: 'BRONZE',
       initials: 'AC',
+      indicationCategoryId: 'canal',
+      indicationOriginId: 'origin-1',
     })
   })
 

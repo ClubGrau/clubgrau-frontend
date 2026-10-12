@@ -5,16 +5,27 @@ import { Icon } from '@iconify/vue';
 import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import type { Customer, CustomerRank } from '../../types/customer';
+import type { Indication, IndicationCategoryId } from '../../types/indication';
+import { FRIEND_CATEGORY_ID } from '../../types/indication';
 import { CUSTOMER_RANK_OPTIONS } from '../../constants/customer-rank';
+import { toCustomerIndication } from '../../domain/customer-indication';
 import { isValidPhone } from '../../domain/phone-value';
+
+const indicationTypes = ['canal', 'campanha', FRIEND_CATEGORY_ID] as const satisfies readonly IndicationCategoryId[];
 
 const emit = defineEmits<{
   close: [];
   create: [payload: Customer.CreateCommand];
+  wasReferredChange: [value: boolean];
+  categoryChange: [categoryId: IndicationCategoryId | null];
 }>();
 
-defineProps<{
+const props = defineProps<{
   submitting?: boolean;
+  customers: { id: string; name: string }[];
+  origins: Indication.Origin[];
+  originsLoading?: boolean;
+  originsErrorKey?: string | null;
 }>();
 
 const { t } = useI18n();
@@ -24,19 +35,73 @@ const form = reactive({
   email: '',
   phone: '',
   nif: '',
-  referral: '',
   rank: '' as CustomerRank | '',
 });
 
+const wasReferred = ref(false);
+const categoryId = ref('');
+const originId = ref('');
+
 const submitted = ref(false);
+
+const isFriend = computed(() => categoryId.value === FRIEND_CATEGORY_ID);
+
+const selectedOrigin = computed(
+  () => props.origins.find((origin) => origin.id === originId.value) ?? null,
+);
+
+const selectedFriend = computed(
+  () => props.customers.find((customer) => customer.id === originId.value) ?? null,
+);
 
 const missingRequired = computed(() => {
   const missing: string[] = [];
   if (form.name.trim().length <= 1) missing.push(t('Customers.form.nameRequired').replace(' *', ''));
   if (!form.email.trim().includes('@')) missing.push(t('Customers.form.emailRequired').replace(' *', ''));
   if (!isValidPhone(form.phone)) missing.push(t('Customers.form.phoneRequired').replace(' *', ''));
+  if (wasReferred.value && !categoryId.value) {
+    missing.push(t('Customers.form.indication.category'));
+  }
+  if (wasReferred.value && categoryId.value && !selectedOrigin.value && !selectedFriend.value) {
+    missing.push(t('Customers.form.indication.origin'));
+  }
   return missing;
 });
+
+const originOptions = computed(() =>
+  props.origins.map((origin) => ({
+    id: origin.id,
+    label: origin.name,
+    value: origin.id,
+  })),
+);
+
+const friendOptions = computed(() =>
+  props.customers
+    .filter((customer) => customer.name.trim().length > 0)
+    .map((customer) => ({
+      id: customer.id,
+      label: customer.name,
+      value: customer.id,
+    })),
+);
+
+const onWasReferred = (value: boolean) => {
+  wasReferred.value = value;
+  if (!value) {
+    categoryId.value = '';
+    originId.value = '';
+    emit('categoryChange', null);
+  }
+  emit('wasReferredChange', value);
+};
+
+const onCategory = (value: IndicationCategoryId) => {
+  if (categoryId.value === value) return;
+  categoryId.value = value;
+  originId.value = '';
+  emit('categoryChange', value);
+};
 
 const fieldError = (value: string, minLength = 1) =>
   submitted.value && value.trim().length < minLength;
@@ -45,13 +110,21 @@ const onSubmit = () => {
   submitted.value = true;
   if (missingRequired.value.length > 0) return;
 
+  const indication = toCustomerIndication({
+    wasReferred: wasReferred.value,
+    categoryId: categoryId.value,
+    origin: isFriend.value ? null : selectedOrigin.value,
+    friend: isFriend.value ? selectedFriend.value : null,
+  });
+  if (!indication) return;
+
   emit('create', {
     name: form.name.trim(),
     email: form.email.trim(),
     phone: form.phone.trim(),
     nif: form.nif.trim(),
-    referral: form.referral.trim(),
     rank: form.rank,
+    ...indication,
   });
 };
 </script>
@@ -141,19 +214,6 @@ const onSubmit = () => {
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label for="customer-referral" class="text-xs text-gray-400">
-                {{ t('Customers.form.referral') }}
-              </label>
-              <input
-                id="customer-referral"
-                v-model="form.referral"
-                type="text"
-                :placeholder="t('Customers.form.referralPlaceholder')"
-                class="form-input"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
               <span class="text-xs text-gray-400">{{ t('Customers.form.rank') }}</span>
               <SelectFilter
                 v-model="form.rank"
@@ -161,6 +221,103 @@ const onSubmit = () => {
                 :placeholder="t('Customers.form.rankPlaceholder')"
                 variant="field"
               />
+            </div>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <h3 class="mb-4 text-base font-semibold text-gray-900">
+            {{ t('Customers.form.indication.title') }}
+          </h3>
+
+          <fieldset class="space-y-2">
+            <legend class="text-xs text-gray-400">
+              {{ t('Customers.form.indication.wasReferred') }}
+            </legend>
+            <div class="flex gap-5">
+              <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-800">
+                <input
+                  class="size-4 accent-[#3B82F6]"
+                  type="radio"
+                  name="customer-was-referred"
+                  :checked="wasReferred"
+                  @change="onWasReferred(true)"
+                />
+                {{ t('Customers.form.indication.yes') }}
+              </label>
+              <label class="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-800">
+                <input
+                  class="size-4 accent-[#3B82F6]"
+                  type="radio"
+                  name="customer-was-referred"
+                  :checked="!wasReferred"
+                  @change="onWasReferred(false)"
+                />
+                {{ t('Customers.form.indication.no') }}
+              </label>
+            </div>
+          </fieldset>
+
+          <div v-if="wasReferred" class="mt-4 space-y-4">
+            <fieldset class="space-y-2">
+              <legend class="text-xs text-gray-400">
+                {{ t('Customers.form.indication.category') }}
+              </legend>
+              <div class="flex flex-wrap gap-5">
+                <label
+                  v-for="typeId in indicationTypes"
+                  :key="typeId"
+                  class="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-800"
+                >
+                  <input
+                    class="size-4 accent-[#3B82F6]"
+                    type="radio"
+                    name="customer-indication-category"
+                    :checked="categoryId === typeId"
+                    @change="onCategory(typeId)"
+                  />
+                  {{ t(`Customers.form.indication.types.${typeId}`) }}
+                </label>
+              </div>
+            </fieldset>
+
+            <div v-if="categoryId" class="flex flex-col gap-1.5">
+              <span class="text-xs text-gray-400">
+                {{ t('Customers.form.indication.origin') }}
+              </span>
+              <p
+                v-if="!isFriend && originsLoading"
+                class="flex items-center gap-2 text-sm text-gray-400"
+                aria-live="polite"
+              >
+                <Icon icon="carbon:circle-dash" class="size-4 animate-spin text-[#e69138]" />
+                {{ t('Customers.form.indication.loading') }}
+              </p>
+              <p v-else-if="!isFriend && originsErrorKey" class="text-sm text-red-500">
+                {{ t(originsErrorKey) }}
+              </p>
+              <SelectFilter
+                v-else-if="isFriend ? friendOptions.length : originOptions.length"
+                v-model="originId"
+                :options="isFriend ? friendOptions : originOptions"
+                :placeholder="
+                  t(
+                    isFriend
+                      ? 'Customers.form.indication.friendPlaceholder'
+                      : 'Customers.form.indication.originPlaceholder',
+                  )
+                "
+                variant="field"
+              />
+              <p v-else class="text-sm text-gray-400">
+                {{
+                  t(
+                    isFriend
+                      ? 'Customers.form.indication.emptyFriends'
+                      : 'Customers.form.indication.emptyOrigins',
+                  )
+                }}
+              </p>
             </div>
           </div>
         </section>

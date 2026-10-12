@@ -45,6 +45,11 @@ const {
   removeCustomerName,
   isCreating,
   isRemoving,
+  indicationOrigins,
+  isLoadingIndicationOrigins,
+  indicationOriginsErrorKey,
+  setCustomerWasReferred,
+  setCustomerIndicationCategory,
   openCreateDrawer,
   closeCreateDrawer,
   closeRemoveModal,
@@ -366,7 +371,7 @@ const copyNif = async (nif: string) => {
 
     <Drawer
       :open="detailCustomerId !== null"
-      width-class="w-full max-w-md"
+      width-class="w-full max-w-3xl"
       @close="closeCustomer"
     >
       <CustomerDetailPanel
@@ -383,13 +388,19 @@ const copyNif = async (nif: string) => {
 
     <Drawer
       :open="isCreateDrawerOpen"
-      width-class="w-full max-w-md"
+      width-class="w-full max-w-3xl"
       @close="closeCreateDrawer"
     >
       <CustomerFormPanel
         :submitting="isCreating"
+        :customers="filteredCustomers"
+        :origins="indicationOrigins"
+        :origins-loading="isLoadingIndicationOrigins"
+        :origins-error-key="indicationOriginsErrorKey"
         @close="closeCreateDrawer"
         @create="handleCreateCustomer"
+        @was-referred-change="setCustomerWasReferred"
+        @category-change="setCustomerIndicationCategory"
       />
     </Drawer>
 

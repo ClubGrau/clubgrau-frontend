@@ -1,14 +1,18 @@
 import { computed, ref } from 'vue'
 import { hardcodedCustomersApi } from '../../services/api/customers/hardcoded-customers-api'
+import { httpIndicationsApi } from '../../services/api/indications/http-indications-api'
+import type { GetIndicationCatalogApi } from '../../services/api/indications/types'
 import type {
   CreateCustomerApi,
   GetCustomerApi,
   GetCustomersApi,
   RemoveCustomerApi,
 } from '../../services/api/customers/types'
+import type { IndicationCategoryId } from '../../types/indication'
 import type { Customer } from '../../types/customer'
 import { useCreateCustomer } from './useCreateCustomer'
 import { useCustomerDetail } from './useCustomerDetail'
+import { useCustomerIndicationOptions } from './useCustomerIndicationOptions'
 import { useCustomerSelection } from './useCustomerSelection'
 import { useCustomers } from './useCustomers'
 import { useRemoveCustomer } from './useRemoveCustomer'
@@ -18,6 +22,7 @@ export function useCustomersScreen(
     GetCustomerApi &
     CreateCustomerApi &
     RemoveCustomerApi = hardcodedCustomersApi,
+  indications: GetIndicationCatalogApi = httpIndicationsApi,
 ) {
   const {
     filteredCustomers,
@@ -38,6 +43,26 @@ export function useCustomersScreen(
   const isCreateDrawerOpen = ref(false)
   const isRemoveModalOpen = ref(false)
   const activeCustomerId = ref<string | null>(null)
+  const customerWasReferred = ref(false)
+  const customerIndicationCategoryId = ref<IndicationCategoryId | null>(null)
+  const indicationOptions = useCustomerIndicationOptions(
+    indications,
+    customerIndicationCategoryId,
+  )
+
+  const resetIndicationChoice = () => {
+    customerWasReferred.value = false
+    customerIndicationCategoryId.value = null
+  }
+
+  const setCustomerWasReferred = (value: boolean) => {
+    customerWasReferred.value = value
+    if (!value) customerIndicationCategoryId.value = null
+  }
+
+  const setCustomerIndicationCategory = (categoryId: IndicationCategoryId | null) => {
+    customerIndicationCategoryId.value = categoryId
+  }
 
   const { create: createCustomer, isCreating } = useCreateCustomer(api, {
     onCreated: () => {
@@ -64,6 +89,7 @@ export function useCustomersScreen(
 
   const openCreateDrawer = () => {
     detail.close()
+    resetIndicationChoice()
     isCreateDrawerOpen.value = true
   }
 
@@ -84,6 +110,7 @@ export function useCustomersScreen(
 
   const closeCreateDrawer = () => {
     isCreateDrawerOpen.value = false
+    resetIndicationChoice()
   }
 
   const openRemoveModal = (id: string) => {
@@ -134,6 +161,11 @@ export function useCustomersScreen(
     ...selection,
     isCreating,
     isRemoving,
+    indicationOrigins: indicationOptions.origins,
+    isLoadingIndicationOrigins: indicationOptions.isLoading,
+    indicationOriginsErrorKey: indicationOptions.errorKey,
+    setCustomerWasReferred,
+    setCustomerIndicationCategory,
     openCreateDrawer,
     closeCreateDrawer,
     openRemoveModal,

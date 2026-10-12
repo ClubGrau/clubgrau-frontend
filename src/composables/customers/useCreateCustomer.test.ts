@@ -22,6 +22,9 @@ function payload(overrides: Partial<Customer.CreateCommand> = {}): Customer.Crea
     nif: '123456789',
     referral: 'Marina Albuquerque',
     rank: 'BRONZE',
+    wasReferred: false,
+    indicationCategoryId: null,
+    indicationOriginId: null,
     ...overrides,
   }
 }
@@ -63,6 +66,9 @@ describe('toCreateCustomerParams', () => {
       nif: '123456789',
       referral: 'Marina Albuquerque',
       rank: 'BRONZE',
+      wasReferred: false,
+      indicationCategoryId: null,
+      indicationOriginId: null,
     })
   })
 })

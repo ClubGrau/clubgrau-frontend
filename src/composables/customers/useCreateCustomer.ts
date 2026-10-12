@@ -19,6 +19,9 @@ export function toCreateCustomerParams(
     nif: payload.nif,
     referral: payload.referral,
     rank: payload.rank,
+    wasReferred: payload.wasReferred,
+    indicationCategoryId: payload.indicationCategoryId,
+    indicationOriginId: payload.indicationOriginId,
   }
 }
 

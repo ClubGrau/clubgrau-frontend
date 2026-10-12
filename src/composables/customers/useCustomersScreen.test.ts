@@ -1,7 +1,28 @@
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { describe, expect, it, vi } from 'vitest'
 import { createApp, effectScope } from 'vue'
+
+vi.hoisted(() => {
+  const memory: Record<string, string> = {}
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (key: string) => memory[key] ?? null,
+      setItem: (key: string, value: string) => {
+        memory[key] = value
+      },
+      removeItem: (key: string) => {
+        delete memory[key]
+      },
+      clear: () => {
+        for (const key of Object.keys(memory)) delete memory[key]
+      },
+    },
+  })
+})
+import type { GetIndicationCatalogApi } from '../../services/api/indications/types'
 import type { Customer } from '../../types/customer'
+import type { Indication } from '../../types/indication'
 import { useCustomersScreen } from './useCustomersScreen'
 
 function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem {
@@ -36,7 +57,10 @@ function stubApi(item = listItem()) {
   }
 }
 
-function withScreen(api = stubApi()) {
+function withScreen(
+  api = stubApi(),
+  indications: GetIndicationCatalogApi = { getCatalog: vi.fn() },
+) {
   const queryClient = new QueryClient({
     defaultOptions: {
       mutations: { retry: 0 },
@@ -46,13 +70,16 @@ function withScreen(api = stubApi()) {
   const app = createApp({})
   app.use(VueQueryPlugin, { queryClient })
   const scope = effectScope()
-  const composable = app.runWithContext(() => scope.run(() => useCustomersScreen(api)))
+  const composable = app.runWithContext(() =>
+    scope.run(() => useCustomersScreen(api, indications)),
+  )
   if (!composable) {
     throw new Error('useCustomersScreen did not return inside the Vue context')
   }
   return {
     composable,
     api,
+    indications,
     dispose: () => {
       scope.stop()
       app.unmount()
@@ -146,6 +173,60 @@ describe('useCustomersScreen', () => {
     composable.closeCustomer()
     expect(composable.detailCustomerId.value).toBeNull()
     expect(composable.detailCustomer.value).toBeNull()
+
+    dispose()
+  })
+
+  it('reads the indication catalog only after Canal or Campanha is selected', async () => {
+    const catalog: Indication.Catalog = {
+      categories: [
+        {
+          id: 'canal',
+          name: 'Canal',
+          holdsOrigins: true,
+          origins: [
+            { id: 'canal-active', categoryId: 'canal', name: 'Facebook', active: true },
+            { id: 'canal-ended', categoryId: 'canal', name: 'Orkut', active: false },
+          ],
+        },
+        {
+          id: 'campanha',
+          name: 'Campanha',
+          holdsOrigins: true,
+          origins: [],
+        },
+        { id: 'amigo', name: 'Amigo', holdsOrigins: false, origins: [] },
+      ],
+    }
+    const indications: GetIndicationCatalogApi = {
+      getCatalog: vi.fn().mockResolvedValue(catalog),
+    }
+    const { composable, dispose } = withScreen(stubApi(), indications)
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+    expect(indications.getCatalog).not.toHaveBeenCalled()
+
+    composable.setCustomerWasReferred(true)
+    composable.setCustomerIndicationCategory('amigo')
+    expect(indications.getCatalog).not.toHaveBeenCalled()
+    expect(composable.indicationOrigins.value).toEqual([])
+
+    composable.setCustomerIndicationCategory('canal')
+    await vi.waitFor(() => {
+      expect(indications.getCatalog).toHaveBeenCalledTimes(1)
+      expect(composable.indicationOrigins.value.map((origin) => origin.id)).toEqual([
+        'canal-active',
+      ])
+    })
+
+    composable.setCustomerIndicationCategory('campanha')
+    expect(composable.indicationOrigins.value).toEqual([])
+    expect(indications.getCatalog).toHaveBeenCalledTimes(1)
+
+    composable.closeCreateDrawer()
+    expect(indications.getCatalog).toHaveBeenCalledTimes(1)
 
     dispose()
   })

@@ -107,6 +107,8 @@ export class HardcodedCustomersApi
         referral: params.referral,
         rank: params.rank,
         createdAt: new Date().toISOString(),
+        indicationCategoryId: params.indicationCategoryId,
+        indicationOriginId: params.indicationOriginId,
       },
       ...this.items,
     ]

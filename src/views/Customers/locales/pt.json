@@ -85,11 +85,27 @@
     "phonePlaceholder": "912 345 678",
     "nif": "NIF",
     "nifPlaceholder": "123456789",
-    "referral": "Indicação",
-    "referralPlaceholder": "Ex: Rafael Nunes",
     "rank": "Rank",
     "rankPlaceholder": "Selecionar rank",
-    "missingFields": "Preencha os campos obrigatórios: {fields}."
+    "missingFields": "Preencha os campos obrigatórios: {fields}.",
+    "indication": {
+      "title": "Indicação",
+      "wasReferred": "Veio por indicação?",
+      "yes": "Sim",
+      "no": "Não",
+      "category": "Tipo de indicação",
+      "types": {
+        "canal": "Canal",
+        "campanha": "Campanha",
+        "amigo": "Amigo"
+      },
+      "origin": "Indicação",
+      "originPlaceholder": "Selecione uma indicação",
+      "friendPlaceholder": "Selecione um cliente",
+      "loading": "A carregar indicações…",
+      "emptyOrigins": "Nenhuma indicação ativa nesta categoria.",
+      "emptyFriends": "Nenhum cliente disponível."
+    }
   },
   "modal": {
     "removeTitle": "Remover cliente",

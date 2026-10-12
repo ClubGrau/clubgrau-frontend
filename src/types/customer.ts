@@ -1,3 +1,5 @@
+import type { IndicationCategoryId } from './indication';
+
 export type CustomerRank = 'BRONZE' | 'PRATA' | 'OURO';
 
 export type CustomerSortKey = 'name' | 'rank' | 'createdAt';
@@ -15,6 +17,8 @@ export namespace Customer {
     referral: string;
     rank: CustomerRank | '';
     createdAt: string;
+    indicationCategoryId?: IndicationCategoryId | null;
+    indicationOriginId?: string | null;
   }
 
   /** Table row: Entity, initials, and referral links resolved from the wallet. */
@@ -31,5 +35,8 @@ export namespace Customer {
     nif: string;
     referral: string;
     rank: CustomerRank | '';
+    wasReferred: boolean;
+    indicationCategoryId: IndicationCategoryId | null;
+    indicationOriginId: string | null;
   }
 }

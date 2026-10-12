@@ -1,4 +1,5 @@
 import type { CustomerWalletSummary } from '../../../domain/customer-wallet'
+import type { IndicationCategoryId } from '../../../types/indication'
 import type {
   Customer,
   CustomerRank,
@@ -34,6 +35,9 @@ export interface CreateCustomerParams {
   nif: string
   referral: string
   rank: CustomerRank | ''
+  wasReferred: boolean
+  indicationCategoryId: IndicationCategoryId | null
+  indicationOriginId: string | null
 }
 
 export type CreateCustomerResult = { id: string }

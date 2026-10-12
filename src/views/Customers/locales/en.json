@@ -85,11 +85,27 @@
     "phonePlaceholder": "912 345 678",
     "nif": "Tax ID",
     "nifPlaceholder": "123456789",
-    "referral": "Referral",
-    "referralPlaceholder": "E.g. Rafael Nunes",
     "rank": "Rank",
     "rankPlaceholder": "Select rank",
-    "missingFields": "Fill in the required fields: {fields}."
+    "missingFields": "Fill in the required fields: {fields}.",
+    "indication": {
+      "title": "Indication",
+      "wasReferred": "Came by indication?",
+      "yes": "Yes",
+      "no": "No",
+      "category": "Indication type",
+      "types": {
+        "canal": "Channel",
+        "campanha": "Campaign",
+        "amigo": "Friend"
+      },
+      "origin": "Indication",
+      "originPlaceholder": "Select an indication",
+      "friendPlaceholder": "Select a customer",
+      "loading": "Loading indications…",
+      "emptyOrigins": "No active indication in this category.",
+      "emptyFriends": "No customer available."
+    }
   },
   "modal": {
     "removeTitle": "Remove customer",
