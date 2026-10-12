@@ -11,7 +11,7 @@ describe('HardcodedCustomersApi', () => {
   it('returns list items with initials', async () => {
     const result = await api().getCustomers({ page: 1, limit: 10 })
 
-    expect(result.total).toBe(5)
+    expect(result.total).toBe(8)
     expect(result.data[0]).toMatchObject({
       id: 'cust-1',
       name: 'Marina Albuquerque',
@@ -37,7 +37,7 @@ describe('HardcodedCustomersApi', () => {
 
     expect(all.summary).toEqual(summarizeCustomers(seedCustomers(), new Date()))
     expect(ouro.summary).toEqual(all.summary)
-    expect(ouro.summary.byRank).toEqual({ OURO: 2, PRATA: 2, BRONZE: 1 })
+    expect(ouro.summary.byRank).toEqual({ OURO: 2, PRATA: 5, BRONZE: 1 })
     expect(ouro.total).toBe(2)
   })
 
@@ -67,8 +67,11 @@ describe('HardcodedCustomersApi', () => {
     })
 
     expect(newest.data.map((item) => item.name)).toEqual([
-      'Helena Cardoso',
+      'Pedro Santos',
+      'Maria Oliveira',
       'Camila Prado',
+      'João da Silva',
+      'Helena Cardoso',
       'Rafael Nunes',
       'Marina Albuquerque',
       'Diego Fontes',
@@ -76,6 +79,9 @@ describe('HardcodedCustomersApi', () => {
     expect(byRank.data.map((item) => item.rank)).toEqual([
       'OURO',
       'OURO',
+      'PRATA',
+      'PRATA',
+      'PRATA',
       'PRATA',
       'PRATA',
       'BRONZE',
@@ -115,7 +121,7 @@ describe('HardcodedCustomersApi', () => {
     const result = await api().getCustomers({ page: 2, limit: 2 })
 
     expect(result.page).toBe(2)
-    expect(result.totalPages).toBe(3)
+    expect(result.totalPages).toBe(4)
     expect(result.data).toHaveLength(2)
     expect(result.data[0]?.id).toBe('cust-3')
   })
@@ -132,7 +138,7 @@ describe('HardcodedCustomersApi', () => {
     })
     const result = await customers.getCustomers({ page: 1, limit: 10 })
 
-    expect(result.total).toBe(6)
+    expect(result.total).toBe(9)
     expect(result.data[0]).toMatchObject({
       id: created.id,
       name: 'Ana Costa',
@@ -148,7 +154,7 @@ describe('HardcodedCustomersApi', () => {
     await customers.remove({ id: 'cust-1' })
     const result = await customers.getCustomers({ page: 1, limit: 10 })
 
-    expect(result.total).toBe(4)
+    expect(result.total).toBe(7)
     expect(result.data.find((item) => item.id === 'cust-1')).toBeUndefined()
   })
 })
