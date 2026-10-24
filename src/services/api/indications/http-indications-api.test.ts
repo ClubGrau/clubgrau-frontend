@@ -38,6 +38,23 @@ describe('HttpIndicationsApi', () => {
     expect(api.get).toHaveBeenCalledWith('/api/indication-catalog')
   })
 
+  it('maps GET /api/indication-linkable-origins to id, category and name', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        origins: [
+          { id: 'canal-1', categoryId: 'canal', name: 'Instagram' },
+          { id: 'campanha-1', categoryId: 'campanha', name: 'Verão', active: false },
+        ],
+      },
+    })
+
+    await expect(httpIndicationsApi.getLinkableOrigins()).resolves.toEqual([
+      { id: 'canal-1', categoryId: 'canal', name: 'Instagram' },
+      { id: 'campanha-1', categoryId: 'campanha', name: 'Verão' },
+    ])
+    expect(api.get).toHaveBeenCalledWith('/api/indication-linkable-origins')
+  })
+
   it('posts create with exactly categoryId and name', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: { id: 'origin-1' } })
 

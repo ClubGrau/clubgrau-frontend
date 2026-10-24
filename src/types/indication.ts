@@ -14,6 +14,13 @@ export namespace Indication {
     active: boolean
   }
 
+  /** Active Canal or Campanha origin the create form may link. */
+  export interface LinkableOrigin {
+    id: string
+    categoryId: IndicationOriginCategoryId
+    name: string
+  }
+
   export interface Category {
     id: IndicationCategoryId
     name: string

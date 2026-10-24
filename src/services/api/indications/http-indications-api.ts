@@ -1,6 +1,7 @@
 import type { IndicationOriginResult } from '../../../types/indication'
 import { api } from '../config'
 import { mapIndicationCatalog } from './map-indication-catalog'
+import { mapLinkableIndicationOrigins } from './map-linkable-indication-origins'
 import type {
   CorrectIndicationOriginNameApi,
   CorrectIndicationOriginNameParams,
@@ -9,6 +10,7 @@ import type {
   EndIndicationOriginApi,
   EndIndicationOriginParams,
   GetIndicationCatalogApi,
+  GetLinkableIndicationOriginsApi,
   ReopenIndicationOriginApi,
   ReopenIndicationOriginParams,
 } from './types'
@@ -16,6 +18,7 @@ import type {
 export class HttpIndicationsApi
   implements
     GetIndicationCatalogApi,
+    GetLinkableIndicationOriginsApi,
     CreateIndicationOriginApi,
     CorrectIndicationOriginNameApi,
     EndIndicationOriginApi,
@@ -24,6 +27,11 @@ export class HttpIndicationsApi
   async getCatalog() {
     const { data } = await api.get<unknown>('/api/indication-catalog')
     return mapIndicationCatalog(data)
+  }
+
+  async getLinkableOrigins() {
+    const { data } = await api.get<unknown>('/api/indication-linkable-origins')
+    return mapLinkableIndicationOrigins(data)
   }
 
   async create(params: CreateIndicationOriginParams): Promise<IndicationOriginResult> {
