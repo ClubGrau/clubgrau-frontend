@@ -68,8 +68,8 @@ const copyNif = async () => {
             {{ t('Customers.table.contact') }}
           </dt>
           <dd class="mt-1 space-y-1 text-sm text-gray-800">
-            <p>{{ customer.email }}</p>
-            <p>{{ customer.phone }}</p>
+            <p>{{ customer.email.trim() || t('Customers.emptyValue') }}</p>
+            <p>{{ customer.phone.trim() || t('Customers.emptyValue') }}</p>
           </dd>
         </div>
 

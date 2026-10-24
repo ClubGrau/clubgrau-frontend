@@ -270,11 +270,11 @@ const copyNif = async (nif: string) => {
           <div class="space-y-1">
             <div class="flex items-center gap-2 text-xs text-gray-500">
               <Icon icon="carbon:email" class="size-3.5 shrink-0 text-gray-400" />
-              <span class="truncate font-semibold">{{ row.email }}</span>
+              <span class="truncate font-semibold">{{ optionalDisplay(row.email) }}</span>
             </div>
             <div class="flex items-center gap-2 text-xs text-gray-500">
               <Icon icon="carbon:phone" class="size-3.5 shrink-0 text-gray-400" />
-              <span>{{ row.phone }}</span>
+              <span>{{ optionalDisplay(row.phone) }}</span>
             </div>
           </div>
         </template>
