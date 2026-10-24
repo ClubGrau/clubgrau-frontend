@@ -11,8 +11,8 @@
   "emptyValue": "—",
   "rank": {
     "BRONZE": "Bronze",
-    "PRATA": "Silver",
-    "OURO": "Gold"
+    "SILVER": "Silver",
+    "GOLD": "Gold"
   },
   "rankFilter": {
     "label": "Filter by rank",
@@ -70,7 +70,10 @@
     "created": "Customer created.",
     "removed": "Customer removed from the wallet.",
     "nifCopied": "Tax ID copied.",
-    "unexpected": "Could not complete the action. Try again."
+    "unexpected": "Could not complete the action. Try again.",
+    "emailInUse": "This email is already in use.",
+    "createValidation": "Could not create the customer. Check the data.",
+    "forbidden": "You cannot create customers."
   },
   "form": {
     "createTitle": "New customer",
@@ -79,14 +82,12 @@
     "sectionMain": "Main details",
     "nameRequired": "Full name *",
     "namePlaceholder": "E.g. Marina Albuquerque",
-    "emailRequired": "E-mail *",
+    "email": "E-mail",
     "emailPlaceholder": "name{'@'}company.com",
-    "phoneRequired": "Phone *",
+    "phone": "Phone",
     "phonePlaceholder": "912 345 678",
     "nif": "Tax ID",
     "nifPlaceholder": "123456789",
-    "rank": "Rank",
-    "rankPlaceholder": "Select rank",
     "missingFields": "Fill in the required fields: {fields}.",
     "indication": {
       "title": "Indication",
@@ -103,6 +104,7 @@
       "originPlaceholder": "Select an indication",
       "friendPlaceholder": "Select a customer",
       "loading": "Loading indications…",
+      "loadError": "Could not load indications.",
       "emptyOrigins": "No active indication in this category.",
       "emptyFriends": "No customer available."
     }

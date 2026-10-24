@@ -9,7 +9,7 @@ export function seedCustomers(): Customer.Entity[] {
       phone: '(85) 98812-4410',
       nif: '251847963',
       referral: 'Rafael Nunes',
-      rank: 'OURO',
+      rank: 'GOLD',
       createdAt: '2026-01-14T00:00:00.000Z',
     },
     {
@@ -19,7 +19,7 @@ export function seedCustomers(): Customer.Entity[] {
       phone: '(11) 99640-2233',
       nif: '183920456',
       referral: '',
-      rank: 'PRATA',
+      rank: 'SILVER',
       createdAt: '2026-02-03T00:00:00.000Z',
     },
     {
@@ -39,7 +39,7 @@ export function seedCustomers(): Customer.Entity[] {
       phone: '(47) 99114-0098',
       nif: '176543210',
       referral: 'Helena Cardoso',
-      rank: 'PRATA',
+      rank: 'SILVER',
       createdAt: '2025-11-08T00:00:00.000Z',
     },
     {
@@ -49,7 +49,7 @@ export function seedCustomers(): Customer.Entity[] {
       phone: '(21) 98455-6612',
       nif: '209876541',
       referral: '',
-      rank: 'OURO',
+      rank: 'GOLD',
       createdAt: '2026-04-30T00:00:00.000Z',
     },
     {
@@ -59,7 +59,7 @@ export function seedCustomers(): Customer.Entity[] {
       phone: '(11) 99640-2233',
       nif: '183920456',
       referral: '',
-      rank: 'PRATA',
+      rank: 'SILVER',
       createdAt: '2026-05-01T00:00:00.000Z',
     },
     {
@@ -69,7 +69,7 @@ export function seedCustomers(): Customer.Entity[] {
       phone: '(11) 99640-2233',
       nif: '183920456',
       referral: '',
-      rank: 'PRATA',
+      rank: 'SILVER',
       createdAt: '2026-10-01T00:00:00.000Z',
     },
     {
@@ -79,7 +79,7 @@ export function seedCustomers(): Customer.Entity[] {
       phone: '(11) 99640-2233',
       nif: '183920456',
       referral: '',
-      rank: 'PRATA',
+      rank: 'SILVER',
       createdAt: '2026-10-02T00:00:00.000Z',
     },
   ];

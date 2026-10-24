@@ -12,14 +12,14 @@ const wallet = [
     id: 'cust-1',
     name: 'Marina Albuquerque',
     referral: 'Rafael Nunes',
-    rank: 'OURO' as const,
+    rank: 'GOLD' as const,
     createdAt: '2026-01-14T00:00:00.000Z',
   },
   {
     id: 'cust-2',
     name: 'Rafael Nunes',
     referral: '',
-    rank: 'PRATA' as const,
+    rank: 'SILVER' as const,
     createdAt: '2026-02-03T00:00:00.000Z',
   },
   {
@@ -41,7 +41,7 @@ describe('summarizeCustomers', () => {
   it('counts the wallet and who joined in the current month', () => {
     expect(summarizeCustomers(wallet, new Date(2026, 2, 22))).toEqual({
       total: 3,
-      byRank: { OURO: 1, PRATA: 1, BRONZE: 1 },
+      byRank: { GOLD: 1, SILVER: 1, BRONZE: 1 },
       joinedThisMonth: 1,
     })
   })
@@ -76,6 +76,24 @@ describe('referralLinks', () => {
       referredCount: 0,
     })
   })
+
+  it('prefers the stored friend id over matching the referral name', () => {
+    const links = referralLinks([
+      ...wallet,
+      {
+        id: 'cust-4',
+        name: 'Ana Costa',
+        referral: 'Someone else',
+        referralCustomerId: 'cust-1',
+      },
+    ])
+
+    expect(links.get('cust-4')).toEqual({
+      referralCustomerId: 'cust-1',
+      referredCount: 0,
+    })
+    expect(links.get('cust-1')?.referredCount).toBe(2)
+  })
 })
 
 describe('sortCustomers', () => {
@@ -91,8 +109,8 @@ describe('sortCustomers', () => {
       'Rafael Nunes',
     ])
     expect(sortCustomers(wallet, 'rank', 'asc').map((item) => item.rank)).toEqual([
-      'OURO',
-      'PRATA',
+      'GOLD',
+      'SILVER',
       'BRONZE',
     ])
   })

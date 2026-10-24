@@ -10,7 +10,7 @@ function entity(overrides: Partial<Customer.Entity> = {}): Customer.Entity {
     phone: '(85) 98812-4410',
     nif: '251847963',
     referral: 'Rafael Nunes',
-    rank: 'OURO',
+    rank: 'GOLD',
     createdAt: '2026-01-14T00:00:00.000Z',
     ...overrides,
   }
@@ -35,7 +35,7 @@ describe('mapCustomerToListItem', () => {
       name: 'Marina Albuquerque',
       nif: '251847963',
       referral: 'Rafael Nunes',
-      rank: 'OURO',
+      rank: 'GOLD',
       initials: 'MA',
     })
   })

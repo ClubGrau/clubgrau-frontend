@@ -1,32 +1,16 @@
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp, effectScope, ref } from 'vue'
-import type { GetIndicationCatalogApi } from '../../services/api/indications/types'
+import type { GetLinkableIndicationOriginsApi } from '../../services/api/indications/types'
 import type { Indication, IndicationCategoryId } from '../../types/indication'
 import { useCustomerIndicationOptions } from './useCustomerIndicationOptions'
 
-const catalog: Indication.Catalog = {
-  categories: [
-    {
-      id: 'canal',
-      name: 'Canal',
-      holdsOrigins: true,
-      origins: [
-        { id: 'canal-active', categoryId: 'canal', name: 'Facebook', active: true },
-        { id: 'canal-ended', categoryId: 'canal', name: 'Orkut', active: false },
-      ],
-    },
-    {
-      id: 'campanha',
-      name: 'Campanha',
-      holdsOrigins: true,
-      origins: [{ id: 'campanha-active', categoryId: 'campanha', name: 'Verão', active: true }],
-    },
-    { id: 'amigo', name: 'Amigo', holdsOrigins: false, origins: [] },
-  ],
-}
+const origins: Indication.LinkableOrigin[] = [
+  { id: 'canal-active', categoryId: 'canal', name: 'Facebook' },
+  { id: 'campanha-active', categoryId: 'campanha', name: 'Verão' },
+]
 
-function withOptions(api: GetIndicationCatalogApi) {
+function withOptions(api: GetLinkableIndicationOriginsApi) {
   const categoryId = ref<IndicationCategoryId | null>(null)
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -57,9 +41,9 @@ describe('useCustomerIndicationOptions', () => {
     vi.clearAllMocks()
   })
 
-  it('does not read the catalog for Amigo', async () => {
-    const api: GetIndicationCatalogApi = {
-      getCatalog: vi.fn().mockResolvedValue(catalog),
+  it('does not read linkable origins for Amigo', async () => {
+    const api: GetLinkableIndicationOriginsApi = {
+      getLinkableOrigins: vi.fn().mockResolvedValue(origins),
     }
     const { composable, categoryId, dispose } = withOptions(api)
 
@@ -67,29 +51,29 @@ describe('useCustomerIndicationOptions', () => {
     await vi.waitFor(() => {
       expect(composable.isLoading.value).toBe(false)
     })
-    expect(api.getCatalog).not.toHaveBeenCalled()
+    expect(api.getLinkableOrigins).not.toHaveBeenCalled()
     expect(composable.origins.value).toEqual([])
 
     dispose()
   })
 
-  it('reads the catalog when Canal is selected and reuses it for Campanha', async () => {
-    const api: GetIndicationCatalogApi = {
-      getCatalog: vi.fn().mockResolvedValue(catalog),
+  it('reads linkable origins when Canal is selected and reuses them for Campanha', async () => {
+    const api: GetLinkableIndicationOriginsApi = {
+      getLinkableOrigins: vi.fn().mockResolvedValue(origins),
     }
     const { composable, categoryId, dispose } = withOptions(api)
 
-    expect(api.getCatalog).not.toHaveBeenCalled()
+    expect(api.getLinkableOrigins).not.toHaveBeenCalled()
 
     categoryId.value = 'canal'
     await vi.waitFor(() => {
       expect(composable.origins.value.map((origin) => origin.id)).toEqual(['canal-active'])
     })
-    expect(api.getCatalog).toHaveBeenCalledTimes(1)
+    expect(api.getLinkableOrigins).toHaveBeenCalledTimes(1)
 
     categoryId.value = 'campanha'
     expect(composable.origins.value.map((origin) => origin.id)).toEqual(['campanha-active'])
-    expect(api.getCatalog).toHaveBeenCalledTimes(1)
+    expect(api.getLinkableOrigins).toHaveBeenCalledTimes(1)
 
     dispose()
   })

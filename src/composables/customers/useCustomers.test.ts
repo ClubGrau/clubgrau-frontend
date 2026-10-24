@@ -13,7 +13,7 @@ function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem
     phone: '(85) 98812-4410',
     nif: '251847963',
     referral: 'Rafael Nunes',
-    rank: 'OURO',
+    rank: 'GOLD',
     createdAt: '2026-01-14T00:00:00.000Z',
     initials: 'MA',
     referralCustomerId: 'cust-2',
@@ -79,17 +79,17 @@ describe('useCustomers', () => {
     })
 
     composable.currentPage.value = 2
-    composable.toggleRankFilter('OURO')
-    expect(composable.rankFilter.value).toBe('OURO')
+    composable.toggleRankFilter('GOLD')
+    expect(composable.rankFilter.value).toBe('GOLD')
     expect(composable.currentPage.value).toBe(1)
 
-    composable.toggleRankFilter('OURO')
+    composable.toggleRankFilter('GOLD')
     expect(composable.rankFilter.value).toBeNull()
 
-    composable.toggleRankFilter('PRATA')
-    expect(composable.rankFilter.value).toBe('PRATA')
-    composable.toggleRankFilter('OURO')
-    expect(composable.rankFilter.value).toBe('OURO')
+    composable.toggleRankFilter('SILVER')
+    expect(composable.rankFilter.value).toBe('SILVER')
+    composable.toggleRankFilter('GOLD')
+    expect(composable.rankFilter.value).toBe('GOLD')
 
     dispose()
   })

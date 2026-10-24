@@ -33,12 +33,12 @@ describe('HardcodedCustomersApi', () => {
   it('summarizes the searched wallet before the rank filter', async () => {
     const customers = api()
     const all = await customers.getCustomers({ page: 1, limit: 10 })
-    const ouro = await customers.getCustomers({ page: 1, limit: 10, rank: 'OURO' })
+    const gold = await customers.getCustomers({ page: 1, limit: 10, rank: 'GOLD' })
 
     expect(all.summary).toEqual(summarizeCustomers(seedCustomers(), new Date()))
-    expect(ouro.summary).toEqual(all.summary)
-    expect(ouro.summary.byRank).toEqual({ OURO: 2, PRATA: 5, BRONZE: 1 })
-    expect(ouro.total).toBe(2)
+    expect(gold.summary).toEqual(all.summary)
+    expect(gold.summary.byRank).toEqual({ GOLD: 2, SILVER: 5, BRONZE: 1 })
+    expect(gold.total).toBe(2)
   })
 
   it('keeps platform totals when the wallet is searched', async () => {
@@ -47,7 +47,7 @@ describe('HardcodedCustomersApi', () => {
 
     expect(searched.summary.total).toBe(platform.total)
     expect(searched.summary.joinedThisMonth).toBe(platform.joinedThisMonth)
-    expect(searched.summary.byRank).toEqual({ OURO: 1, PRATA: 0, BRONZE: 0 })
+    expect(searched.summary.byRank).toEqual({ GOLD: 1, SILVER: 0, BRONZE: 0 })
     expect(searched.total).toBe(1)
   })
 
@@ -77,13 +77,13 @@ describe('HardcodedCustomersApi', () => {
       'Diego Fontes',
     ])
     expect(byRank.data.map((item) => item.rank)).toEqual([
-      'OURO',
-      'OURO',
-      'PRATA',
-      'PRATA',
-      'PRATA',
-      'PRATA',
-      'PRATA',
+      'GOLD',
+      'GOLD',
+      'SILVER',
+      'SILVER',
+      'SILVER',
+      'SILVER',
+      'SILVER',
       'BRONZE',
     ])
   })
@@ -109,7 +109,7 @@ describe('HardcodedCustomersApi', () => {
   })
 
   it('filters by rank', async () => {
-    const result = await api().getCustomers({ page: 1, limit: 10, rank: 'OURO' })
+    const result = await api().getCustomers({ page: 1, limit: 10, rank: 'GOLD' })
 
     expect(result.data.map((item) => item.name)).toEqual([
       'Marina Albuquerque',
@@ -132,12 +132,8 @@ describe('HardcodedCustomersApi', () => {
       name: 'Ana Costa',
       email: 'ana@costa.com',
       phone: '+351912345678',
-      nif: '123456789',
-      referral: 'Marina Albuquerque',
-      rank: 'BRONZE',
-      wasReferred: true,
-      indicationCategoryId: 'canal',
-      indicationOriginId: 'origin-1',
+      nif: 123456789,
+      indication: { categoryId: 'canal', originId: 'origin-1' },
     })
     const result = await customers.getCustomers({ page: 1, limit: 10 })
 
@@ -146,11 +142,32 @@ describe('HardcodedCustomersApi', () => {
       id: created.id,
       name: 'Ana Costa',
       nif: '123456789',
-      referral: 'Marina Albuquerque',
+      referral: '',
       rank: 'BRONZE',
       initials: 'AC',
       indicationCategoryId: 'canal',
       indicationOriginId: 'origin-1',
+      referralCustomerId: null,
+    })
+  })
+
+  it('stores the friend id when the customer was referred by a friend', async () => {
+    const customers = api()
+    const created = await customers.create({
+      name: 'Ana Costa',
+      email: 'ana@costa.com',
+      phone: null,
+      nif: null,
+      indication: { categoryId: 'amigo', referrerCustomerId: 'cust-1' },
+    })
+    const result = await customers.getCustomer(created.id)
+
+    expect(result).toMatchObject({
+      id: created.id,
+      indicationCategoryId: 'amigo',
+      indicationOriginId: null,
+      referral: 'Marina Albuquerque',
+      referralCustomerId: 'cust-1',
     })
   })
 

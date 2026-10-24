@@ -16,16 +16,26 @@ export interface CustomerReferralLink {
   referredCount: number
 }
 
+/**
+ * Customer type definition
+ */
+export type Customer = {
+  id: string
+  name: string
+  referral: string
+  referralCustomerId?: string | null
+}
+
 const RANK_WEIGHT: Record<CustomerRank, number> = {
-  OURO: CUSTOMER_RANK_LADDER.indexOf('OURO'),
-  PRATA: CUSTOMER_RANK_LADDER.indexOf('PRATA'),
+  GOLD: CUSTOMER_RANK_LADDER.indexOf('GOLD'),
+  SILVER: CUSTOMER_RANK_LADDER.indexOf('SILVER'),
   BRONZE: CUSTOMER_RANK_LADDER.indexOf('BRONZE'),
 }
 
 export function emptyCustomerWalletSummary(): CustomerWalletSummary {
   return {
     total: 0,
-    byRank: { OURO: 0, PRATA: 0, BRONZE: 0 },
+    byRank: { GOLD: 0, SILVER: 0, BRONZE: 0 },
     joinedThisMonth: 0,
   }
 }
@@ -63,7 +73,7 @@ export function summarizeCustomers(
 }
 
 export function referralLinks(
-  customers: readonly { id: string; name: string; referral: string }[],
+  customers: readonly Customer[],
 ): Map<string, CustomerReferralLink> {
   const idByName = new Map<string, string>()
   for (const customer of customers) {
@@ -75,8 +85,9 @@ export function referralLinks(
   const referralCustomerId = new Map<string, string | null>()
 
   for (const customer of customers) {
+    const storedId = customer.referralCustomerId?.trim() || null
     const referral = customer.referral.trim().toLowerCase()
-    const referrerId = referral ? (idByName.get(referral) ?? null) : null
+    const referrerId = storedId ?? (referral ? (idByName.get(referral) ?? null) : null)
     const linkedId = referrerId && referrerId !== customer.id ? referrerId : null
     referralCustomerId.set(customer.id, linkedId)
     if (linkedId) {

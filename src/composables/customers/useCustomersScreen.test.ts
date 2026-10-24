@@ -20,7 +20,7 @@ vi.hoisted(() => {
     },
   })
 })
-import type { GetIndicationCatalogApi } from '../../services/api/indications/types'
+import type { GetLinkableIndicationOriginsApi } from '../../services/api/indications/types'
 import type { Customer } from '../../types/customer'
 import type { Indication } from '../../types/indication'
 import { useCustomersScreen } from './useCustomersScreen'
@@ -33,7 +33,7 @@ function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem
     phone: '(85) 98812-4410',
     nif: '251847963',
     referral: 'Rafael Nunes',
-    rank: 'OURO',
+    rank: 'GOLD',
     createdAt: '2026-01-14T00:00:00.000Z',
     initials: 'MA',
     referralCustomerId: 'cust-2',
@@ -59,7 +59,7 @@ function stubApi(item = listItem()) {
 
 function withScreen(
   api = stubApi(),
-  indications: GetIndicationCatalogApi = { getCatalog: vi.fn() },
+  linkableOrigins: GetLinkableIndicationOriginsApi = { getLinkableOrigins: vi.fn() },
 ) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -71,7 +71,7 @@ function withScreen(
   app.use(VueQueryPlugin, { queryClient })
   const scope = effectScope()
   const composable = app.runWithContext(() =>
-    scope.run(() => useCustomersScreen(api, indications)),
+    scope.run(() => useCustomersScreen(api, api, linkableOrigins)),
   )
   if (!composable) {
     throw new Error('useCustomersScreen did not return inside the Vue context')
@@ -79,7 +79,7 @@ function withScreen(
   return {
     composable,
     api,
-    indications,
+    linkableOrigins,
     dispose: () => {
       scope.stop()
       app.unmount()
@@ -177,45 +177,28 @@ describe('useCustomersScreen', () => {
     dispose()
   })
 
-  it('reads the indication catalog only after Canal or Campanha is selected', async () => {
-    const catalog: Indication.Catalog = {
-      categories: [
-        {
-          id: 'canal',
-          name: 'Canal',
-          holdsOrigins: true,
-          origins: [
-            { id: 'canal-active', categoryId: 'canal', name: 'Facebook', active: true },
-            { id: 'canal-ended', categoryId: 'canal', name: 'Orkut', active: false },
-          ],
-        },
-        {
-          id: 'campanha',
-          name: 'Campanha',
-          holdsOrigins: true,
-          origins: [],
-        },
-        { id: 'amigo', name: 'Amigo', holdsOrigins: false, origins: [] },
-      ],
+  it('reads linkable origins only after Canal or Campanha is selected', async () => {
+    const origins: Indication.LinkableOrigin[] = [
+      { id: 'canal-active', categoryId: 'canal', name: 'Facebook' },
+    ]
+    const linkableOrigins: GetLinkableIndicationOriginsApi = {
+      getLinkableOrigins: vi.fn().mockResolvedValue(origins),
     }
-    const indications: GetIndicationCatalogApi = {
-      getCatalog: vi.fn().mockResolvedValue(catalog),
-    }
-    const { composable, dispose } = withScreen(stubApi(), indications)
+    const { composable, dispose } = withScreen(stubApi(), linkableOrigins)
 
     await vi.waitFor(() => {
       expect(composable.filteredCustomers.value).toHaveLength(1)
     })
-    expect(indications.getCatalog).not.toHaveBeenCalled()
+    expect(linkableOrigins.getLinkableOrigins).not.toHaveBeenCalled()
 
     composable.setCustomerWasReferred(true)
     composable.setCustomerIndicationCategory('amigo')
-    expect(indications.getCatalog).not.toHaveBeenCalled()
+    expect(linkableOrigins.getLinkableOrigins).not.toHaveBeenCalled()
     expect(composable.indicationOrigins.value).toEqual([])
 
     composable.setCustomerIndicationCategory('canal')
     await vi.waitFor(() => {
-      expect(indications.getCatalog).toHaveBeenCalledTimes(1)
+      expect(linkableOrigins.getLinkableOrigins).toHaveBeenCalledTimes(1)
       expect(composable.indicationOrigins.value.map((origin) => origin.id)).toEqual([
         'canal-active',
       ])
@@ -223,10 +206,10 @@ describe('useCustomersScreen', () => {
 
     composable.setCustomerIndicationCategory('campanha')
     expect(composable.indicationOrigins.value).toEqual([])
-    expect(indications.getCatalog).toHaveBeenCalledTimes(1)
+    expect(linkableOrigins.getLinkableOrigins).toHaveBeenCalledTimes(1)
 
     composable.closeCreateDrawer()
-    expect(indications.getCatalog).toHaveBeenCalledTimes(1)
+    expect(linkableOrigins.getLinkableOrigins).toHaveBeenCalledTimes(1)
 
     dispose()
   })

@@ -4,12 +4,11 @@ import { useI18n } from 'vue-i18n';
 import { Icon } from '@iconify/vue';
 import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
-import type { Customer, CustomerRank } from '../../types/customer';
+import type { Customer } from '../../types/customer';
 import type { Indication, IndicationCategoryId } from '../../types/indication';
 import { FRIEND_CATEGORY_ID } from '../../types/indication';
-import { CUSTOMER_RANK_OPTIONS } from '../../constants/customer-rank';
 import { toCustomerIndication } from '../../domain/customer-indication';
-import { isValidPhone } from '../../domain/phone-value';
+import { hasPhoneNumber, isValidPhone } from '../../domain/phone-value';
 
 const indicationTypes = ['canal', 'campanha', FRIEND_CATEGORY_ID] as const satisfies readonly IndicationCategoryId[];
 
@@ -23,7 +22,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   submitting?: boolean;
   customers: { id: string; name: string }[];
-  origins: Indication.Origin[];
+  origins: Indication.LinkableOrigin[];
   originsLoading?: boolean;
   originsErrorKey?: string | null;
 }>();
@@ -35,7 +34,6 @@ const form = reactive({
   email: '',
   phone: '',
   nif: '',
-  rank: '' as CustomerRank | '',
 });
 
 const wasReferred = ref(false);
@@ -54,11 +52,24 @@ const selectedFriend = computed(
   () => props.customers.find((customer) => customer.id === originId.value) ?? null,
 );
 
+const emailInvalid = computed(() => {
+  const email = form.email.trim();
+  return email.length > 0 && !email.includes('@');
+});
+
+const phoneInvalid = computed(() => hasPhoneNumber(form.phone) && !isValidPhone(form.phone));
+
+const nifInvalid = computed(() => {
+  const nif = form.nif.trim();
+  return nif.length > 0 && !/^\d+$/.test(nif);
+});
+
 const missingRequired = computed(() => {
   const missing: string[] = [];
   if (form.name.trim().length <= 1) missing.push(t('Customers.form.nameRequired').replace(' *', ''));
-  if (!form.email.trim().includes('@')) missing.push(t('Customers.form.emailRequired').replace(' *', ''));
-  if (!isValidPhone(form.phone)) missing.push(t('Customers.form.phoneRequired').replace(' *', ''));
+  if (emailInvalid.value) missing.push(t('Customers.form.email'));
+  if (phoneInvalid.value) missing.push(t('Customers.form.phone'));
+  if (nifInvalid.value) missing.push(t('Customers.form.nif'));
   if (wasReferred.value && !categoryId.value) {
     missing.push(t('Customers.form.indication.category'));
   }
@@ -110,21 +121,20 @@ const onSubmit = () => {
   submitted.value = true;
   if (missingRequired.value.length > 0) return;
 
-  const indication = toCustomerIndication({
+  const draft = toCustomerIndication({
     wasReferred: wasReferred.value,
     categoryId: categoryId.value,
     origin: isFriend.value ? null : selectedOrigin.value,
     friend: isFriend.value ? selectedFriend.value : null,
   });
-  if (!indication) return;
+  if (!draft) return;
 
   emit('create', {
     name: form.name.trim(),
     email: form.email.trim(),
-    phone: form.phone.trim(),
+    phone: hasPhoneNumber(form.phone) ? form.phone.trim() : '',
     nif: form.nif.trim(),
-    rank: form.rank,
-    ...indication,
+    indication: draft.indication,
   });
 };
 </script>
@@ -176,7 +186,7 @@ const onSubmit = () => {
 
             <div class="flex flex-col gap-1.5">
               <label for="customer-email" class="text-xs text-gray-400">
-                {{ t('Customers.form.emailRequired') }}
+                {{ t('Customers.form.email') }}
               </label>
               <input
                 id="customer-email"
@@ -184,19 +194,19 @@ const onSubmit = () => {
                 type="email"
                 :placeholder="t('Customers.form.emailPlaceholder')"
                 class="form-input"
-                :class="{ 'form-input-error': submitted && !form.email.includes('@') }"
+                :class="{ 'form-input-error': submitted && emailInvalid }"
               />
             </div>
 
             <div class="flex flex-col gap-1.5">
               <label for="customer-phone" class="text-xs text-gray-400">
-                {{ t('Customers.form.phoneRequired') }}
+                {{ t('Customers.form.phone') }}
               </label>
               <PhoneInput
                 id="customer-phone"
                 v-model="form.phone"
                 :placeholder="t('Customers.form.phonePlaceholder')"
-                :invalid="submitted && !isValidPhone(form.phone)"
+                :invalid="submitted && phoneInvalid"
               />
             </div>
 
@@ -210,16 +220,7 @@ const onSubmit = () => {
                 type="text"
                 :placeholder="t('Customers.form.nifPlaceholder')"
                 class="form-input"
-              />
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-              <span class="text-xs text-gray-400">{{ t('Customers.form.rank') }}</span>
-              <SelectFilter
-                v-model="form.rank"
-                :options="CUSTOMER_RANK_OPTIONS"
-                :placeholder="t('Customers.form.rankPlaceholder')"
-                variant="field"
+                :class="{ 'form-input-error': submitted && nifInvalid }"
               />
             </div>
           </div>
@@ -300,6 +301,7 @@ const onSubmit = () => {
                 v-else-if="isFriend ? friendOptions.length : originOptions.length"
                 v-model="originId"
                 :options="isFriend ? friendOptions : originOptions"
+                placement="top"
                 :placeholder="
                   t(
                     isFriend

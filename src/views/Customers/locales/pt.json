@@ -11,8 +11,8 @@
   "emptyValue": "—",
   "rank": {
     "BRONZE": "Bronze",
-    "PRATA": "Prata",
-    "OURO": "Ouro"
+    "SILVER": "Prata",
+    "GOLD": "Ouro"
   },
   "rankFilter": {
     "label": "Filtrar por rank",
@@ -70,7 +70,10 @@
     "created": "Cliente criado.",
     "removed": "Cliente removido da carteira.",
     "nifCopied": "NIF copiado.",
-    "unexpected": "Não foi possível concluir a ação. Tente novamente."
+    "unexpected": "Não foi possível concluir a ação. Tente novamente.",
+    "emailInUse": "Este e-mail já está em uso.",
+    "createValidation": "Não foi possível criar o cliente. Verifique os dados.",
+    "forbidden": "Não tem permissão para criar clientes."
   },
   "form": {
     "createTitle": "Novo cliente",
@@ -79,14 +82,12 @@
     "sectionMain": "Dados principais",
     "nameRequired": "Nome completo *",
     "namePlaceholder": "Ex: Marina Albuquerque",
-    "emailRequired": "E-mail *",
+    "email": "E-mail",
     "emailPlaceholder": "nome{'@'}empresa.com",
-    "phoneRequired": "Telefone *",
+    "phone": "Telefone",
     "phonePlaceholder": "912 345 678",
     "nif": "NIF",
     "nifPlaceholder": "123456789",
-    "rank": "Rank",
-    "rankPlaceholder": "Selecionar rank",
     "missingFields": "Preencha os campos obrigatórios: {fields}.",
     "indication": {
       "title": "Indicação",
@@ -103,6 +104,7 @@
       "originPlaceholder": "Selecione uma indicação",
       "friendPlaceholder": "Selecione um cliente",
       "loading": "A carregar indicações…",
+      "loadError": "Não foi possível carregar as indicações.",
       "emptyOrigins": "Nenhuma indicação ativa nesta categoria.",
       "emptyFriends": "Nenhum cliente disponível."
     }

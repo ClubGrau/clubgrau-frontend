@@ -4,7 +4,11 @@ import { createApp, effectScope } from 'vue'
 import type { CreateCustomerApi } from '../../services/api/customers/types'
 import type { Customer } from '../../types/customer'
 import { useToast } from '../useToast'
-import { toCreateCustomerParams, useCreateCustomer } from './useCreateCustomer'
+import {
+  toastKeyForCreateCustomerError,
+  toCreateCustomerParams,
+  useCreateCustomer,
+} from './useCreateCustomer'
 
 const { toasts, dismiss } = useToast()
 
@@ -14,25 +18,27 @@ function dismissAllToasts() {
   }
 }
 
+function httpError(status: number, error?: string) {
+  return {
+    response: {
+      status,
+      data: error === undefined ? {} : { error },
+    },
+  }
+}
+
 function payload(overrides: Partial<Customer.CreateCommand> = {}): Customer.CreateCommand {
   return {
     name: 'Ana Costa',
     email: 'ana@costa.com',
     phone: '+351912345678',
     nif: '123456789',
-    referral: 'Marina Albuquerque',
-    rank: 'BRONZE',
-    wasReferred: false,
-    indicationCategoryId: null,
-    indicationOriginId: null,
+    indication: null,
     ...overrides,
   }
 }
 
-function withCreate(
-  api: CreateCustomerApi,
-  options: Parameters<typeof useCreateCustomer>[1],
-) {
+function withCreate(api: CreateCustomerApi, options: Parameters<typeof useCreateCustomer>[1]) {
   const queryClient = new QueryClient({
     defaultOptions: {
       mutations: { retry: 0 },
@@ -42,9 +48,7 @@ function withCreate(
   const app = createApp({})
   app.use(VueQueryPlugin, { queryClient })
   const scope = effectScope()
-  const composable = app.runWithContext(() =>
-    scope.run(() => useCreateCustomer(api, options)),
-  )
+  const composable = app.runWithContext(() => scope.run(() => useCreateCustomer(api, options)))
   if (!composable) {
     throw new Error('useCreateCustomer did not return inside the Vue context')
   }
@@ -58,18 +62,68 @@ function withCreate(
 }
 
 describe('toCreateCustomerParams', () => {
-  it('forwards the command fields', () => {
-    expect(toCreateCustomerParams(payload())).toEqual({
+  it('sends a walk-in with empty optionals as null and no rank', () => {
+    const params = toCreateCustomerParams(
+      payload({ phone: '   ', nif: '', indication: null }),
+    )
+    expect(params).toEqual({
       name: 'Ana Costa',
       email: 'ana@costa.com',
-      phone: '+351912345678',
-      nif: '123456789',
-      referral: 'Marina Albuquerque',
-      rank: 'BRONZE',
-      wasReferred: false,
-      indicationCategoryId: null,
-      indicationOriginId: null,
+      phone: null,
+      nif: null,
+      indication: null,
     })
+    expect(params).not.toHaveProperty('rank')
+    expect(params).not.toHaveProperty('wasReferred')
+    expect(params).not.toHaveProperty('referral')
+  })
+
+  it('sends a channel indication with only the origin id', () => {
+    const params = toCreateCustomerParams(
+      payload({
+        indication: { categoryId: 'canal', originId: 'origin-1' },
+      }),
+    )
+    expect(params.nif).toBe(123456789)
+    expect(params.indication).toEqual({ categoryId: 'canal', originId: 'origin-1' })
+    expect(Object.keys(params.indication ?? {})).toEqual(['categoryId', 'originId'])
+  })
+
+  it('sends a friend indication with only the referrer id', () => {
+    const params = toCreateCustomerParams(
+      payload({
+        indication: { categoryId: 'amigo', referrerCustomerId: 'cust-1' },
+      }),
+    )
+    expect(params.indication).toEqual({
+      categoryId: 'amigo',
+      referrerCustomerId: 'cust-1',
+    })
+    expect(Object.keys(params.indication ?? {})).toEqual(['categoryId', 'referrerCustomerId'])
+  })
+})
+
+describe('toastKeyForCreateCustomerError', () => {
+  it('maps 409 to the email key and does not use the English API string', () => {
+    expect(toastKeyForCreateCustomerError(httpError(409, 'Customer already exists'))).toBe(
+      'Customers.toast.emailInUse',
+    )
+  })
+
+  it('maps 400 to the validation key', () => {
+    expect(
+      toastKeyForCreateCustomerError(httpError(400, 'Customer indication origin is ended')),
+    ).toBe('Customers.toast.createValidation')
+  })
+
+  it('maps 403 to the forbidden key', () => {
+    expect(toastKeyForCreateCustomerError(httpError(403, 'Action not allowed'))).toBe(
+      'Customers.toast.forbidden',
+    )
+  })
+
+  it('does not emit a create toast on 401', () => {
+    expect(toastKeyForCreateCustomerError(httpError(401, 'Authentication failed'))).toBeNull()
   })
 })
 

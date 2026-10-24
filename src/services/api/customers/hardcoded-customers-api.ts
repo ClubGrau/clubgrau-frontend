@@ -1,3 +1,4 @@
+import { INITIAL_CUSTOMER_RANK } from '../../../constants/customer-rank'
 import {
   referralLinks,
   sortCustomers,
@@ -97,18 +98,26 @@ export class HardcodedCustomersApi
 
   async create(params: CreateCustomerParams): Promise<CreateCustomerResult> {
     const id = `cust-${crypto.randomUUID()}`
+    const indication = params.indication
+    const referrerCustomerId =
+      indication && 'referrerCustomerId' in indication ? indication.referrerCustomerId : undefined
+    const referrerName = referrerCustomerId
+      ? (this.items.find((customer) => customer.id === referrerCustomerId)?.name ?? '')
+      : ''
     this.items = [
       {
         id,
         name: params.name,
         email: params.email,
-        phone: params.phone,
-        nif: params.nif,
-        referral: params.referral,
-        rank: params.rank,
+        phone: params.phone ?? '',
+        nif: params.nif == null ? '' : String(params.nif),
+        referral: referrerName,
+        rank: INITIAL_CUSTOMER_RANK,
         createdAt: new Date().toISOString(),
-        indicationCategoryId: params.indicationCategoryId,
-        indicationOriginId: params.indicationOriginId,
+        indicationCategoryId: indication?.categoryId ?? null,
+        indicationOriginId:
+          indication && 'originId' in indication ? indication.originId : null,
+        ...(referrerCustomerId ? { referralCustomerId: referrerCustomerId } : {}),
       },
       ...this.items,
     ]

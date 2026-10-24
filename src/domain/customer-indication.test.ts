@@ -2,48 +2,27 @@ import { describe, expect, it } from 'vitest'
 import type { Indication } from '../types/indication'
 import { selectableOrigins, toCustomerIndication } from './customer-indication'
 
-const catalog: Indication.Category[] = [
-  {
-    id: 'canal',
-    name: 'Canal',
-    holdsOrigins: true,
-    origins: [
-      { id: 'canal-active', categoryId: 'canal', name: 'Facebook', active: true },
-      { id: 'canal-ended', categoryId: 'canal', name: 'Orkut', active: false },
-    ],
-  },
-  {
-    id: 'campanha',
-    name: 'Campanha',
-    holdsOrigins: true,
-    origins: [
-      { id: 'campanha-active', categoryId: 'campanha', name: 'Verão', active: true },
-    ],
-  },
-  {
-    id: 'amigo',
-    name: 'Amigo',
-    holdsOrigins: false,
-    origins: [],
-  },
+const origins: Indication.LinkableOrigin[] = [
+  { id: 'canal-active', categoryId: 'canal', name: 'Facebook' },
+  { id: 'campanha-active', categoryId: 'campanha', name: 'Verão' },
 ]
 
-const facebook = catalog[0].origins[0]
+const facebook = origins[0]
 const marina = { id: 'cust-1', name: 'Marina Albuquerque' }
 
 describe('selectableOrigins', () => {
-  it('returns only active origins of the selected category', () => {
-    expect(selectableOrigins(catalog, 'canal').map((origin) => origin.id)).toEqual([
+  it('keeps the linkable read order inside the selected category', () => {
+    expect(selectableOrigins(origins, 'canal').map((origin) => origin.id)).toEqual([
       'canal-active',
     ])
-    expect(selectableOrigins(catalog, 'campanha').map((origin) => origin.name)).toEqual([
+    expect(selectableOrigins(origins, 'campanha').map((origin) => origin.name)).toEqual([
       'Verão',
     ])
   })
 })
 
 describe('toCustomerIndication', () => {
-  it('clears the link when the customer was not referred', () => {
+  it('sends no indication when the customer was not referred', () => {
     expect(
       toCustomerIndication({
         wasReferred: false,
@@ -51,15 +30,10 @@ describe('toCustomerIndication', () => {
         origin: facebook,
         friend: marina,
       }),
-    ).toEqual({
-      wasReferred: false,
-      indicationCategoryId: null,
-      indicationOriginId: null,
-      referral: '',
-    })
+    ).toEqual({ indication: null })
   })
 
-  it('keeps one active origin and its name', () => {
+  it('links one origin and leaves the friend id out', () => {
     expect(
       toCustomerIndication({
         wasReferred: true,
@@ -68,14 +42,11 @@ describe('toCustomerIndication', () => {
         friend: null,
       }),
     ).toEqual({
-      wasReferred: true,
-      indicationCategoryId: 'canal',
-      indicationOriginId: 'canal-active',
-      referral: 'Facebook',
+      indication: { categoryId: 'canal', originId: 'canal-active' },
     })
   })
 
-  it('links Amigo to one existing customer and not to a catalog origin', () => {
+  it('links Amigo to one existing customer and not to an origin', () => {
     expect(
       toCustomerIndication({
         wasReferred: true,
@@ -84,22 +55,11 @@ describe('toCustomerIndication', () => {
         friend: marina,
       }),
     ).toEqual({
-      wasReferred: true,
-      indicationCategoryId: 'amigo',
-      indicationOriginId: null,
-      referral: 'Marina Albuquerque',
+      indication: { categoryId: 'amigo', referrerCustomerId: 'cust-1' },
     })
   })
 
-  it('refuses an ended origin, a mismatched category, and Amigo without a customer', () => {
-    expect(
-      toCustomerIndication({
-        wasReferred: true,
-        categoryId: 'canal',
-        origin: catalog[0].origins[1],
-        friend: null,
-      }),
-    ).toBeNull()
+  it('refuses a mismatched category and Amigo without a customer', () => {
     expect(
       toCustomerIndication({
         wasReferred: true,
@@ -114,6 +74,14 @@ describe('toCustomerIndication', () => {
         categoryId: 'amigo',
         origin: null,
         friend: null,
+      }),
+    ).toBeNull()
+    expect(
+      toCustomerIndication({
+        wasReferred: true,
+        categoryId: 'amigo',
+        origin: null,
+        friend: { id: '', name: 'Marina Albuquerque' },
       }),
     ).toBeNull()
   })

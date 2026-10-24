@@ -1,7 +1,7 @@
 import type { CustomerWalletSummary } from '../../../domain/customer-wallet'
-import type { IndicationCategoryId } from '../../../types/indication'
 import type {
   Customer,
+  CustomerIndication,
   CustomerRank,
   CustomerSortDirection,
   CustomerSortKey,
@@ -28,16 +28,13 @@ export interface GetCustomerApi {
   getCustomer(id: string): Promise<Customer.ListItem | null>
 }
 
+/** Body of POST /api/customer. Rank is not sent. */
 export interface CreateCustomerParams {
   name: string
   email: string
-  phone: string
-  nif: string
-  referral: string
-  rank: CustomerRank | ''
-  wasReferred: boolean
-  indicationCategoryId: IndicationCategoryId | null
-  indicationOriginId: string | null
+  phone: string | null
+  nif: number | null
+  indication: CustomerIndication | null
 }
 
 export type CreateCustomerResult = { id: string }

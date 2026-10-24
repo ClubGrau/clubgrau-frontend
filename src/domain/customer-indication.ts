@@ -1,16 +1,9 @@
 import {
   FRIEND_CATEGORY_ID,
   type Indication,
-  type IndicationCategoryId,
   type IndicationOriginCategoryId,
 } from '../types/indication'
-
-export interface CustomerIndicationLink {
-  wasReferred: boolean
-  indicationCategoryId: IndicationCategoryId | null
-  indicationOriginId: string | null
-  referral: string
-}
+import type { CustomerIndication } from '../types/customer'
 
 export interface CustomerFriendOption {
   id: string
@@ -20,8 +13,16 @@ export interface CustomerFriendOption {
 export interface CustomerIndicationInput {
   wasReferred: boolean
   categoryId: string
-  origin: Indication.Origin | null
+  origin: Indication.LinkableOrigin | null
   friend: CustomerFriendOption | null
+}
+
+/**
+ * What the form may submit. `null` means the "yes" answer is incomplete and
+ * the form must not submit. `indication: null` means the customer walked in.
+ */
+export interface CustomerIndicationDraft {
+  indication: CustomerIndication | null
 }
 
 export function isIndicationOriginCategoryId(
@@ -30,57 +31,50 @@ export function isIndicationOriginCategoryId(
   return value === 'canal' || value === 'campanha'
 }
 
-/** Origins still offered for a new customer in the selected category. */
+/** Active origins of the selected category, in the order the linkable read sent them. */
 export function selectableOrigins(
-  categories: readonly Indication.Category[],
+  origins: readonly Indication.LinkableOrigin[],
   categoryId: IndicationOriginCategoryId,
-): Indication.Origin[] {
-  const category = categories.find((item) => item.id === categoryId)
-  if (!category?.holdsOrigins) return []
-  return category.origins.filter(
-    (origin) => origin.active && origin.categoryId === categoryId,
-  )
+): Indication.LinkableOrigin[] {
+  return origins.filter((origin) => origin.categoryId === categoryId)
 }
 
 /**
- * One indication per customer: a catalog origin, or one existing customer when
+ * One indication per customer: a linkable origin, or one existing customer when
  * the type is Amigo. An incomplete "yes" returns null so the form can refuse.
  */
 export function toCustomerIndication(
   input: CustomerIndicationInput,
-): CustomerIndicationLink | null {
+): CustomerIndicationDraft | null {
   if (!input.wasReferred) {
-    return {
-      wasReferred: false,
-      indicationCategoryId: null,
-      indicationOriginId: null,
-      referral: '',
-    }
+    return { indication: null }
   }
 
   if (input.categoryId === FRIEND_CATEGORY_ID) {
     const name = input.friend?.name.trim() ?? ''
-    if (!input.friend || name.length === 0) return null
+    const friendId = input.friend?.id.trim() ?? ''
+    if (!input.friend || name.length === 0 || friendId.length === 0) return null
     return {
-      wasReferred: true,
-      indicationCategoryId: FRIEND_CATEGORY_ID,
-      indicationOriginId: null,
-      referral: name,
+      indication: {
+        categoryId: 'amigo',
+        referrerCustomerId: friendId,
+      },
     }
   }
 
   if (
     !isIndicationOriginCategoryId(input.categoryId) ||
-    !input.origin?.active ||
-    input.origin.categoryId !== input.categoryId
+    !input.origin ||
+    input.origin.categoryId !== input.categoryId ||
+    input.origin.id.trim().length === 0
   ) {
     return null
   }
 
   return {
-    wasReferred: true,
-    indicationCategoryId: input.categoryId,
-    indicationOriginId: input.origin.id,
-    referral: input.origin.name,
+    indication: {
+      categoryId: input.categoryId,
+      originId: input.origin.id,
+    },
   }
 }

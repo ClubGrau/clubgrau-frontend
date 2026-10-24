@@ -1,7 +1,8 @@
 import { computed, ref } from 'vue'
 import { hardcodedCustomersApi } from '../../services/api/customers/hardcoded-customers-api'
+import { httpCustomersApi } from '../../services/api/customers/http-customers-api'
 import { httpIndicationsApi } from '../../services/api/indications/http-indications-api'
-import type { GetIndicationCatalogApi } from '../../services/api/indications/types'
+import type { GetLinkableIndicationOriginsApi } from '../../services/api/indications/types'
 import type {
   CreateCustomerApi,
   GetCustomerApi,
@@ -18,11 +19,9 @@ import { useCustomers } from './useCustomers'
 import { useRemoveCustomer } from './useRemoveCustomer'
 
 export function useCustomersScreen(
-  api: GetCustomersApi &
-    GetCustomerApi &
-    CreateCustomerApi &
-    RemoveCustomerApi = hardcodedCustomersApi,
-  indications: GetIndicationCatalogApi = httpIndicationsApi,
+  api: GetCustomersApi & GetCustomerApi & RemoveCustomerApi = hardcodedCustomersApi,
+  createCustomerApi: CreateCustomerApi = httpCustomersApi,
+  linkableOrigins: GetLinkableIndicationOriginsApi = httpIndicationsApi,
 ) {
   const {
     filteredCustomers,
@@ -46,7 +45,7 @@ export function useCustomersScreen(
   const customerWasReferred = ref(false)
   const customerIndicationCategoryId = ref<IndicationCategoryId | null>(null)
   const indicationOptions = useCustomerIndicationOptions(
-    indications,
+    linkableOrigins,
     customerIndicationCategoryId,
   )
 
@@ -64,7 +63,7 @@ export function useCustomersScreen(
     customerIndicationCategoryId.value = categoryId
   }
 
-  const { create: createCustomer, isCreating } = useCreateCustomer(api, {
+  const { create: createCustomer, isCreating } = useCreateCustomer(createCustomerApi, {
     onCreated: () => {
       currentPage.value = 1
       isCreateDrawerOpen.value = false
