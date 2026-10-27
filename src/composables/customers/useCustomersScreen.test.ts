@@ -20,10 +20,20 @@ vi.hoisted(() => {
     },
   })
 })
+import type {
+  CreateCustomerApi,
+  GetCustomerApi,
+  GetCustomersApi,
+  RemoveCustomerApi,
+} from '../../services/api/customers/types'
 import type { GetLinkableIndicationOriginsApi } from '../../services/api/indications/types'
 import type { Customer } from '../../types/customer'
 import type { Indication } from '../../types/indication'
 import { useCustomersScreen } from './useCustomersScreen'
+
+type ScreenApi = GetCustomersApi &
+  Partial<GetCustomerApi & RemoveCustomerApi> &
+  CreateCustomerApi
 
 function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem {
   return {
@@ -57,8 +67,8 @@ function stubApi(item = listItem()) {
   }
 }
 
-function withScreen(
-  api = stubApi(),
+function withScreen<T extends ScreenApi>(
+  api: T,
   linkableOrigins: GetLinkableIndicationOriginsApi = { getLinkableOrigins: vi.fn() },
 ) {
   const queryClient = new QueryClient({
@@ -89,7 +99,7 @@ function withScreen(
 
 describe('useCustomersScreen', () => {
   it('uses the injected adapter list as ListItem', async () => {
-    const { composable, api, dispose } = withScreen()
+    const { composable, api, dispose } = withScreen(stubApi())
 
     await vi.waitFor(() => {
       expect(api.getCustomers).toHaveBeenCalled()
@@ -101,7 +111,7 @@ describe('useCustomersScreen', () => {
   })
 
   it('opens and closes the create drawer', async () => {
-    const { composable, dispose } = withScreen()
+    const { composable, dispose } = withScreen(stubApi())
 
     await vi.waitFor(() => {
       expect(composable.filteredCustomers.value).toHaveLength(1)
@@ -117,7 +127,7 @@ describe('useCustomersScreen', () => {
   })
 
   it('tracks the target name when opening the remove modal', async () => {
-    const { composable, dispose } = withScreen()
+    const { composable, dispose } = withScreen(stubApi())
 
     await vi.waitFor(() => {
       expect(composable.filteredCustomers.value).toHaveLength(1)
@@ -135,7 +145,7 @@ describe('useCustomersScreen', () => {
   })
 
   it('opens the remove modal from the overflow menu action', async () => {
-    const { composable, dispose } = withScreen()
+    const { composable, dispose } = withScreen(stubApi())
 
     await vi.waitFor(() => {
       expect(composable.filteredCustomers.value).toHaveLength(1)
@@ -152,7 +162,7 @@ describe('useCustomersScreen', () => {
   })
 
   it('opens a customer and ignores clicks that belong to the row actions', async () => {
-    const { composable, api, dispose } = withScreen()
+    const { composable, api, dispose } = withScreen(stubApi())
 
     await vi.waitFor(() => {
       expect(composable.filteredCustomers.value).toHaveLength(1)
