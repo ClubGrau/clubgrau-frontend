@@ -6,78 +6,45 @@ withDefaults(defineProps<StatCardItem>(), {
   tone: 'neutral',
 });
 
-const toneClasses: Record<
-  StatCardTone,
-  {
-    root: string;
-    label: string;
-    value: string;
-    description: string;
-    icon: string;
-  }
-> = {
-  neutral: {
-    root: 'bg-[#ececf0]',
-    label: 'text-gray-500',
-    value: 'text-gray-900',
-    description: 'text-gray-400',
-    icon: 'bg-white/80 text-gray-600',
-  },
-  success: {
-    root: 'bg-[#e8f8ef]',
-    label: 'text-[#1f9d55]',
-    value: 'text-[#1f9d55]',
-    description: 'text-[#1f9d55]/75',
-    icon: 'bg-white/80 text-[#1f9d55]',
-  },
-  warning: {
-    root: 'bg-[#fff4e5]',
-    label: 'text-[#c47a12]',
-    value: 'text-[#c47a12]',
-    description: 'text-[#c47a12]/75',
-    icon: 'bg-white/80 text-[#c47a12]',
-  },
-  danger: {
-    root: 'bg-[#fde8e8]',
-    label: 'text-[#d64545]',
-    value: 'text-[#d64545]',
-    description: 'text-[#d64545]/75',
-    icon: 'bg-white/80 text-[#d64545]',
-  },
+const iconTone: Record<StatCardTone, string> = {
+  neutral: 'text-gray-600',
+  success: 'text-[#1f9d55]',
+  warning: 'text-[#c47a12]',
+  danger: 'text-[#d64545]',
 };
 </script>
 
 <template>
-  <div class="rounded-xl px-5 py-4" :class="toneClasses[tone].root">
-    <div class="flex items-start justify-between gap-3">
-      <p
-        class="text-[11px] font-semibold tracking-wide uppercase"
-        :class="toneClasses[tone].label"
-      >
-        <slot name="label">{{ label }}</slot>
-      </p>
-
-      <div
+  <div class="flex h-auto flex-col rounded-2xl border border-black/5 bg-white px-5 py-4 shadow-sm">
+    <div class="flex items-center gap-2">
+      <span
         v-if="icon || $slots.icon"
-        class="flex size-9 shrink-0 items-center justify-center rounded-lg"
-        :class="toneClasses[tone].icon"
+        class="flex size-4 shrink-0 items-center justify-center bg-gray-200 w-8 h-8 rounded-full"
+        :class="iconTone[tone]"
       >
         <slot name="icon">
-          <Icon v-if="icon" :icon="icon" class="size-5" />
+          <Icon v-if="icon" :icon="icon" class="size-4" />
         </slot>
-      </div>
+      </span>
+      <p class="truncate text-sm font-medium text-gray-500">
+        <slot name="label">{{ label }}</slot>
+      </p>
     </div>
 
-    <p class="mt-1 text-3xl font-bold" :class="toneClasses[tone].value">
-      <slot name="value">{{ value }}</slot>
-    </p>
+    <div class="mt-3 flex items-center justify-between gap-4">
+      <p class="min-w-0 text-[2rem] leading-none font-bold tracking-tight text-gray-900">
+        <slot name="value">{{ value }}</slot>
+      </p>
+      <slot name="chart" />
+    </div>
 
     <p
       v-if="description || $slots.description"
-      class="mt-1 text-xs"
-      :class="toneClasses[tone].description"
+      class="mt-2 truncate text-xs text-gray-400"
     >
       <slot name="description">{{ description }}</slot>
     </p>
+
+    <slot name="footer" />
   </div>
 </template>

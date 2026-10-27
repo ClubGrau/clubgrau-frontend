@@ -4,6 +4,10 @@ export interface GetIndicationCatalogApi {
   getCatalog(): Promise<Indication.Catalog>
 }
 
+export interface GetLinkableIndicationOriginsApi {
+  getLinkableOrigins(): Promise<Indication.LinkableOrigin[]>
+}
+
 export interface CreateIndicationOriginParams {
   categoryId: string
   name: string

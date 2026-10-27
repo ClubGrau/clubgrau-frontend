@@ -1,0 +1,131 @@
+{
+  "title": "Clientes",
+  "breadcrumb": {
+    "dashboard": "Dashboard",
+    "customers": "Clientes"
+  },
+  "subtitle": "Carteira completa de contas e contatos comerciais.",
+  "newCustomer": "Novo cliente",
+  "searchPlaceholder": "Buscar cliente",
+  "empty": "Nenhum cliente encontrado.",
+  "loading": "Carregando clientes…",
+  "loadError": "Não foi possível carregar os clientes.",
+  "emptyValue": "—",
+  "rank": {
+    "BRONZE": "Bronze",
+    "SILVER": "Prata",
+    "GOLD": "Ouro"
+  },
+  "rankFilter": {
+    "label": "Filtrar por rank",
+    "apply": "Filtrar clientes {rank}, {count}",
+    "applyName": "Filtrar clientes {rank}",
+    "clear": "Mostrar todos os clientes"
+  },
+  "summary": {
+    "customer": "cliente",
+    "customers": "clientes"
+  },
+  "stats": {
+    "total": {
+      "label": "Total na plataforma",
+      "description": "Clientes cadastrados"
+    },
+    "joinedThisMonth": {
+      "label": "Novos este mês",
+      "description": "{percent}% da carteira",
+      "ofPlatform": "{joined} de {total} clientes da plataforma entraram este mês.",
+      "noneJoined": "Nenhum dos {total} clientes da plataforma entrou este mês.",
+      "emptyPlatform": "A plataforma ainda não tem clientes.",
+      "centerCaption": "da base",
+      "chartJoined": "Novos este mês",
+      "chartExisting": "Já estavam na base"
+    },
+    "listed": {
+      "label": "Clientes",
+      "description": "Nesta lista"
+    }
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Próximo",
+    "of": "de"
+  },
+  "nif": {
+    "copy": "Copiar NIF"
+  },
+  "referral": {
+    "open": "Abrir {name}",
+    "referred": "Indicou {count}"
+  },
+  "table": {
+    "customer": "Cliente",
+    "contact": "Contato",
+    "nif": "Nif",
+    "referral": "Indicação",
+    "rank": "Rank",
+    "registeredAt": "Cadastro",
+    "actions": "Ações",
+    "sort": "Ordenar por {column}"
+  },
+  "detail": {
+    "loading": "Carregando cliente…",
+    "unavailable": "Este cliente não está nesta página."
+  },
+  "menu": {
+    "remove": "Remover"
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "remove": "Remover",
+    "close": "Fechar"
+  },
+  "toast": {
+    "created": "Cliente criado.",
+    "removed": "Cliente removido da carteira.",
+    "nifCopied": "NIF copiado.",
+    "unexpected": "Não foi possível concluir a ação. Tente novamente.",
+    "emailInUse": "Este e-mail já está em uso.",
+    "createValidation": "Não foi possível criar o cliente. Verifique os dados.",
+    "forbidden": "Não tem permissão para criar clientes."
+  },
+  "form": {
+    "createTitle": "Novo cliente",
+    "createSubtitle": "Preencha os dados para cadastrar um novo cliente",
+    "createSubmit": "Criar cliente",
+    "sectionMain": "Dados principais",
+    "nameRequired": "Nome completo *",
+    "namePlaceholder": "Ex: Marina Albuquerque",
+    "email": "E-mail",
+    "emailPlaceholder": "nome{'@'}empresa.com",
+    "phone": "Telefone",
+    "phonePlaceholder": "912 345 678",
+    "nif": "NIF",
+    "nifPlaceholder": "123456789",
+    "missingFields": "Preencha os campos obrigatórios: {fields}.",
+    "indication": {
+      "title": "Indicação",
+      "wasReferred": "Veio por indicação?",
+      "yes": "Sim",
+      "no": "Não",
+      "category": "Tipo de indicação",
+      "types": {
+        "canal": "Canal",
+        "campanha": "Campanha",
+        "amigo": "Amigo"
+      },
+      "origin": "Indicação",
+      "originPlaceholder": "Selecione uma indicação",
+      "friendPlaceholder": "Selecione um cliente",
+      "loading": "A carregar indicações…",
+      "loadError": "Não foi possível carregar as indicações.",
+      "emptyOrigins": "Nenhuma indicação ativa nesta categoria.",
+      "emptyFriends": "Nenhum cliente disponível."
+    }
+  },
+  "modal": {
+    "removeTitle": "Remover cliente",
+    "removeBodyNamed": "Esta ação remove {name} da carteira. Os dados deixam de aparecer na lista.",
+    "removeBodyAnonymous": "Esta ação remove o cliente da carteira. Os dados deixam de aparecer na lista."
+  }
+}

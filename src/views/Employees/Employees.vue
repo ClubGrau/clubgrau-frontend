@@ -2,11 +2,12 @@
 import { computed, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Icon } from '@iconify/vue';
+import ActionsMenu from '../../components/ActionsMenu/ActionsMenu.vue';
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb.vue';
+import DataTable from '../../components/DataTable/DataTable.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
-import Pagination from '../../components/Pagination/Pagination.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
@@ -17,6 +18,8 @@ import ModalLayout from '../../components/Modal/ModalLayout.vue';
 import emptyListImage from '../../assets/img/empty-list.png';
 import { employeeStatusBadge } from '../../constants/employee-status';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
+import type { DataTableColumn, DataTablePagination } from '../../types/data-table';
+import type { Employee } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
 import {
   useEmployeesScreen,
@@ -24,6 +27,7 @@ import {
 } from '../../composables/useEmployeesScreen';
 import InactivateModal from '../../components/Modal/InactivateModal.vue';
 import RemoveEmployeeModal from '../../components/Modal/RemoveEmployeeModal.vue';
+import PageContainer from '../../Layout/PageContainer.vue';
 
 const { t } = useI18n();
 
@@ -119,6 +123,32 @@ const employeeRole = (role: string) => {
 
 const employeeUsername = (username: string) => {
   return username && `@${username}`;
+};
+
+const columns = computed<DataTableColumn[]>(() => [
+  { key: 'name', label: t('Employees.table.name') },
+  { key: 'contacts', label: t('Employees.table.contacts') },
+  { key: 'nif', label: t('Employees.table.nif') },
+  { key: 'role', label: t('Employees.table.role') },
+  { key: 'status', label: t('Employees.table.status') },
+  {
+    key: 'actions',
+    label: t('Employees.table.actions'),
+    align: 'right',
+    stopsRowClick: true,
+    actionsTrigger: true,
+  },
+]);
+
+const tablePagination = computed<DataTablePagination>(() => ({
+  currentPage: currentPage.value,
+  pageSize: pageSize.value,
+  totalItems: total.value,
+  pageSizePlacement: 'top',
+}));
+
+const onEmployeeTableRowClick = (event: MouseEvent, employee: Employee.ListItem) => {
+  onEmployeeRowClick(event, employee.id);
 };
 
 const statCards = computed<StatCardItem[]>(() => [
@@ -236,7 +266,7 @@ onUnmounted(stopStatusTabsDrag);
 </script>
 
 <template>
-  <div class="min-h-full bg-[#f5f5f7] px-4 pb-8 pt-5">
+  <PageContainer>
     <Breadcrumb :items="breadcrumbItems" />
 
     <PageHeader :title="t('Employees.title')">
@@ -272,7 +302,7 @@ onUnmounted(stopStatusTabsDrag);
       >
         <template v-if="isStatsLoading" #value>
           <span
-            class="block h-9 w-12 animate-pulse rounded-md bg-current/20"
+            class="block h-8 w-12 animate-pulse rounded-md bg-current/20"
             aria-hidden="true"
           />
         </template>
@@ -334,163 +364,131 @@ onUnmounted(stopStatusTabsDrag);
         </div>
       </div>
 
-      <div
-        v-if="isListLoading || filteredEmployees.length > 0"
-        class="overflow-x-auto"
-        :aria-busy="isListLoading || isListFetching"
-        :aria-label="isListLoading ? t('Employees.loading') : undefined"
+      <DataTable
+        :columns="columns"
+        :rows="filteredEmployees"
+        row-key="id"
+        :loading="isListLoading"
+        :busy="isListFetching"
+        :label="isListLoading ? t('Employees.loading') : undefined"
+        :pagination="tablePagination"
+        @update:current-page="currentPage = $event"
+        @update:page-size="pageSize = $event"
+        @row-click="onEmployeeTableRowClick"
       >
-        <table class="w-full min-w-225 border-collapse text-left">
-          <thead>
-            <tr class="border-b border-gray-100 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
-              <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.name') }}</th>
-              <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.contacts') }}</th>
-              <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.nif') }}</th>
-              <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.role') }}</th>
-              <th class="py-3 pr-4 font-semibold">{{ t('Employees.table.status') }}</th>
-              <th class="py-3 pl-2 text-right font-semibold">{{ t('Employees.table.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody :class="isListFetching && !isListLoading ? 'opacity-60' : undefined">
-            <template v-if="isListLoading">
-            <tr
-              v-for="row in pageSize"
-              :key="`skeleton-${row}`"
-              class="border-b border-gray-50 last:border-b-0"
-            >
-              <td class="py-4 pr-4 align-middle">
-                <div class="flex items-center gap-3">
-                  <div class="size-9 shrink-0 animate-pulse rounded-full bg-gray-100" />
-                  <div class="space-y-2">
-                    <div class="h-3.5 w-32 animate-pulse rounded bg-gray-100" />
-                    <div class="h-3 w-20 animate-pulse rounded bg-gray-100" />
-                  </div>
-                </div>
-              </td>
-              <td class="py-4 pr-4 align-middle">
+        <template v-if="!isListLoading && filteredEmployees.length === 0" #empty-state>
+          <div
+            class="flex min-h-72 flex-col items-center justify-center gap-4 px-4 py-10 text-center sm:min-h-80 sm:py-14"
+          >
+            <img
+              :src="emptyListImage"
+              alt=""
+              width="434"
+              height="260"
+              class="h-auto w-36 max-w-full sm:w-44"
+            />
+            <p class="max-w-md text-base text-gray-700 sm:text-lg">
+              {{ emptyMessage }}
+            </p>
+          </div>
+        </template>
+
+        <template #loading>
+          <tr
+            v-for="row in pageSize"
+            :key="`skeleton-${row}`"
+            class="border-b border-gray-50 last:border-b-0"
+          >
+            <td class="py-4 pr-4 align-middle">
+              <div class="flex items-center gap-3">
+                <div class="size-9 shrink-0 animate-pulse rounded-full bg-gray-100" />
                 <div class="space-y-2">
-                  <div class="h-3 w-40 animate-pulse rounded bg-gray-100" />
-                  <div class="h-3 w-24 animate-pulse rounded bg-gray-100" />
+                  <div class="h-3.5 w-32 animate-pulse rounded bg-gray-100" />
+                  <div class="h-3 w-20 animate-pulse rounded bg-gray-100" />
                 </div>
-              </td>
-              <td class="py-4 pr-4 align-middle">
-                <div class="h-3.5 w-24 animate-pulse rounded bg-gray-100" />
-              </td>
-              <td class="py-4 pr-4 align-middle">
-                <div class="h-3.5 w-20 animate-pulse rounded bg-gray-100" />
-              </td>
-              <td class="py-4 pr-4 align-middle">
-                <div class="h-6 w-16 animate-pulse rounded-full bg-gray-100" />
-              </td>
-              <td class="py-4 pl-2 text-right align-middle">
-                <div class="ml-auto size-5 animate-pulse rounded bg-gray-100" />
-              </td>
-            </tr>
-            </template>
-            <template v-else>
-            <tr
-              v-for="employee in filteredEmployees"
-              :key="employee.id"
-              class="cursor-pointer border-b border-gray-50 last:border-b-0 hover:bg-gray-50/80"
-              @click="onEmployeeRowClick($event, employee.id)"
-            >
-              <td class="py-4 pr-4 align-middle">
-                <div class="flex items-center gap-3">
-                  <UserAvatar
-                    :initials="employee.initials"
-                    size="sm"
-                    :alt="employee.name"
-                  />
-                  <div class="min-w-0 leading-tight">
-                    <p class="truncate text-sm font-semibold text-gray-900">
-                      {{ employee.name }}
-                    </p>
-                    <p class="truncate text-xs text-gray-400">{{ employeeUsername(employee.username) }}</p>
-                  </div>
-                </div>
-              </td>
+              </div>
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="space-y-2">
+                <div class="h-3 w-40 animate-pulse rounded bg-gray-100" />
+                <div class="h-3 w-24 animate-pulse rounded bg-gray-100" />
+              </div>
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="h-3.5 w-24 animate-pulse rounded bg-gray-100" />
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="h-3.5 w-20 animate-pulse rounded bg-gray-100" />
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="h-6 w-16 animate-pulse rounded-full bg-gray-100" />
+            </td>
+            <td class="py-4 pl-2 text-right align-middle">
+              <div class="ml-auto size-5 animate-pulse rounded bg-gray-100" />
+            </td>
+          </tr>
+        </template>
 
-              <td class="py-4 pr-4 align-middle">
-                <div class="space-y-1">
-                  <div class="flex items-center gap-2 text-xs text-gray-500">
-                    <Icon icon="carbon:email" class="size-3.5 shrink-0 text-gray-400" />
-                    <span class="truncate font-semibold">{{ employee.email }}</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs text-gray-500">
-                    <Icon icon="carbon:phone" class="size-3.5 shrink-0 text-gray-400" />
-                    <span>{{ employee.phone }}</span>
-                  </div>
-                </div>
-              </td>
+        <template #cell-name="{ row }">
+          <div class="flex items-center gap-3">
+            <UserAvatar
+              :initials="row.initials"
+              size="sm"
+              :alt="row.name"
+            />
+            <div class="min-w-0 leading-tight">
+              <p class="truncate text-sm font-semibold text-gray-900">
+                {{ row.name }}
+              </p>
+              <p class="truncate text-xs text-gray-400">{{ employeeUsername(row.username) }}</p>
+            </div>
+          </div>
+        </template>
 
-              <td class="py-4 pr-4 align-middle text-sm text-gray-700">
-                {{ employee.nif }}
-              </td>
+        <template #cell-contacts="{ row }">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+              <Icon icon="carbon:email" class="size-3.5 shrink-0 text-gray-400" />
+              <span class="truncate font-semibold">{{ row.email }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-500">
+              <Icon icon="carbon:phone" class="size-3.5 shrink-0 text-gray-400" />
+              <span>{{ row.phone }}</span>
+            </div>
+          </div>
+        </template>
 
-              <td class="py-4 pr-4 align-middle text-sm text-gray-700">
-                {{ employeeRole(employee.role) }}
-              </td>
+        <template #cell-nif="{ row }">
+          <span class="text-sm text-gray-700">{{ row.nif }}</span>
+        </template>
 
-              <td class="py-4 pr-4 align-middle">
-                <StatusBadge
-                  :label="employeeStatusBadge[employee.status].label"
-                  :variant="employeeStatusBadge[employee.status].variant"
-                />
-              </td>
+        <template #cell-role="{ row }">
+          <span class="text-sm text-gray-700">{{ employeeRole(row.role) }}</span>
+        </template>
 
-              <td
-                class="py-4 pl-2 text-right align-middle"
-                data-row-action
-                data-actions-menu
-              >
-                <button
-                  type="button"
-                  class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                  :aria-expanded="openActionsId === employee.id"
-                  aria-haspopup="menu"
-                  @click.stop="toggleActionsMenu(employee.id, $event.currentTarget)"
-                >
-                  <Icon icon="carbon:overflow-menu-vertical" class="size-5" />
-                </button>
-              </td>
-            </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
+        <template #cell-status="{ row }">
+          <StatusBadge
+            :label="employeeStatusBadge[row.status].label"
+            :variant="employeeStatusBadge[row.status].variant"
+          />
+        </template>
 
-      <div
-        v-else
-        class="flex min-h-72 flex-col items-center justify-center gap-4 px-4 py-10 text-center sm:min-h-80 sm:py-14"
-      >
-        <img
-          :src="emptyListImage"
-          alt=""
-          width="434"
-          height="260"
-          class="h-auto w-36 max-w-full sm:w-44"
-        />
-        <p class="max-w-md text-base text-gray-700 sm:text-lg">
-          {{ emptyMessage }}
-        </p>
-      </div>
-
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total-items="total"
-        page-size-placement="top"
-      />
+        <template #cell-actions="{ row }">
+          <button
+            type="button"
+            class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            :aria-expanded="openActionsId === row.id"
+            aria-haspopup="menu"
+            @click.stop="toggleActionsMenu(row.id, $event.currentTarget)"
+          >
+            <Icon icon="carbon:overflow-menu-vertical" class="size-5" />
+          </button>
+        </template>
+      </DataTable>
     </section>
 
-    <Teleport to="body">
-      <div
-        v-if="openActionsId"
-        data-actions-menu
-        role="menu"
-        class="fixed z-50 min-w-40 rounded-xl border border-gray-100 bg-white p-1.5 shadow-[0_12px_32px_rgba(16,22,37,0.12)]"
-        :style="actionsMenuStyle"
-      >
+    <ActionsMenu :open="openActionsId !== null" :menu-style="actionsMenuStyle">
+      <template v-if="openActionsId">
         <button
           type="button"
           role="menuitem"
@@ -531,8 +529,8 @@ onUnmounted(stopStatusTabsDrag);
           <Icon icon="carbon:trash-can" class="size-4" />
           {{ t('Employees.menu.remove') }}
         </button>
-      </div>
-    </Teleport>
+      </template>
+    </ActionsMenu>
 
     <Drawer
       :open="(drawer.open && !isDeactivateModalOpen && !isRemoveModalOpen) || isOwnFormOpen"
@@ -631,5 +629,5 @@ onUnmounted(stopStatusTabsDrag);
         @cancel="closeModal"
       />
     </ModalLayout>
-  </div>
+  </PageContainer>
 </template>

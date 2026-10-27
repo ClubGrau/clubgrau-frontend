@@ -1,0 +1,131 @@
+{
+  "title": "Customers",
+  "breadcrumb": {
+    "dashboard": "Dashboard",
+    "customers": "Customers"
+  },
+  "subtitle": "Full wallet of commercial accounts and contacts.",
+  "newCustomer": "New customer",
+  "searchPlaceholder": "Search customers",
+  "empty": "No customers found.",
+  "loading": "Loading customers…",
+  "loadError": "Could not load customers.",
+  "emptyValue": "—",
+  "rank": {
+    "BRONZE": "Bronze",
+    "SILVER": "Silver",
+    "GOLD": "Gold"
+  },
+  "rankFilter": {
+    "label": "Filter by rank",
+    "apply": "Filter {rank} customers, {count}",
+    "applyName": "Filter {rank} customers",
+    "clear": "Show all customers"
+  },
+  "summary": {
+    "customer": "customer",
+    "customers": "customers"
+  },
+  "stats": {
+    "total": {
+      "label": "Platform total",
+      "description": "Registered customers"
+    },
+    "joinedThisMonth": {
+      "label": "New this month",
+      "description": "{percent}% of the wallet",
+      "ofPlatform": "{joined} of {total} customers on the platform joined this month.",
+      "noneJoined": "None of the {total} customers on the platform joined this month.",
+      "emptyPlatform": "The platform has no customers yet.",
+      "centerCaption": "of the base",
+      "chartJoined": "New this month",
+      "chartExisting": "Already on the platform"
+    },
+    "listed": {
+      "label": "Customers",
+      "description": "In this list"
+    }
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "of": "of"
+  },
+  "nif": {
+    "copy": "Copy tax ID"
+  },
+  "referral": {
+    "open": "Open {name}",
+    "referred": "Referred {count}"
+  },
+  "table": {
+    "customer": "Customer",
+    "contact": "Contact",
+    "nif": "Tax ID",
+    "referral": "Referral",
+    "rank": "Rank",
+    "registeredAt": "Registered",
+    "actions": "Actions",
+    "sort": "Sort by {column}"
+  },
+  "detail": {
+    "loading": "Loading customer…",
+    "unavailable": "This customer is not on this page."
+  },
+  "menu": {
+    "remove": "Remove"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "close": "Close"
+  },
+  "toast": {
+    "created": "Customer created.",
+    "removed": "Customer removed from the wallet.",
+    "nifCopied": "Tax ID copied.",
+    "unexpected": "Could not complete the action. Try again.",
+    "emailInUse": "This email is already in use.",
+    "createValidation": "Could not create the customer. Check the data.",
+    "forbidden": "You cannot create customers."
+  },
+  "form": {
+    "createTitle": "New customer",
+    "createSubtitle": "Fill in the details to add a new customer",
+    "createSubmit": "Create customer",
+    "sectionMain": "Main details",
+    "nameRequired": "Full name *",
+    "namePlaceholder": "E.g. Marina Albuquerque",
+    "email": "E-mail",
+    "emailPlaceholder": "name{'@'}company.com",
+    "phone": "Phone",
+    "phonePlaceholder": "912 345 678",
+    "nif": "Tax ID",
+    "nifPlaceholder": "123456789",
+    "missingFields": "Fill in the required fields: {fields}.",
+    "indication": {
+      "title": "Indication",
+      "wasReferred": "Came by indication?",
+      "yes": "Yes",
+      "no": "No",
+      "category": "Indication type",
+      "types": {
+        "canal": "Channel",
+        "campanha": "Campaign",
+        "amigo": "Friend"
+      },
+      "origin": "Indication",
+      "originPlaceholder": "Select an indication",
+      "friendPlaceholder": "Select a customer",
+      "loading": "Loading indications…",
+      "loadError": "Could not load indications.",
+      "emptyOrigins": "No active indication in this category.",
+      "emptyFriends": "No customer available."
+    }
+  },
+  "modal": {
+    "removeTitle": "Remove customer",
+    "removeBodyNamed": "This action removes {name} from the wallet. They will no longer appear in the list.",
+    "removeBodyAnonymous": "This action removes the customer from the wallet. They will no longer appear in the list."
+  }
+}
