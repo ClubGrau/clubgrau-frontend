@@ -8,7 +8,6 @@ import DataTable from '../../components/DataTable/DataTable.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
-import Pagination from '../../components/Pagination/Pagination.vue';
 import SelectFilter from '../../components/SelectFilter/SelectFilter.vue';
 import StatusBadge from '../../components/StatusBadge/StatusBadge.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
@@ -19,7 +18,7 @@ import ModalLayout from '../../components/Modal/ModalLayout.vue';
 import emptyListImage from '../../assets/img/empty-list.png';
 import { employeeStatusBadge } from '../../constants/employee-status';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
-import type { DataTableColumn } from '../../types/data-table';
+import type { DataTableColumn, DataTablePagination } from '../../types/data-table';
 import type { Employee } from '../../types/employee';
 import type { StatCardItem } from '../../types/stat-card';
 import {
@@ -140,6 +139,13 @@ const columns = computed<DataTableColumn[]>(() => [
     actionsTrigger: true,
   },
 ]);
+
+const tablePagination = computed<DataTablePagination>(() => ({
+  currentPage: currentPage.value,
+  pageSize: pageSize.value,
+  totalItems: total.value,
+  pageSizePlacement: 'top',
+}));
 
 const onEmployeeTableRowClick = (event: MouseEvent, employee: Employee.ListItem) => {
   onEmployeeRowClick(event, employee.id);
@@ -359,15 +365,34 @@ onUnmounted(stopStatusTabsDrag);
       </div>
 
       <DataTable
-        v-if="isListLoading || filteredEmployees.length > 0"
         :columns="columns"
         :rows="filteredEmployees"
         row-key="id"
         :loading="isListLoading"
         :busy="isListFetching"
         :label="isListLoading ? t('Employees.loading') : undefined"
+        :pagination="tablePagination"
+        @update:current-page="currentPage = $event"
+        @update:page-size="pageSize = $event"
         @row-click="onEmployeeTableRowClick"
       >
+        <template v-if="!isListLoading && filteredEmployees.length === 0" #empty-state>
+          <div
+            class="flex min-h-72 flex-col items-center justify-center gap-4 px-4 py-10 text-center sm:min-h-80 sm:py-14"
+          >
+            <img
+              :src="emptyListImage"
+              alt=""
+              width="434"
+              height="260"
+              class="h-auto w-36 max-w-full sm:w-44"
+            />
+            <p class="max-w-md text-base text-gray-700 sm:text-lg">
+              {{ emptyMessage }}
+            </p>
+          </div>
+        </template>
+
         <template #loading>
           <tr
             v-for="row in pageSize"
@@ -460,29 +485,6 @@ onUnmounted(stopStatusTabsDrag);
           </button>
         </template>
       </DataTable>
-
-      <div
-        v-else
-        class="flex min-h-72 flex-col items-center justify-center gap-4 px-4 py-10 text-center sm:min-h-80 sm:py-14"
-      >
-        <img
-          :src="emptyListImage"
-          alt=""
-          width="434"
-          height="260"
-          class="h-auto w-36 max-w-full sm:w-44"
-        />
-        <p class="max-w-md text-base text-gray-700 sm:text-lg">
-          {{ emptyMessage }}
-        </p>
-      </div>
-
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total-items="total"
-        page-size-placement="top"
-      />
     </section>
 
     <ActionsMenu :open="openActionsId !== null" :menu-style="actionsMenuStyle">

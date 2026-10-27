@@ -1,5 +1,7 @@
 <script setup lang="ts" generic="T">
-import type { DataTableColumn } from '../../types/data-table';
+import { computed, useSlots } from 'vue';
+import Pagination from '../Pagination/Pagination.vue';
+import type { DataTableColumn, DataTablePagination } from '../../types/data-table';
 
 const props = withDefaults(
   defineProps<{
@@ -9,6 +11,7 @@ const props = withDefaults(
     loading?: boolean;
     busy?: boolean;
     label?: string;
+    pagination?: DataTablePagination;
   }>(),
   {
     loading: false,
@@ -18,7 +21,29 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   rowClick: [event: MouseEvent, row: T];
+  'update:currentPage': [page: number];
+  'update:pageSize': [size: number];
 }>();
+
+const slots = useSlots();
+
+const replacesTable = computed(
+  () => !props.loading && props.rows.length === 0 && Boolean(slots['empty-state']),
+);
+
+const paginationBindings = computed(() => {
+  if (!props.pagination) return null;
+  const { currentPage, pageSize, totalItems, ...optional } = props.pagination;
+  const definedOptional = Object.fromEntries(
+    Object.entries(optional).filter(([, value]) => value !== undefined),
+  );
+  return {
+    currentPage,
+    pageSize,
+    totalItems,
+    ...definedOptional,
+  };
+});
 
 const headerClass = (column: DataTableColumn) =>
   column.align === 'right' ? 'py-3 pl-2 text-right font-semibold' : 'py-3 pr-4 font-semibold';
@@ -34,12 +59,16 @@ const onRowClick = (event: MouseEvent, row: T) => {
 </script>
 
 <template>
-  <div
-    class="overflow-x-auto"
-    :aria-busy="loading || busy || undefined"
-    :aria-label="label"
-  >
-    <table class="w-full min-w-225 border-collapse text-left">
+  <div>
+    <slot v-if="replacesTable" name="empty-state" />
+
+    <div
+      v-else
+      class="overflow-x-auto"
+      :aria-busy="loading || busy || undefined"
+      :aria-label="label"
+    >
+      <table class="w-full min-w-225 border-collapse text-left">
       <thead>
         <tr class="border-b border-gray-100 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
           <th
@@ -83,6 +112,14 @@ const onRowClick = (event: MouseEvent, row: T) => {
           </td>
         </tr>
       </tbody>
-    </table>
+      </table>
+    </div>
+
+    <Pagination
+      v-if="paginationBindings"
+      v-bind="paginationBindings"
+      @update:current-page="emit('update:currentPage', $event)"
+      @update:page-size="emit('update:pageSize', $event)"
+    />
   </div>
 </template>
