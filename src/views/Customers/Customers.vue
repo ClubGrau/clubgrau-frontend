@@ -8,12 +8,11 @@ import DataTable from '../../components/DataTable/DataTable.vue';
 import Drawer from '../../components/Drawer/Drawer.vue';
 import PageHeader from '../../components/PageHeader/PageHeader.vue';
 import StatCard from '../../components/StatCard/StatCard.vue';
-import Pagination from '../../components/Pagination/Pagination.vue';
 import UserAvatar from '../../components/UserAvatar/UserAvatar.vue';
 import ModalLayout from '../../components/Modal/ModalLayout.vue';
 import type { BreadcrumbItem } from '../../types/breadcrumb';
-import type { Customer, CustomerSortKey } from '../../types/customer';
-import type { DataTableColumn } from '../../types/data-table';
+import type { Customer } from '../../types/customer';
+import type { DataTableColumn, DataTablePagination } from '../../types/data-table';
 import type { StatCardItem } from '../../types/stat-card';
 import { CUSTOMER_RANK_LADDER } from '../../constants/customer-rank';
 import { formatRegistrationDate, joinedSharePercent } from '../../domain/customer-wallet';
@@ -35,11 +34,16 @@ const {
   searchQuery,
   rankFilter,
   toggleRankFilter,
-  sortKey,
-  sortDirection,
-  toggleSort,
   summary,
+  hasSummary,
+  joinedThisMonth,
+  walletTotal,
+  hasJoinedThisMonth,
   total,
+  isListLoading,
+  isListFetching,
+  isListError,
+  canRemove,
   isCreateDrawerOpen,
   isRemoveModalOpen,
   removeCustomerName,
@@ -78,52 +82,92 @@ const optionalDisplay = (value: string) => value.trim() || t('Customers.emptyVal
 const customerCountLabel = (count: number) =>
   t(count === 1 ? 'Customers.summary.customer' : 'Customers.summary.customers');
 
-const statCards = computed<StatCardItem[]>(() => [
-  {
-    id: 'total',
-    label: t('Customers.stats.total.label'),
-    value: summary.value.total,
-    description: t('Customers.stats.total.description'),
-    icon: 'carbon:user-multiple',
-    tone: 'neutral',
-  },
-  {
-    id: 'joinedThisMonth',
-    label: t('Customers.stats.joinedThisMonth.label'),
-    value: summary.value.joinedThisMonth,
-    description: t('Customers.stats.joinedThisMonth.description', {
-      percent: joinedSharePercent(summary.value.joinedThisMonth, summary.value.total),
-    }),
-    icon: 'carbon:user-follow',
-    tone: 'success',
-  },
-]);
+const statCards = computed<StatCardItem[]>(() => {
+  const cards: StatCardItem[] = [
+    hasSummary.value
+      ? {
+          id: 'total',
+          label: t('Customers.stats.total.label'),
+          value: summary.value.total,
+          description: t('Customers.stats.total.description'),
+          icon: 'carbon:user-multiple',
+          tone: 'neutral',
+        }
+      : {
+          id: 'listed',
+          label: t('Customers.stats.listed.label'),
+          value: total.value,
+          description: t('Customers.stats.listed.description'),
+          icon: 'carbon:user-multiple',
+          tone: 'neutral',
+        },
+  ];
 
-const ariaSort = (key: CustomerSortKey) => {
-  if (sortKey.value !== key) return 'none';
-  return sortDirection.value === 'asc' ? 'ascending' : 'descending';
+  if (hasJoinedThisMonth.value) {
+    cards.push({
+      id: 'joinedThisMonth',
+      label: t('Customers.stats.joinedThisMonth.label'),
+      value: joinedThisMonth.value,
+      description: t('Customers.stats.joinedThisMonth.description', {
+        percent: joinedSharePercent(joinedThisMonth.value, walletTotal.value),
+      }),
+      icon: 'carbon:user-follow',
+      tone: 'success',
+    });
+  }
+
+  return cards;
+});
+
+const columns = computed<DataTableColumn[]>(() => {
+  const base: DataTableColumn[] = [
+    { key: 'name', label: t('Customers.table.customer') },
+    { key: 'contact', label: t('Customers.table.contact') },
+    { key: 'nif', label: t('Customers.table.nif') },
+    { key: 'referral', label: t('Customers.table.referral') },
+    { key: 'rank', label: t('Customers.table.rank') },
+    { key: 'createdAt', label: t('Customers.table.registeredAt') },
+  ];
+
+  if (!canRemove.value) return base;
+
+  return [
+    ...base,
+    {
+      key: 'actions',
+      label: t('Customers.table.actions'),
+      align: 'right',
+      stopsRowClick: true,
+      actionsTrigger: true,
+    },
+  ];
+});
+
+const tablePagination = computed<DataTablePagination>(() => ({
+  currentPage: currentPage.value,
+  pageSize: pageSize.value,
+  totalItems: total.value,
+  summaryMode: 'range',
+  pageSizePlacement: 'top',
+  previousLabel: t('Customers.pagination.previous'),
+  nextLabel: t('Customers.pagination.next'),
+  ofLabel: t('Customers.pagination.of'),
+  resultsLabel: customerCountLabel(total.value),
+}));
+
+const rankFilterLabel = (rank: (typeof CUSTOMER_RANK_LADDER)[number]) => {
+  const rankLabel = t(`Customers.rank.${rank}`);
+  if (rankFilter.value === rank) {
+    return t('Customers.rankFilter.clear', { rank: rankLabel });
+  }
+  if (!hasSummary.value) {
+    return t('Customers.rankFilter.applyName', { rank: rankLabel });
+  }
+  return t('Customers.rankFilter.apply', {
+    rank: rankLabel,
+    count: summary.value.byRank[rank],
+  });
 };
-
-const sortIcon = (key: CustomerSortKey) => {
-  if (sortKey.value !== key) return 'carbon:caret-sort';
-  return sortDirection.value === 'asc' ? 'carbon:caret-sort-up' : 'carbon:caret-sort-down';
-};
-
-const columns = computed<DataTableColumn[]>(() => [
-  { key: 'name', label: t('Customers.table.customer'), ariaSort: ariaSort('name') },
-  { key: 'contact', label: t('Customers.table.contact') },
-  { key: 'nif', label: t('Customers.table.nif') },
-  { key: 'referral', label: t('Customers.table.referral') },
-  { key: 'rank', label: t('Customers.table.rank'), ariaSort: ariaSort('rank') },
-  { key: 'createdAt', label: t('Customers.table.registeredAt'), ariaSort: ariaSort('createdAt') },
-  {
-    key: 'actions',
-    label: t('Customers.table.actions'),
-    align: 'right',
-    stopsRowClick: true,
-    actionsTrigger: true,
-  },
-]);
 
 const onCustomerTableRowClick = (event: MouseEvent, customer: Customer.ListItem) => {
   onCustomerRowClick(event, customer.id);
@@ -160,7 +204,8 @@ const copyNif = async (nif: string) => {
     </PageHeader>
 
     <div
-      class="mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scrollbar-none md:grid md:snap-none md:grid-cols-2 md:gap-4 md:overflow-visible lg:w-[75%] [&::-webkit-scrollbar]:hidden"
+      class="mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scrollbar-none md:grid md:snap-none md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden"
+      :class="statCards.length > 1 ? 'md:grid-cols-2 lg:w-[75%]' : 'md:max-w-md md:grid-cols-1'"
     >
       <StatCard
         v-for="card in statCards"
@@ -190,63 +235,38 @@ const copyNif = async (nif: string) => {
             v-for="rank in CUSTOMER_RANK_LADDER"
             :key="rank"
             :rank="rank"
-            :count="summary.byRank[rank]"
             variant="filter"
             interactive
+            :count="hasSummary ? summary.byRank[rank] : undefined"
             :selected="rankFilter === rank"
-            :aria-label="
-              rankFilter === rank
-                ? t('Customers.rankFilter.clear', { rank: t(`Customers.rank.${rank}`) })
-                : t('Customers.rankFilter.apply', {
-                    rank: t(`Customers.rank.${rank}`),
-                    count: summary.byRank[rank],
-                  })
-            "
+            :aria-label="rankFilterLabel(rank)"
             @click="toggleRankFilter(rank)"
           />
         </div>
       </div>
 
+      <p v-if="isListError" class="mb-3 text-sm text-red-600">
+        {{ t('Customers.loadError') }}
+      </p>
+
       <DataTable
         :columns="columns"
         :rows="filteredCustomers"
         row-key="id"
+        :loading="isListLoading"
+        :busy="isListFetching && !isListLoading"
+        :label="isListLoading ? t('Customers.loading') : undefined"
+        :pagination="tablePagination"
+        @update:current-page="currentPage = $event"
+        @update:page-size="pageSize = $event"
         @row-click="onCustomerTableRowClick"
       >
-        <template #header-name="{ column }">
-          <button
-            type="button"
-            class="inline-flex cursor-pointer items-center gap-1"
-            :aria-label="t('Customers.table.sort', { column: column.label })"
-            @click="toggleSort('name')"
-          >
-            {{ column.label }}
-            <Icon :icon="sortIcon('name')" class="size-3.5" :class="sortKey === 'name' ? 'text-gray-700' : 'text-gray-300'" />
-          </button>
-        </template>
-
-        <template #header-rank="{ column }">
-          <button
-            type="button"
-            class="inline-flex cursor-pointer items-center gap-1"
-            :aria-label="t('Customers.table.sort', { column: column.label })"
-            @click="toggleSort('rank')"
-          >
-            {{ column.label }}
-            <Icon :icon="sortIcon('rank')" class="size-3.5" :class="sortKey === 'rank' ? 'text-gray-700' : 'text-gray-300'" />
-          </button>
-        </template>
-
-        <template #header-createdAt="{ column }">
-          <button
-            type="button"
-            class="inline-flex cursor-pointer items-center gap-1"
-            :aria-label="t('Customers.table.sort', { column: column.label })"
-            @click="toggleSort('createdAt')"
-          >
-            {{ column.label }}
-            <Icon :icon="sortIcon('createdAt')" class="size-3.5" :class="sortKey === 'createdAt' ? 'text-gray-700' : 'text-gray-300'" />
-          </button>
+        <template #loading>
+          <tr>
+            <td :colspan="columns.length" class="py-12 text-center text-sm text-gray-400">
+              {{ t('Customers.loading') }}
+            </td>
+          </tr>
         </template>
 
         <template #cell-name="{ row }">
@@ -325,7 +345,7 @@ const copyNif = async (nif: string) => {
           <span class="text-sm text-gray-700">{{ formatRegistrationDate(row.createdAt) }}</span>
         </template>
 
-        <template #cell-actions="{ row }">
+        <template v-if="canRemove" #cell-actions="{ row }">
           <button
             type="button"
             class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
@@ -339,24 +359,12 @@ const copyNif = async (nif: string) => {
         </template>
 
         <template #empty>
-          {{ t('Customers.empty') }}
+          {{ isListError ? t('Customers.loadError') : t('Customers.empty') }}
         </template>
       </DataTable>
-
-      <Pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total-items="total"
-        summary-mode="range"
-        page-size-placement="top"
-        :previous-label="t('Customers.pagination.previous')"
-        :next-label="t('Customers.pagination.next')"
-        :of-label="t('Customers.pagination.of')"
-        :results-label="customerCountLabel(total)"
-      />
     </section>
 
-    <ActionsMenu :open="openActionsId !== null" :menu-style="actionsMenuStyle">
+    <ActionsMenu v-if="canRemove" :open="openActionsId !== null" :menu-style="actionsMenuStyle">
       <button
         v-if="openActionsId"
         type="button"
@@ -377,12 +385,16 @@ const copyNif = async (nif: string) => {
       <CustomerDetailPanel
         v-if="detailCustomer"
         :customer="detailCustomer"
+        :removable="canRemove"
         @close="closeCustomer"
         @open-customer="openCustomer"
         @remove="openRemoveModal(detailCustomer.id)"
       />
       <p v-else-if="isDetailLoading" class="p-6 text-sm text-gray-400">
         {{ t('Customers.detail.loading') }}
+      </p>
+      <p v-else class="p-6 text-sm text-gray-400">
+        {{ t('Customers.detail.unavailable') }}
       </p>
     </Drawer>
 

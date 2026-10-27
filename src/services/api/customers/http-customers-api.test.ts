@@ -4,14 +4,82 @@ import { httpCustomersApi } from './http-customers-api'
 
 vi.mock('../config', () => ({
   api: {
+    get: vi.fn(),
     post: vi.fn(),
   },
 }))
 
 describe('HttpCustomersApi', () => {
   beforeEach(() => {
+    vi.mocked(api.get).mockReset()
     vi.mocked(api.post).mockReset()
   })
+
+  it('gets a page with search and rank and maps rows to ListItem', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        customers: [
+          {
+            id: 'cust-1',
+            name: 'Maria Silva',
+            email: 'maria@example.com',
+            phone: null,
+            nif: null,
+            createdAt: '2026-03-01T00:00:00.000Z',
+            rank: 'BRONZE',
+            indication: { categoryId: 'canal', originId: 'origin-1', name: 'Instagram' },
+          },
+        ],
+        page: 2,
+        limit: 10,
+        total: 11,
+        totalPages: 2,
+      },
+    })
+
+    const result = await httpCustomersApi.getCustomers({
+      page: 2,
+      limit: 10,
+      search: ' maria ',
+      rank: 'BRONZE',
+      sort: 'name',
+      direction: 'asc',
+    })
+
+    expect(api.get).toHaveBeenCalledWith('/api/customers', {
+      params: { page: 2, limit: 10, search: 'maria', rank: 'BRONZE' },
+    })
+    expect(result).toMatchObject({
+      page: 2,
+      limit: 10,
+      total: 11,
+      totalPages: 2,
+    })
+    expect(result.summary).toBeUndefined()
+    expect(result.data[0]).toMatchObject({
+      id: 'cust-1',
+      initials: 'MS',
+      referral: 'Instagram',
+      indicationOriginId: 'origin-1',
+      referralCustomerId: null,
+      referredCount: 0,
+      phone: '',
+      nif: '',
+    })
+  })
+
+  it('omits blank search and rank from the query', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: { customers: [], page: 1, limit: 10, total: 0, totalPages: 0 },
+    })
+
+    await httpCustomersApi.getCustomers({ page: 1, limit: 10, search: '   ' })
+
+    expect(api.get).toHaveBeenCalledWith('/api/customers', {
+      params: { page: 1, limit: 10 },
+    })
+  })
+
 
   it('posts create with name, email, optional fields and no rank', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: { id: '507f1f77bcf86cd799439011' } })

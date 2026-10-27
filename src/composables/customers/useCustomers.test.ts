@@ -1,9 +1,10 @@
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { describe, expect, it, vi } from 'vitest'
 import { createApp, effectScope } from 'vue'
+import { calendarMonthKey } from '../../domain/customer-wallet'
 import type { Customer } from '../../types/customer'
-import type { GetCustomersApi } from '../../services/api/customers/types'
-import { useCustomers } from './useCustomers'
+import type { GetCustomersApi, GetCustomersParams } from '../../services/api/customers/types'
+import { readJoinedThisMonth, useCustomers } from './useCustomers'
 
 function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem {
   return {
@@ -124,5 +125,98 @@ describe('useCustomers', () => {
     expect(composable.currentPage.value).toBe(1)
 
     dispose()
+  })
+
+  it('counts newcomers this month when the list has no wallet summary', async () => {
+    const month = calendarMonthKey(new Date())
+    const api: GetCustomersApi = {
+      getCustomers: vi.fn().mockImplementation(async (params: GetCustomersParams) => {
+        if (params.limit === 100) {
+          return {
+            data: [listItem({ id: 'new', createdAt: `${month}-04T12:00:00.000Z` })],
+            page: 1,
+            limit: 100,
+            total: 4,
+            totalPages: 1,
+          }
+        }
+
+        return {
+          data: [listItem()],
+          page: 1,
+          limit: params.limit,
+          total: 4,
+          totalPages: 1,
+        }
+      }),
+    }
+    const { composable, dispose } = withCustomers(api)
+
+    await vi.waitFor(() => {
+      expect(composable.hasJoinedThisMonth.value).toBe(true)
+    })
+    expect(composable.joinedThisMonth.value).toBe(1)
+    expect(composable.walletTotal.value).toBe(4)
+
+    dispose()
+  })
+})
+
+describe('readJoinedThisMonth', () => {
+  it('walks newest-first pages until an older registration appears', async () => {
+    const month = calendarMonthKey(new Date())
+    const api: GetCustomersApi = {
+      getCustomers: vi.fn().mockImplementation(async (params: GetCustomersParams) => {
+        if (params.page === 1) {
+          return {
+            data: [
+              listItem({ id: 'new-1', createdAt: `${month}-02T12:00:00.000Z` }),
+              listItem({ id: 'new-2', createdAt: `${month}-03T12:00:00.000Z` }),
+            ],
+            page: 1,
+            limit: 100,
+            total: 3,
+            totalPages: 2,
+          }
+        }
+
+        return {
+          data: [listItem({ id: 'old', createdAt: '2020-01-01T00:00:00.000Z' })],
+          page: 2,
+          limit: 100,
+          total: 3,
+          totalPages: 2,
+        }
+      }),
+    }
+
+    await expect(readJoinedThisMonth(api)).resolves.toEqual({
+      total: 3,
+      joinedThisMonth: 2,
+    })
+    expect(api.getCustomers).toHaveBeenCalledTimes(2)
+  })
+
+  it('uses the wallet summary when the source already counted it', async () => {
+    const api: GetCustomersApi = {
+      getCustomers: vi.fn().mockResolvedValue({
+        data: [],
+        page: 1,
+        limit: 100,
+        total: 8,
+        totalPages: 1,
+        summary: {
+          total: 8,
+          joinedThisMonth: 3,
+          byRank: { GOLD: 1, SILVER: 1, BRONZE: 6 },
+        },
+      }),
+    }
+
+    await expect(readJoinedThisMonth(api)).resolves.toEqual({
+      total: 8,
+      joinedThisMonth: 3,
+    })
+    expect(api.getCustomers).toHaveBeenCalledTimes(1)
   })
 })

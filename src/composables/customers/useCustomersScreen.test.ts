@@ -177,6 +177,38 @@ describe('useCustomersScreen', () => {
     dispose()
   })
 
+  it('opens a customer from the current page when there is no get-by-id port', async () => {
+    const api = {
+      getCustomers: vi.fn().mockResolvedValue({
+        data: [listItem()],
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1,
+      }),
+      create: vi.fn().mockResolvedValue({ id: 'cust-new' }),
+    }
+    const { composable, dispose } = withScreen(api)
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+
+    composable.openCustomer('cust-1')
+    await vi.waitFor(() => {
+      expect(composable.detailCustomer.value?.name).toBe('Marina Albuquerque')
+    })
+    expect(composable.canRemove.value).toBe(false)
+
+    composable.openCustomer('missing')
+    await vi.waitFor(() => {
+      expect(composable.detailCustomer.value).toBeNull()
+    })
+    expect(composable.detailCustomerId.value).toBe('missing')
+
+    dispose()
+  })
+
   it('reads linkable origins only after Canal or Campanha is selected', async () => {
     const origins: Indication.LinkableOrigin[] = [
       { id: 'canal-active', categoryId: 'canal', name: 'Facebook' },

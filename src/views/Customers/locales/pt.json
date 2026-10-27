@@ -8,6 +8,8 @@
   "newCustomer": "Novo cliente",
   "searchPlaceholder": "Buscar cliente",
   "empty": "Nenhum cliente encontrado.",
+  "loading": "Carregando clientes…",
+  "loadError": "Não foi possível carregar os clientes.",
   "emptyValue": "—",
   "rank": {
     "BRONZE": "Bronze",
@@ -17,6 +19,7 @@
   "rankFilter": {
     "label": "Filtrar por rank",
     "apply": "Filtrar clientes {rank}, {count}",
+    "applyName": "Filtrar clientes {rank}",
     "clear": "Mostrar todos os clientes"
   },
   "summary": {
@@ -31,6 +34,10 @@
     "joinedThisMonth": {
       "label": "Novos este mês",
       "description": "{percent}% da carteira"
+    },
+    "listed": {
+      "label": "Clientes",
+      "description": "Nesta lista"
     }
   },
   "pagination": {
@@ -56,7 +63,8 @@
     "sort": "Ordenar por {column}"
   },
   "detail": {
-    "loading": "Carregando cliente…"
+    "loading": "Carregando cliente…",
+    "unavailable": "Este cliente não está nesta página."
   },
   "menu": {
     "remove": "Remover"

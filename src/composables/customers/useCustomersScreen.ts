@@ -1,5 +1,4 @@
 import { computed, ref } from 'vue'
-import { hardcodedCustomersApi } from '../../services/api/customers/hardcoded-customers-api'
 import { httpCustomersApi } from '../../services/api/customers/http-customers-api'
 import { httpIndicationsApi } from '../../services/api/indications/http-indications-api'
 import type { GetLinkableIndicationOriginsApi } from '../../services/api/indications/types'
@@ -8,6 +7,7 @@ import type {
   GetCustomerApi,
   GetCustomersApi,
   RemoveCustomerApi,
+  RemoveCustomerParams,
 } from '../../services/api/customers/types'
 import type { IndicationCategoryId } from '../../types/indication'
 import type { Customer } from '../../types/customer'
@@ -18,8 +18,10 @@ import { useCustomerSelection } from './useCustomerSelection'
 import { useCustomers } from './useCustomers'
 import { useRemoveCustomer } from './useRemoveCustomer'
 
+type CustomersScreenApi = GetCustomersApi & Partial<GetCustomerApi & RemoveCustomerApi>
+
 export function useCustomersScreen(
-  api: GetCustomersApi & GetCustomerApi & RemoveCustomerApi = hardcodedCustomersApi,
+  api: CustomersScreenApi = httpCustomersApi,
   createCustomerApi: CreateCustomerApi = httpCustomersApi,
   linkableOrigins: GetLinkableIndicationOriginsApi = httpIndicationsApi,
 ) {
@@ -34,10 +36,34 @@ export function useCustomersScreen(
     sortDirection,
     toggleSort,
     summary,
+    hasSummary,
+    joinedThisMonth,
+    walletTotal,
+    hasJoinedThisMonth,
     total,
+    isLoading,
+    isFetching,
+    isError,
   } = useCustomers(api)
 
-  const detail = useCustomerDetail(api)
+  const detailSource: GetCustomerApi = {
+    getCustomer: (id) => {
+      if (api.getCustomer) return api.getCustomer(id)
+      const listed = filteredCustomers.value.find((customer) => customer.id === id) ?? null
+      return Promise.resolve(listed)
+    },
+  }
+
+  const detail = useCustomerDetail(detailSource)
+
+  const canRemove = computed(() => typeof api.remove === 'function')
+
+  const removeSource: RemoveCustomerApi = {
+    remove: (params: RemoveCustomerParams) => {
+      if (api.remove) return api.remove(params)
+      return Promise.reject(new Error('Remove customer is not available'))
+    },
+  }
 
   const isCreateDrawerOpen = ref(false)
   const isRemoveModalOpen = ref(false)
@@ -70,7 +96,7 @@ export function useCustomersScreen(
     },
   })
 
-  const { remove, isRemoving } = useRemoveCustomer(api, {
+  const { remove, isRemoving } = useRemoveCustomer(removeSource, {
     onRemoved: (result) => {
       isRemoveModalOpen.value = false
       activeCustomerId.value = null
@@ -146,7 +172,15 @@ export function useCustomersScreen(
     sortDirection,
     toggleSort,
     summary,
+    hasSummary,
+    joinedThisMonth,
+    walletTotal,
+    hasJoinedThisMonth,
     total,
+    isListLoading: isLoading,
+    isListFetching: isFetching,
+    isListError: isError,
+    canRemove,
     detailCustomerId: detail.customerId,
     detailCustomer: detail.customer,
     isDetailLoading: detail.isLoading,

@@ -8,6 +8,8 @@
   "newCustomer": "New customer",
   "searchPlaceholder": "Search customers",
   "empty": "No customers found.",
+  "loading": "Loading customers…",
+  "loadError": "Could not load customers.",
   "emptyValue": "—",
   "rank": {
     "BRONZE": "Bronze",
@@ -17,6 +19,7 @@
   "rankFilter": {
     "label": "Filter by rank",
     "apply": "Filter {rank} customers, {count}",
+    "applyName": "Filter {rank} customers",
     "clear": "Show all customers"
   },
   "summary": {
@@ -31,6 +34,10 @@
     "joinedThisMonth": {
       "label": "New this month",
       "description": "{percent}% of the wallet"
+    },
+    "listed": {
+      "label": "Customers",
+      "description": "In this list"
     }
   },
   "pagination": {
@@ -56,7 +63,8 @@
     "sort": "Sort by {column}"
   },
   "detail": {
-    "loading": "Loading customer…"
+    "loading": "Loading customer…",
+    "unavailable": "This customer is not on this page."
   },
   "menu": {
     "remove": "Remove"

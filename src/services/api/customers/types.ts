@@ -17,7 +17,8 @@ export interface GetCustomersParams extends Pagination.PaginationParams {
 
 export interface GetCustomersResult
   extends Pagination.PaginationResponse<Customer.ListItem> {
-  summary: CustomerWalletSummary
+  /** Present only when the source can count the wallet. GET /api/customers does not. */
+  summary?: CustomerWalletSummary
 }
 
 export interface GetCustomersApi {
