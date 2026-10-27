@@ -33,7 +33,13 @@
     },
     "joinedThisMonth": {
       "label": "Novos este mês",
-      "description": "{percent}% da carteira"
+      "description": "{percent}% da carteira",
+      "ofPlatform": "{joined} de {total} clientes da plataforma entraram este mês.",
+      "noneJoined": "Nenhum dos {total} clientes da plataforma entrou este mês.",
+      "emptyPlatform": "A plataforma ainda não tem clientes.",
+      "centerCaption": "da base",
+      "chartJoined": "Novos este mês",
+      "chartExisting": "Já estavam na base"
     },
     "listed": {
       "label": "Clientes",

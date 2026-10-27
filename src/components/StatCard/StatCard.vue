@@ -31,9 +31,12 @@ const iconTone: Record<StatCardTone, string> = {
       </p>
     </div>
 
-    <p class="mt-3 text-[2rem] leading-none font-bold tracking-tight text-gray-900">
-      <slot name="value">{{ value }}</slot>
-    </p>
+    <div class="mt-3 flex items-center justify-between gap-4">
+      <p class="min-w-0 text-[2rem] leading-none font-bold tracking-tight text-gray-900">
+        <slot name="value">{{ value }}</slot>
+      </p>
+      <slot name="chart" />
+    </div>
 
     <p
       v-if="description || $slots.description"
@@ -41,5 +44,7 @@ const iconTone: Record<StatCardTone, string> = {
     >
       <slot name="description">{{ description }}</slot>
     </p>
+
+    <slot name="footer" />
   </div>
 </template>

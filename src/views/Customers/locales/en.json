@@ -33,7 +33,13 @@
     },
     "joinedThisMonth": {
       "label": "New this month",
-      "description": "{percent}% of the wallet"
+      "description": "{percent}% of the wallet",
+      "ofPlatform": "{joined} of {total} customers on the platform joined this month.",
+      "noneJoined": "None of the {total} customers on the platform joined this month.",
+      "emptyPlatform": "The platform has no customers yet.",
+      "centerCaption": "of the base",
+      "chartJoined": "New this month",
+      "chartExisting": "Already on the platform"
     },
     "listed": {
       "label": "Customers",

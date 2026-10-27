@@ -22,6 +22,7 @@ import CustomerDetailPanel from './CustomerDetailPanel.vue';
 import CustomerFormPanel from './CustomerFormPanel.vue';
 import RankPatch from './RankPatch.vue';
 import RemoveCustomerModal from './RemoveCustomerModal.vue';
+import WalletShareMeter from './WalletShareMeter.vue';
 import PageContainer from '../../Layout/PageContainer.vue';
 
 const { t } = useI18n();
@@ -82,6 +83,14 @@ const optionalDisplay = (value: string) => value.trim() || t('Customers.emptyVal
 const customerCountLabel = (count: number) =>
   t(count === 1 ? 'Customers.summary.customer' : 'Customers.summary.customers');
 
+const joinedShare = computed(() =>
+  joinedSharePercent(joinedThisMonth.value, walletTotal.value),
+);
+
+const alreadyOnPlatform = computed(() =>
+  Math.max(0, walletTotal.value - joinedThisMonth.value),
+);
+
 const statCards = computed<StatCardItem[]>(() => {
   const cards: StatCardItem[] = [
     hasSummary.value
@@ -108,11 +117,8 @@ const statCards = computed<StatCardItem[]>(() => {
       id: 'joinedThisMonth',
       label: t('Customers.stats.joinedThisMonth.label'),
       value: joinedThisMonth.value,
-      description: t('Customers.stats.joinedThisMonth.description', {
-        percent: joinedSharePercent(joinedThisMonth.value, walletTotal.value),
-      }),
       icon: 'carbon:user-follow',
-      tone: 'success',
+      tone: joinedThisMonth.value > 0 ? 'success' : 'neutral',
     });
   }
 
@@ -212,7 +218,29 @@ const copyNif = async (nif: string) => {
         :key="card.id"
         class="w-[calc(100%-3rem)] shrink-0 snap-start md:w-auto md:min-w-0 md:shrink md:snap-align-none"
         v-bind="card"
-      />
+      >
+        <template v-if="card.id === 'joinedThisMonth'" #footer>
+          <div class="flex items-center gap-4">
+            <div>
+              <p class="text-sm leading-snug text-gray-600">
+                {{ t('Customers.stats.joinedThisMonth.description', {
+                  percent: joinedShare,
+                }) }}
+              </p>
+            </div>
+            <div class="mt-3 flex items-center gap-4">
+              <WalletShareMeter
+              :percent="joinedShare"
+              :joined="joinedThisMonth"
+              :existing="alreadyOnPlatform"
+              :joined-label="t('Customers.stats.joinedThisMonth.chartJoined')"
+              :existing-label="t('Customers.stats.joinedThisMonth.chartExisting')"
+              :center-caption="t('Customers.stats.joinedThisMonth.centerCaption')"
+              />
+            </div>
+          </div>
+        </template>
+      </StatCard>
     </div>
 
     <section class="rounded-2xl bg-white p-5 shadow-sm">
