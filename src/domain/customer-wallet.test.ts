@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  emptyCustomerWalletSummary,
   formatRegistrationDate,
   joinedSharePercent,
   referralLinks,
   sortCustomers,
   summarizeCustomers,
+  withBalancedIndication,
 } from './customer-wallet'
 
 const wallet = [
@@ -43,7 +45,67 @@ describe('summarizeCustomers', () => {
       total: 3,
       byRank: { GOLD: 1, SILVER: 1, BRONZE: 1 },
       joinedThisMonth: 1,
+      joinedLastMonth: 1,
+      byIndication: { canal: 0, campanha: 0, amigo: 0, none: 0 },
     })
+  })
+
+  it('counts how customers were indicated', () => {
+    expect(
+      summarizeCustomers(
+        [
+          {
+            rank: 'BRONZE',
+            createdAt: '2026-03-02T00:00:00.000Z',
+            indicationCategoryId: 'canal',
+          },
+          {
+            rank: 'SILVER',
+            createdAt: '2026-01-02T00:00:00.000Z',
+            indicationCategoryId: 'amigo',
+          },
+          {
+            rank: 'GOLD',
+            createdAt: '2026-03-11T00:00:00.000Z',
+            indicationCategoryId: null,
+          },
+          {
+            rank: '',
+            createdAt: '2025-12-01T00:00:00.000Z',
+            indicationCategoryId: 'campanha',
+          },
+        ],
+        new Date(2026, 2, 22),
+      ),
+    ).toMatchObject({
+      byRank: { GOLD: 1, SILVER: 1, BRONZE: 1 },
+      byIndication: { canal: 1, campanha: 1, amigo: 1, none: 1 },
+    })
+  })
+})
+
+describe('withBalancedIndication', () => {
+  it('puts customers missing from the origin buckets into sem indicação', () => {
+    const summary = emptyCustomerWalletSummary()
+    summary.total = 83
+    summary.byIndication = { canal: 10, campanha: 5, amigo: 6, none: 62 }
+
+    expect(withBalancedIndication(summary).byIndication).toEqual({
+      canal: 10,
+      campanha: 5,
+      amigo: 6,
+      none: 62,
+    })
+
+    summary.byIndication.none = 58
+    expect(withBalancedIndication(summary).byIndication.none).toBe(62)
+    expect(withBalancedIndication(summary).total).toBe(83)
+  })
+
+  it('leaves an empty mix alone', () => {
+    const summary = emptyCustomerWalletSummary()
+    summary.total = 4
+    expect(withBalancedIndication(summary)).toBe(summary)
   })
 })
 
