@@ -15,7 +15,7 @@ function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem
     phone: '(11) 99640-2233',
     nif: '183920456',
     referral: '',
-    rank: 'PRATA',
+    rank: 'SILVER',
     createdAt: '2026-10-02T00:00:00.000Z',
     initials: 'PS',
     referralCustomerId: null,
@@ -35,7 +35,7 @@ function withDashboard() {
       summary: {
         total: 8,
         joinedThisMonth: 2,
-        byRank: { OURO: 2, PRATA: 5, BRONZE: 1 },
+        byRank: { GOLD: 2, SILVER: 5, BRONZE: 1 },
       },
     }),
   }
