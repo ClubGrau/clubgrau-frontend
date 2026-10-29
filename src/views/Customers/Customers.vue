@@ -390,9 +390,40 @@ const copyNif = async (nif: string) => {
         @row-click="onCustomerTableRowClick"
       >
         <template #loading>
-          <tr>
-            <td :colspan="columns.length" class="py-12 text-center text-sm text-gray-400">
-              {{ t('Customers.loading') }}
+          <tr
+            v-for="row in pageSize"
+            :key="`skeleton-${row}`"
+            class="border-b border-gray-50 last:border-b-0"
+          >
+            <td class="py-4 pr-4 align-middle">
+              <div class="flex items-center gap-3">
+                <div class="size-9 shrink-0 animate-pulse rounded-full bg-gray-100" />
+                <div class="h-3.5 w-32 animate-pulse rounded bg-gray-100" />
+              </div>
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="space-y-2">
+                <div class="h-3 w-40 animate-pulse rounded bg-gray-100" />
+                <div class="h-3 w-24 animate-pulse rounded bg-gray-100" />
+              </div>
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="h-3.5 w-24 animate-pulse rounded bg-gray-100" />
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="space-y-2">
+                <div class="h-3.5 w-28 animate-pulse rounded bg-gray-100" />
+                <div class="h-3 w-20 animate-pulse rounded bg-gray-100" />
+              </div>
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="h-6 w-16 animate-pulse rounded-md bg-gray-100" />
+            </td>
+            <td class="py-4 pr-4 align-middle">
+              <div class="h-3.5 w-20 animate-pulse rounded bg-gray-100" />
+            </td>
+            <td v-if="canRemove" class="py-4 pl-2 text-right align-middle">
+              <div class="ml-auto size-5 animate-pulse rounded bg-gray-100" />
             </td>
           </tr>
         </template>
