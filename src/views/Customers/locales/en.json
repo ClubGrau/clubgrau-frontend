@@ -18,6 +18,7 @@
   },
   "rankFilter": {
     "label": "Filter by rank",
+    "all": "All",
     "apply": "Filter {rank} customers, {count}",
     "applyName": "Filter {rank} customers",
     "clear": "Show all customers"
@@ -33,13 +34,15 @@
     },
     "joinedThisMonth": {
       "label": "New this month",
-      "description": "{percent}% of the wallet",
-      "ofPlatform": "{joined} of {total} customers on the platform joined this month.",
-      "noneJoined": "None of the {total} customers on the platform joined this month.",
-      "emptyPlatform": "The platform has no customers yet.",
-      "centerCaption": "of the base",
-      "chartJoined": "New this month",
-      "chartExisting": "Already on the platform"
+      "lastMonthTotal": "Total last month: {count}",
+      "grewShare": "Your base grew {share}% of the total"
+    },
+    "indication": {
+      "label": "How they arrived",
+      "canal": "Channel",
+      "campanha": "Campaign",
+      "amigo": "Friend",
+      "none": "No indication"
     },
     "listed": {
       "label": "Customers",

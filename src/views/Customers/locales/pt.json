@@ -18,6 +18,7 @@
   },
   "rankFilter": {
     "label": "Filtrar por rank",
+    "all": "Todos",
     "apply": "Filtrar clientes {rank}, {count}",
     "applyName": "Filtrar clientes {rank}",
     "clear": "Mostrar todos os clientes"
@@ -33,13 +34,15 @@
     },
     "joinedThisMonth": {
       "label": "Novos este mês",
-      "description": "{percent}% da carteira",
-      "ofPlatform": "{joined} de {total} clientes da plataforma entraram este mês.",
-      "noneJoined": "Nenhum dos {total} clientes da plataforma entrou este mês.",
-      "emptyPlatform": "A plataforma ainda não tem clientes.",
-      "centerCaption": "da base",
-      "chartJoined": "Novos este mês",
-      "chartExisting": "Já estavam na base"
+      "lastMonthTotal": "Total no mês passado: {count}",
+      "grewShare": "Sua base cresceu {share}% do total"
+    },
+    "indication": {
+      "label": "Origem da entrada",
+      "canal": "Canal",
+      "campanha": "Campanha",
+      "amigo": "Amigo",
+      "none": "Sem indicação"
     },
     "listed": {
       "label": "Clientes",
