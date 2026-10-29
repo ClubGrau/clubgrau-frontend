@@ -122,6 +122,10 @@ export function useCustomers(getCustomersApi: GetCustomersApi) {
     ),
   )
   const hasSummary = computed(() => listSummary.value != null || wallet.isSuccess.value)
+  const isStatsLoading = computed(() => {
+    if (hasSummary.value || wallet.isError.value) return false
+    return query.isLoading.value || query.isSuccess.value
+  })
   const joinedThisMonth = computed(() => summary.value.joinedThisMonth)
   const walletTotal = computed(() => summary.value.total)
   const hasJoinedThisMonth = hasSummary
@@ -156,6 +160,7 @@ export function useCustomers(getCustomersApi: GetCustomersApi) {
     toggleSort,
     summary,
     hasSummary,
+    isStatsLoading,
     joinedThisMonth,
     walletTotal,
     hasJoinedThisMonth,

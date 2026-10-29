@@ -157,6 +157,52 @@ describe('useCustomers', () => {
     })
     expect(composable.joinedThisMonth.value).toBe(1)
     expect(composable.walletTotal.value).toBe(4)
+    expect(composable.isStatsLoading.value).toBe(false)
+
+    dispose()
+  })
+
+  it('keeps the wallet cards loading until the summary walk finishes', async () => {
+    let releaseWallet: () => void = () => {}
+    const walletGate = new Promise<void>((resolve) => {
+      releaseWallet = resolve
+    })
+    const api: GetCustomersApi = {
+      getCustomers: vi.fn().mockImplementation(async (params: GetCustomersParams) => {
+        if (params.limit === 100) {
+          await walletGate
+          return {
+            data: [listItem()],
+            page: 1,
+            limit: 100,
+            total: 4,
+            totalPages: 1,
+          }
+        }
+
+        return {
+          data: [listItem()],
+          page: 1,
+          limit: params.limit,
+          total: 4,
+          totalPages: 1,
+        }
+      }),
+    }
+    const { composable, dispose } = withCustomers(api)
+
+    await vi.waitFor(() => {
+      expect(composable.isLoading.value).toBe(false)
+      expect(composable.isStatsLoading.value).toBe(true)
+    })
+    expect(composable.hasJoinedThisMonth.value).toBe(false)
+
+    releaseWallet()
+
+    await vi.waitFor(() => {
+      expect(composable.hasJoinedThisMonth.value).toBe(true)
+    })
+    expect(composable.isStatsLoading.value).toBe(false)
 
     dispose()
   })

@@ -38,6 +38,7 @@ const {
   toggleRankFilter,
   summary,
   hasSummary,
+  isStatsLoading,
   joinedThisMonth,
   walletTotal,
   hasJoinedThisMonth,
@@ -152,7 +153,7 @@ const statCards = computed<StatCardItem[]>(() => {
         },
   ];
 
-  if (hasJoinedThisMonth.value) {
+  if (hasJoinedThisMonth.value || isStatsLoading.value) {
     cards.push({
       id: 'joinedThisMonth',
       label: t('Customers.stats.joinedThisMonth.label'),
@@ -274,14 +275,18 @@ const copyNif = async (nif: string) => {
         class="!h-44 w-[calc(100%-3rem)] shrink-0 snap-start overflow-hidden md:w-72 lg:w-auto lg:shrink lg:snap-align-none"
         v-bind="card"
       >
-        <template v-if="isListLoading" #value>
+        <template v-if="isListLoading || (isStatsLoading && card.id === 'joinedThisMonth')" #value>
           <span
             class="block h-7 w-10 animate-pulse rounded-md bg-current/20"
             aria-hidden="true"
           />
         </template>
         <template v-if="card.id === 'joinedThisMonth'" #footer>
-          <p class="mt-2 flex min-w-0 items-start gap-1.5 text-xs leading-snug text-gray-600">
+          <div v-if="isStatsLoading" class="mt-2 space-y-1.5" aria-hidden="true">
+            <span class="block h-3 w-3/4 animate-pulse rounded bg-gray-100" />
+            <span class="block h-3 w-1/2 animate-pulse rounded bg-gray-100" />
+          </div>
+          <p v-else class="mt-2 flex min-w-0 items-start gap-1.5 text-xs leading-snug text-gray-600">
             <Icon
               icon="carbon:chart-line"
               class="mt-0.5 size-4 shrink-0"
@@ -301,7 +306,7 @@ const copyNif = async (nif: string) => {
       </StatCard>
 
       <StatCard
-        v-if="hasJoinedThisMonth"
+        v-if="hasJoinedThisMonth || isStatsLoading"
         density="compact"
         class="!h-44 w-[calc(100%-3rem)] shrink-0 snap-start overflow-hidden md:w-72 lg:col-span-2 lg:w-auto lg:shrink lg:snap-align-none"
         :label="t('Customers.stats.indication.label')"
@@ -309,7 +314,7 @@ const copyNif = async (nif: string) => {
         value=""
       >
         <template #body>
-          <div v-if="isListLoading" class="mt-2.5 space-y-2" aria-hidden="true">
+          <div v-if="isStatsLoading" class="mt-2.5 space-y-2" aria-hidden="true">
             <span class="block h-1.5 w-full animate-pulse rounded-full bg-gray-100" />
             <span class="block h-2.5 animate-pulse rounded bg-gray-100" />
             <span class="block h-2.5 animate-pulse rounded bg-gray-100" />
