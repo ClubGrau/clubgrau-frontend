@@ -45,7 +45,7 @@ const onNavigate = () => {
       class="mb-1.25 flex h-18 shrink-0 cursor-pointer items-center justify-center border-b border-[#6767676f]"
       @click="navigateToDashboard"
     >
-      <img :src="logo" alt="Logo Grau" class="w-4/5" />
+      <img :src="logo" alt="Logo Grau" class="h-8 w-auto max-w-[9.25rem] object-contain" />
     </div>
     <SideBarPlugins @navigate="onNavigate" />
   </aside>

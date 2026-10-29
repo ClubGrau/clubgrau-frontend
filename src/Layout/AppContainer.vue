@@ -173,7 +173,7 @@ watch(() => route.path, () => {
           :aria-label="menuOpen ? t('SideBar.closeMenu') : t('SideBar.openMenu')"
           @click="toggleMenu"
         >
-          <img :src="patchLogo" alt="" class="size-10" />
+          <img :src="patchLogo" alt="" class="size-8" />
           <Icon icon="mdi:menu" class="size-8 shrink-0" />
         </button>
 
