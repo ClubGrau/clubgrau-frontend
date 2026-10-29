@@ -9,7 +9,7 @@ const props = withDefaults(
     rank: CustomerRank;
     selected?: boolean;
     interactive?: boolean;
-    variant?: 'filter' | 'table';
+    variant?: 'tab' | 'table';
     ariaLabel?: string;
     count?: number;
   }>(),
@@ -23,12 +23,10 @@ const props = withDefaults(
 const config = computed(() => customerRankPatch[props.rank]);
 
 const rootClass = computed(() => {
-  if (props.variant === 'filter') {
+  if (props.variant === 'tab') {
     return [
-      'inline-flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors max-[429px]:gap-1 max-[429px]:overflow-hidden max-[429px]:px-2 max-[429px]:py-1.5 max-[429px]:text-xs min-[1100px]:flex-none min-[1100px]:justify-start',
-      props.selected
-        ? [config.value.tone, 'border-transparent']
-        : ['border-gray-200 bg-white text-gray-700', config.value.hoverTone],
+      'inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors',
+      props.selected ? [config.value.tone, 'font-medium'] : 'text-gray-500 hover:text-gray-700',
     ];
   }
 
@@ -38,14 +36,9 @@ const rootClass = computed(() => {
   ];
 });
 
-const iconClass = computed(() => {
-  if (props.variant === 'filter') {
-    const size = 'size-4 shrink-0 max-[429px]:size-3';
-    return props.selected ? size : [size, config.value.iconTone];
-  }
-
-  return 'size-3 shrink-0';
-});
+const iconClass = computed(() =>
+  props.variant === 'tab' ? 'size-3.5 shrink-0' : 'size-3 shrink-0',
+);
 </script>
 
 <template>
@@ -53,7 +46,9 @@ const iconClass = computed(() => {
     :is="interactive ? 'button' : 'span'"
     :type="interactive ? 'button' : undefined"
     :class="rootClass"
-    :aria-pressed="interactive ? selected : undefined"
+    :role="variant === 'tab' ? 'tab' : undefined"
+    :aria-selected="variant === 'tab' ? selected : undefined"
+    :aria-pressed="interactive && variant !== 'tab' ? selected : undefined"
     :aria-label="ariaLabel"
   >
     <Icon :icon="config.icon" :class="iconClass" />

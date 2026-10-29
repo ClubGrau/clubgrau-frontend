@@ -12,8 +12,6 @@ export interface CustomerRankPatchConfig {
   label: string
   icon: string
   tone: string
-  iconTone: string
-  hoverTone: string
 }
 
 export const customerRankPatch: Record<CustomerRank, CustomerRankPatchConfig> = {
@@ -21,22 +19,16 @@ export const customerRankPatch: Record<CustomerRank, CustomerRankPatchConfig> = 
     label: 'Bronze',
     icon: 'ph:medal-fill',
     tone: 'bg-[#c47a3a] text-white',
-    iconTone: 'text-[#c47a3a]',
-    hoverTone: 'hover:border-[#c47a3a]/50 hover:bg-[#c47a3a]/8',
   },
   SILVER: {
     label: 'Prata',
     icon: 'ph:star-fill',
     tone: 'bg-[#8b95a1] text-white',
-    iconTone: 'text-[#6d7784]',
-    hoverTone: 'hover:border-[#8b95a1]/50 hover:bg-[#8b95a1]/8',
   },
   GOLD: {
     label: 'Ouro',
     icon: 'ph:crown-fill',
     tone: 'bg-[#d4a017] text-white',
-    iconTone: 'text-[#c49412]',
-    hoverTone: 'hover:border-[#d4a017]/50 hover:bg-[#d4a017]/8',
   },
 }
 

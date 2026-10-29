@@ -15,14 +15,15 @@ import type { Customer } from '../../types/customer';
 import type { DataTableColumn, DataTablePagination } from '../../types/data-table';
 import type { StatCardItem } from '../../types/stat-card';
 import { CUSTOMER_RANK_LADDER } from '../../constants/customer-rank';
+import type { CustomerRank } from '../../types/customer';
 import { formatRegistrationDate, joinedSharePercent } from '../../domain/customer-wallet';
 import { useToast } from '../../composables/useToast';
 import { useCustomersScreen } from '../../composables/customers/useCustomersScreen';
 import CustomerDetailPanel from './CustomerDetailPanel.vue';
 import CustomerFormPanel from './CustomerFormPanel.vue';
+import IndicationMix, { type WalletMixSegment } from './IndicationMix.vue';
 import RankPatch from './RankPatch.vue';
 import RemoveCustomerModal from './RemoveCustomerModal.vue';
-import WalletShareMeter from './WalletShareMeter.vue';
 import PageContainer from '../../Layout/PageContainer.vue';
 
 const { t } = useI18n();
@@ -87,9 +88,48 @@ const joinedShare = computed(() =>
   joinedSharePercent(joinedThisMonth.value, walletTotal.value),
 );
 
-const alreadyOnPlatform = computed(() =>
-  Math.max(0, walletTotal.value - joinedThisMonth.value),
-);
+const joinedLastMonth = computed(() => summary.value.joinedLastMonth);
+
+const intakeDelta = computed(() => joinedThisMonth.value - joinedLastMonth.value);
+
+const intakeTone = computed(() => {
+  const delta = intakeDelta.value;
+  if (delta === 0) return 'neutral' as const;
+  return delta > 0 ? ('success' as const) : ('danger' as const);
+});
+
+const intakeDeltaClass = computed(() => {
+  const delta = intakeDelta.value;
+  if (delta === 0) return 'text-gray-400';
+  return delta > 0 ? 'text-[#1f9d55]' : 'text-[#d64545]';
+});
+
+const indicationSegments = computed<WalletMixSegment[]>(() => [
+  {
+    id: 'canal',
+    label: t('Customers.stats.indication.canal'),
+    value: summary.value.byIndication.canal,
+    color: '#3b82f6',
+  },
+  {
+    id: 'campanha',
+    label: t('Customers.stats.indication.campanha'),
+    value: summary.value.byIndication.campanha,
+    color: '#e69138',
+  },
+  {
+    id: 'amigo',
+    label: t('Customers.stats.indication.amigo'),
+    value: summary.value.byIndication.amigo,
+    color: '#1f9d55',
+  },
+  {
+    id: 'none',
+    label: t('Customers.stats.indication.none'),
+    value: summary.value.byIndication.none,
+    color: '#64748b',
+  },
+]);
 
 const statCards = computed<StatCardItem[]>(() => {
   const cards: StatCardItem[] = [
@@ -118,7 +158,7 @@ const statCards = computed<StatCardItem[]>(() => {
       label: t('Customers.stats.joinedThisMonth.label'),
       value: joinedThisMonth.value,
       icon: 'carbon:user-follow',
-      tone: joinedThisMonth.value > 0 ? 'success' : 'neutral',
+      tone: intakeTone.value,
     });
   }
 
@@ -149,10 +189,16 @@ const columns = computed<DataTableColumn[]>(() => {
   ];
 });
 
+const tableTotal = computed(() => {
+  const narrowing = rankFilter.value !== null || searchQuery.value.trim().length > 0;
+  if (!narrowing && hasSummary.value) return walletTotal.value;
+  return total.value;
+});
+
 const tablePagination = computed<DataTablePagination>(() => ({
   currentPage: currentPage.value,
   pageSize: pageSize.value,
-  totalItems: total.value,
+  totalItems: tableTotal.value,
   summaryMode: 'range',
   pageSizePlacement: 'top',
   previousLabel: t('Customers.pagination.previous'),
@@ -160,6 +206,15 @@ const tablePagination = computed<DataTablePagination>(() => ({
   ofLabel: t('Customers.pagination.of'),
   resultsLabel: customerCountLabel(total.value),
 }));
+
+const selectRankFilter = (rank: CustomerRank | null) => {
+  if (rank === null) {
+    if (rankFilter.value) toggleRankFilter(rankFilter.value);
+    return;
+  }
+  if (rankFilter.value === rank) return;
+  toggleRankFilter(rank);
+};
 
 const rankFilterLabel = (rank: (typeof CUSTOMER_RANK_LADDER)[number]) => {
   const rankLabel = t(`Customers.rank.${rank}`);
@@ -204,48 +259,102 @@ const copyNif = async (nif: string) => {
           @click="openCreateDrawer"
         >
           {{ t('Customers.newCustomer') }}
-          <span class="text-lg leading-none">+</span> 
+          <span class="text-lg leading-none">+</span>
         </button>
       </template>
     </PageHeader>
 
     <div
-      class="mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scrollbar-none md:grid md:snap-none md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden"
-      :class="statCards.length > 1 ? 'md:grid-cols-2 lg:w-[75%]' : 'md:max-w-md md:grid-cols-1'"
+      class="mb-6 flex snap-x snap-mandatory items-stretch gap-3 overflow-x-auto overscroll-x-contain scrollbar-none lg:grid lg:snap-none lg:grid-cols-4 lg:gap-4 lg:overflow-visible [&::-webkit-scrollbar]:hidden"
     >
       <StatCard
         v-for="card in statCards"
         :key="card.id"
-        class="w-[calc(100%-3rem)] shrink-0 snap-start md:w-auto md:min-w-0 md:shrink md:snap-align-none"
+        density="compact"
+        class="!h-44 w-[calc(100%-3rem)] shrink-0 snap-start overflow-hidden md:w-72 lg:w-auto lg:shrink lg:snap-align-none"
         v-bind="card"
       >
+        <template v-if="isListLoading" #value>
+          <span
+            class="block h-7 w-10 animate-pulse rounded-md bg-current/20"
+            aria-hidden="true"
+          />
+        </template>
         <template v-if="card.id === 'joinedThisMonth'" #footer>
-          <div class="flex items-center gap-4">
-            <div>
-              <p class="text-sm leading-snug text-gray-600">
-                {{ t('Customers.stats.joinedThisMonth.description', {
-                  percent: joinedShare,
-                }) }}
-              </p>
-            </div>
-            <div class="mt-3 flex items-center gap-4">
-              <WalletShareMeter
-              :percent="joinedShare"
-              :joined="joinedThisMonth"
-              :existing="alreadyOnPlatform"
-              :joined-label="t('Customers.stats.joinedThisMonth.chartJoined')"
-              :existing-label="t('Customers.stats.joinedThisMonth.chartExisting')"
-              :center-caption="t('Customers.stats.joinedThisMonth.centerCaption')"
-              />
-            </div>
+          <p class="mt-2 flex min-w-0 items-start gap-1.5 text-xs leading-snug text-gray-600">
+            <Icon
+              icon="carbon:chart-line"
+              class="mt-0.5 size-4 shrink-0"
+              :class="intakeDeltaClass"
+              aria-hidden="true"
+            />
+            <span class="min-w-0">
+              <span class="block truncate">
+                {{ t('Customers.stats.joinedThisMonth.lastMonthTotal', { count: joinedLastMonth }) }}
+              </span>
+              <span class="block truncate">
+                {{ t('Customers.stats.joinedThisMonth.grewShare', { share: joinedShare }) }}
+              </span>
+            </span>
+          </p>
+        </template>
+      </StatCard>
+
+      <StatCard
+        v-if="hasJoinedThisMonth"
+        density="compact"
+        class="!h-44 w-[calc(100%-3rem)] shrink-0 snap-start overflow-hidden md:w-72 lg:col-span-2 lg:w-auto lg:shrink lg:snap-align-none"
+        :label="t('Customers.stats.indication.label')"
+        icon="carbon:connect-source"
+        value=""
+      >
+        <template #body>
+          <div v-if="isListLoading" class="mt-2.5 space-y-2" aria-hidden="true">
+            <span class="block h-1.5 w-full animate-pulse rounded-full bg-gray-100" />
+            <span class="block h-2.5 animate-pulse rounded bg-gray-100" />
+            <span class="block h-2.5 animate-pulse rounded bg-gray-100" />
+            <span class="block h-2.5 w-2/3 animate-pulse rounded bg-gray-100" />
           </div>
+          <IndicationMix v-else :segments="indicationSegments" />
         </template>
       </StatCard>
     </div>
 
-    <section class="rounded-2xl bg-white p-5 shadow-sm">
+    <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
       <div class="mb-5 flex flex-col gap-3 min-[1100px]:flex-row min-[1100px]:items-center">
-        <div class="relative w-full min-w-0 min-[1100px]:max-w-2/3 min-[1100px]:flex-1">
+        <div
+          class="flex w-full min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-[#f3f3f5] p-1 scrollbar-none min-[1100px]:w-auto min-[1100px]:shrink-0 [&::-webkit-scrollbar]:hidden"
+          role="tablist"
+          :aria-label="t('Customers.rankFilter.label')"
+        >
+          <button
+            type="button"
+            role="tab"
+            class="shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors"
+            :class="
+              rankFilter === null
+                ? 'bg-[#5c5c66] font-medium text-white'
+                : 'text-gray-500 hover:text-gray-700'
+            "
+            :aria-selected="rankFilter === null"
+            @click="selectRankFilter(null)"
+          >
+            {{ t('Customers.rankFilter.all') }}
+          </button>
+          <RankPatch
+            v-for="rank in CUSTOMER_RANK_LADDER"
+            :key="rank"
+            :rank="rank"
+            variant="tab"
+            interactive
+            :count="hasSummary ? summary.byRank[rank] : undefined"
+            :selected="rankFilter === rank"
+            :aria-label="rankFilterLabel(rank)"
+            @click="selectRankFilter(rank)"
+          />
+        </div>
+
+        <div class="relative w-full min-w-0 min-[1100px]:flex-1">
           <Icon
             icon="carbon:search"
             class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400"
@@ -254,21 +363,7 @@ const copyNif = async (nif: string) => {
             v-model="searchQuery"
             type="search"
             :placeholder="t('Customers.searchPlaceholder')"
-           class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
-          />
-        </div>
-
-        <div class="flex w-full min-w-0 items-center gap-2 max-[429px]:gap-1 min-[1100px]:w-auto min-[1100px]:shrink-0" role="group" :aria-label="t('Customers.rankFilter.label')">
-          <RankPatch
-            v-for="rank in CUSTOMER_RANK_LADDER"
-            :key="rank"
-            :rank="rank"
-            variant="filter"
-            interactive
-            :count="hasSummary ? summary.byRank[rank] : undefined"
-            :selected="rankFilter === rank"
-            :aria-label="rankFilterLabel(rank)"
-            @click="toggleRankFilter(rank)"
+            class="w-full rounded-full border border-gray-200 bg-white py-2.5 pr-4 pl-9 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:border-[#3B82F6] focus:bg-white focus:ring-2 focus:ring-[#3B82F6]/30"
           />
         </div>
       </div>
@@ -315,16 +410,17 @@ const copyNif = async (nif: string) => {
         </template>
 
         <template #cell-contact="{ row }">
-          <div class="space-y-1">
-            <div class="flex items-center gap-2 text-xs text-gray-500">
+          <div v-if="row.email.trim() || row.phone.trim()" class="space-y-1">
+            <div v-if="row.email.trim()" class="flex items-center gap-2 text-xs text-gray-500">
               <Icon icon="carbon:email" class="size-3.5 shrink-0 text-gray-400" />
-              <span class="truncate font-semibold">{{ optionalDisplay(row.email) }}</span>
+              <span class="truncate font-semibold">{{ row.email }}</span>
             </div>
-            <div class="flex items-center gap-2 text-xs text-gray-500">
+            <div v-if="row.phone.trim()" class="flex items-center gap-2 text-xs text-gray-500">
               <Icon icon="carbon:phone" class="size-3.5 shrink-0 text-gray-400" />
-              <span>{{ optionalDisplay(row.phone) }}</span>
+              <span>{{ row.phone }}</span>
             </div>
           </div>
+          <span v-else class="text-sm text-gray-400">{{ t('Customers.emptyValue') }}</span>
         </template>
 
         <template #cell-nif="{ row }">
