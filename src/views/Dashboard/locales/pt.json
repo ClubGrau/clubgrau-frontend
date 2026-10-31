@@ -1,0 +1,58 @@
+{
+  "title": "Dashboard",
+  "subtitle": "A carteira do salão: quem entrou, o rank e de onde veio.",
+  "breadcrumb": "Dashboard",
+  "loadError": "Não foi possível carregar a carteira.",
+  "actions": {
+    "customers": "Clientes"
+  },
+  "kpi": {
+    "total": {
+      "label": "Clientes na carteira",
+      "description": "Contas cadastradas"
+    },
+    "joined": {
+      "label": "Novos este mês",
+      "lastMonth": "Mês passado: {count}",
+      "share": "{percent}% da carteira"
+    }
+  },
+  "composition": {
+    "title": "Visão geral",
+    "close": "Fechar"
+  },
+  "ranks": {
+    "title": "Rank",
+    "caption": "Como a carteira se reparte"
+  },
+  "indication": {
+    "title": "Origem da entrada",
+    "canal": "Canal",
+    "campanha": "Campanha",
+    "amigo": "Amigo",
+    "none": "Sem indicação"
+  },
+  "recent": {
+    "title": "Clientes recentes",
+    "composition": "Visão geral",
+    "viewAll": "Ver tudo",
+    "empty": "Ainda não há clientes na carteira.",
+    "error": "Não foi possível carregar os clientes recentes."
+  },
+  "team": {
+    "title": "Colaboradores",
+    "viewAll": "Ver equipe",
+    "active": "Em atividade",
+    "vacation": "Em férias",
+    "inactive": "Inativos",
+    "error": "Não foi possível carregar a equipe."
+  },
+  "catalog": {
+    "title": "Indicações",
+    "viewAll": "Ver catálogo",
+    "canal": "Canal",
+    "campanha": "Campanha",
+    "active": "Ativas: {count}",
+    "error": "Não foi possível carregar o catálogo."
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "title": "Dashboard",
+  "subtitle": "The salon wallet: who joined, their rank, and where they came from.",
+  "breadcrumb": "Dashboard",
+  "loadError": "Could not load the wallet.",
+  "actions": {
+    "customers": "Customers"
+  },
+  "kpi": {
+    "total": {
+      "label": "Customers in the wallet",
+      "description": "Registered accounts"
+    },
+    "joined": {
+      "label": "New this month",
+      "lastMonth": "Last month: {count}",
+      "share": "{percent}% of the wallet"
+    }
+  },
+  "composition": {
+    "title": "Overview",
+    "close": "Close"
+  },
+  "ranks": {
+    "title": "Rank",
+    "caption": "How the wallet splits"
+  },
+  "indication": {
+    "title": "How they arrived",
+    "canal": "Channel",
+    "campanha": "Campaign",
+    "amigo": "Friend",
+    "none": "No indication"
+  },
+  "recent": {
+    "title": "Recent customers",
+    "composition": "Overview",
+    "viewAll": "View all",
+    "empty": "No customers in the wallet yet.",
+    "error": "Could not load recent customers."
+  },
+  "team": {
+    "title": "Collaborators",
+    "viewAll": "View team",
+    "active": "Active",
+    "vacation": "On vacation",
+    "inactive": "Inactive",
+    "error": "Could not load the team."
+  },
+  "catalog": {
+    "title": "Indications",
+    "viewAll": "View catalog",
+    "canal": "Channel",
+    "campanha": "Campaign",
+    "active": "Active: {count}",
+    "error": "Could not load the catalog."
+  }
+}
