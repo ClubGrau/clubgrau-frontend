@@ -1,54 +1,58 @@
 {
   "title": "Dashboard",
-  "subtitle": "O dia do salão: carteira, agenda e o que precisa de atenção.",
+  "subtitle": "A carteira do salão: quem entrou, o rank e de onde veio.",
   "breadcrumb": "Dashboard",
-  "context": {
-    "salon": "Club Grau",
-    "today": "Hoje"
+  "loadError": "Não foi possível carregar a carteira.",
+  "actions": {
+    "customers": "Clientes"
   },
   "kpi": {
-    "clients": {
-      "label": "Clientes ativos",
-      "joined": "+{count}",
-      "description": "{percent}% da carteira este mês"
+    "total": {
+      "label": "Clientes na carteira",
+      "description": "Contas cadastradas"
     },
-    "appointments": {
-      "label": "Marcações de hoje",
-      "description": "Atendimentos previstos"
-    },
-    "revenue": {
-      "label": "Receita do mês",
-      "description": "Total faturado este mês"
-    },
-    "newMetric": "Novo indicador"
+    "joined": {
+      "label": "Novos este mês",
+      "lastMonth": "Mês passado: {count}",
+      "share": "{percent}% da carteira"
+    }
   },
-  "appointments": {
-    "title": "Marcações de hoje",
-    "chair": "Cadeira {chair}"
+  "composition": {
+    "title": "Visão geral",
+    "close": "Fechar"
   },
-  "service": {
-    "cut": "Corte",
-    "beard": "Barba",
-    "color": "Coloração"
+  "ranks": {
+    "title": "Rank",
+    "caption": "Como a carteira se reparte"
   },
-  "revenue": {
-    "title": "Receita"
-  },
-  "treatment": {
-    "title": "Serviços de hoje",
-    "caption": "{completed}/{total} serviços concluídos"
-  },
-  "stock": {
-    "title": "Stock de produtos",
-    "remaining": "{count} un. restantes",
-    "pomade": "Pomada",
-    "shaveCream": "Creme de barbear",
-    "balm": "Bálsamo",
-    "gel": "Gel"
+  "indication": {
+    "title": "Origem da entrada",
+    "canal": "Canal",
+    "campanha": "Campanha",
+    "amigo": "Amigo",
+    "none": "Sem indicação"
   },
   "recent": {
     "title": "Clientes recentes",
+    "composition": "Visão geral",
     "viewAll": "Ver tudo",
-    "empty": "Ainda não há clientes na carteira."
+    "empty": "Ainda não há clientes na carteira.",
+    "error": "Não foi possível carregar os clientes recentes."
+  },
+  "team": {
+    "title": "Colaboradores",
+    "viewAll": "Ver equipe",
+    "active": "Em atividade",
+    "vacation": "Em férias",
+    "inactive": "Inativos",
+    "error": "Não foi possível carregar a equipe."
+  },
+  "catalog": {
+    "title": "Indicações",
+    "viewAll": "Ver catálogo",
+    "canal": "Canal",
+    "campanha": "Campanha",
+    "active": "Ativas: {count}",
+    "error": "Não foi possível carregar o catálogo."
   }
 }
