@@ -21,7 +21,7 @@ import { useToast } from '../../composables/useToast';
 import { useCustomersScreen } from '../../composables/customers/useCustomersScreen';
 import CustomerDetailPanel from './CustomerDetailPanel.vue';
 import CustomerFormPanel from './CustomerFormPanel.vue';
-import IndicationMix, { type WalletMixSegment } from './IndicationMix.vue';
+import IndicationMix, { type WalletMixSegment } from '../../components/IndicationMix/IndicationMix.vue';
 import RankPatch from './RankPatch.vue';
 import RemoveCustomerModal from './RemoveCustomerModal.vue';
 import PageContainer from '../../Layout/PageContainer.vue';
