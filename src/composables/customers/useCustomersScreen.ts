@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue'
+import { canRemoveCustomer } from '../../domain/customer-actions'
 import { httpCustomersApi } from '../../services/api/customers/http-customers-api'
 import { httpIndicationsApi } from '../../services/api/indications/http-indications-api'
 import type { GetLinkableIndicationOriginsApi } from '../../services/api/indications/types'
@@ -9,6 +10,7 @@ import type {
   RemoveCustomerApi,
   RemoveCustomerParams,
 } from '../../services/api/customers/types'
+import { useAuthStore } from '../../stores/auth'
 import type { IndicationCategoryId } from '../../types/indication'
 import type { Customer } from '../../types/customer'
 import { useCreateCustomer } from './useCreateCustomer'
@@ -25,6 +27,8 @@ export function useCustomersScreen(
   createCustomerApi: CreateCustomerApi = httpCustomersApi,
   linkableOrigins: GetLinkableIndicationOriginsApi = httpIndicationsApi,
 ) {
+  const authStore = useAuthStore()
+
   const {
     filteredCustomers,
     pageSize,
@@ -57,7 +61,9 @@ export function useCustomersScreen(
 
   const detail = useCustomerDetail(detailSource)
 
-  const canRemove = computed(() => typeof api.remove === 'function')
+  const canRemove = computed(
+    () => canRemoveCustomer(authStore.actor) && typeof api.remove === 'function',
+  )
 
   const removeSource: RemoveCustomerApi = {
     remove: (params: RemoveCustomerParams) => {
@@ -97,16 +103,34 @@ export function useCustomersScreen(
     },
   })
 
-  const { remove, isRemoving } = useRemoveCustomer(removeSource, {
+  const resetRemoveModal = () => {
+    isRemoveModalOpen.value = false
+    activeCustomerId.value = null
+    removeError.value = null
+  }
+
+  const { remove, isRemoving, removeError } = useRemoveCustomer(removeSource, {
     onRemoved: (result) => {
-      isRemoveModalOpen.value = false
-      activeCustomerId.value = null
+      if (filteredCustomers.value.length <= 1 && currentPage.value > 1) {
+        currentPage.value -= 1
+      }
+      resetRemoveModal()
       if (detail.customerId.value === result.id) detail.close()
+    },
+    onAlreadyRemoved: (id) => {
+      resetRemoveModal()
+      if (detail.customerId.value === id) detail.close()
+    },
+    onForbidden: () => {
+      resetRemoveModal()
     },
   })
 
   const removeCustomerName = computed(() => {
     if (!activeCustomerId.value) return ''
+    if (detail.customer.value?.id === activeCustomerId.value) {
+      return detail.customer.value.name
+    }
     return (
       filteredCustomers.value.find((customer) => customer.id === activeCustomerId.value)
         ?.name ?? ''
@@ -140,13 +164,15 @@ export function useCustomersScreen(
   }
 
   const openRemoveModal = (id: string) => {
+    if (!canRemove.value) return
+    removeError.value = null
     activeCustomerId.value = id
     isRemoveModalOpen.value = true
   }
 
   const closeRemoveModal = () => {
-    isRemoveModalOpen.value = false
-    activeCustomerId.value = null
+    if (isRemoving.value) return
+    resetRemoveModal()
   }
 
   const selection = useCustomerSelection({
@@ -157,9 +183,9 @@ export function useCustomersScreen(
     createCustomer(payload)
   }
 
-  const handleRemoveCustomer = () => {
-    if (!activeCustomerId.value) return
-    remove(activeCustomerId.value)
+  const handleRemoveCustomer = (password: string) => {
+    if (!canRemove.value || !activeCustomerId.value) return
+    remove({ id: activeCustomerId.value, password })
   }
 
   return {
@@ -196,6 +222,7 @@ export function useCustomersScreen(
     ...selection,
     isCreating,
     isRemoving,
+    removeError,
     indicationOrigins: indicationOptions.origins,
     isLoadingIndicationOrigins: indicationOptions.isLoading,
     indicationOriginsErrorKey: indicationOptions.errorKey,

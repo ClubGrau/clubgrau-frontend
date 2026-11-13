@@ -156,6 +156,28 @@ describe('referralLinks', () => {
     })
     expect(links.get('cust-1')?.referredCount).toBe(2)
   })
+
+  it('does not link a removed referrer to a new customer registered with the same name', () => {
+    const links = referralLinks([
+      {
+        id: 'cust-new-marina',
+        name: 'Marina Albuquerque',
+        referral: '',
+      },
+      {
+        id: 'cust-referred',
+        name: 'Camila Prado',
+        referral: 'Marina Albuquerque',
+        referrerRemoved: true,
+      },
+    ])
+
+    expect(links.get('cust-referred')).toEqual({
+      referralCustomerId: null,
+      referredCount: 0,
+    })
+    expect(links.get('cust-new-marina')?.referredCount).toBe(0)
+  })
 })
 
 describe('sortCustomers', () => {

@@ -113,8 +113,17 @@ const copyNif = async () => {
             {{ t('Customers.table.referral') }}
           </dt>
           <dd class="mt-1 text-sm text-gray-800">
+            <span
+              v-if="customer.referrerRemoved && customer.referral.trim()"
+              class="inline-flex flex-wrap items-center gap-1.5"
+            >
+              <span>{{ customer.referral }}</span>
+              <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                {{ t('Customers.referral.removed') }}
+              </span>
+            </span>
             <button
-              v-if="customer.referralCustomerId"
+              v-else-if="customer.referralCustomerId && customer.referral.trim()"
               type="button"
               class="cursor-pointer font-medium text-gray-900 underline-offset-2 hover:underline"
               :aria-label="t('Customers.referral.open', { name: customer.referral })"

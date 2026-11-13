@@ -108,6 +108,7 @@ describe('mapApiCustomerToListItem', () => {
             categoryId: 'amigo',
             referrerCustomerId: 'cust-2',
             name: null,
+            referrerRemoved: false,
           },
         }),
       ),
@@ -117,6 +118,29 @@ describe('mapApiCustomerToListItem', () => {
       indicationCategoryId: 'amigo',
       indicationOriginId: null,
       referralCustomerId: 'cust-2',
+      referrerRemoved: false,
+      referredCount: 0,
+    })
+  })
+
+  it('flags a removed friend referrer and drops the open link', () => {
+    expect(
+      mapApiCustomerToListItem(
+        apiItem({
+          indication: {
+            categoryId: 'amigo',
+            referrerCustomerId: 'cust-removed',
+            name: 'Maria Silva',
+            referrerRemoved: true,
+          },
+        }),
+      ),
+    ).toMatchObject({
+      referral: 'Maria Silva',
+      indicationCategoryId: 'amigo',
+      indicationOriginId: null,
+      referralCustomerId: null,
+      referrerRemoved: true,
       referredCount: 0,
     })
   })

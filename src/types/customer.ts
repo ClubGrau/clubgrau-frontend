@@ -26,6 +26,7 @@ export namespace Customer {
     indicationCategoryId?: IndicationCategoryId | null;
     indicationOriginId?: string | null;
     referralCustomerId?: string;
+    referrerRemoved?: boolean;
   }
 
   /** Table row: Entity, initials, and referral links resolved from the wallet. */

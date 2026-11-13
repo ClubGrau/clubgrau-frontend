@@ -18,6 +18,7 @@ const CONFLICT_CODES: Record<string, ApiErrorCode> = {
   'Last Admin must stay ACTIVE until another Admin exists': 'LAST_ADMIN',
   'Employee is not inactive': 'NOT_INACTIVE',
   'Employee is already removed': 'ALREADY_REMOVED',
+  'Customer is already removed': 'ALREADY_REMOVED',
 }
 
 const STATUS_CODES: Record<number, ApiErrorCode> = {

@@ -7,6 +7,9 @@ import type {
   GetCustomersApi,
   GetCustomersParams,
   GetCustomersResult,
+  RemoveCustomerApi,
+  RemoveCustomerParams,
+  RemoveCustomerResult,
 } from './types'
 
 type CustomersListPayload = {
@@ -17,7 +20,9 @@ type CustomersListPayload = {
   totalPages: number
 }
 
-export class HttpCustomersApi implements GetCustomersApi, CreateCustomerApi {
+export class HttpCustomersApi
+  implements GetCustomersApi, CreateCustomerApi, RemoveCustomerApi
+{
   async getCustomers(params: GetCustomersParams): Promise<GetCustomersResult> {
     const query: Record<string, string | number> = {
       page: params.page,
@@ -43,6 +48,14 @@ export class HttpCustomersApi implements GetCustomersApi, CreateCustomerApi {
 
   async create(params: CreateCustomerParams): Promise<CreateCustomerResult> {
     const { data } = await api.post<CreateCustomerResult>('/api/customer', params)
+    return data
+  }
+
+  async remove(params: RemoveCustomerParams): Promise<RemoveCustomerResult> {
+    const { data } = await api.post<RemoveCustomerResult>('/api/customer/remove', {
+      id: params.id,
+      password: params.password,
+    })
     return data
   }
 }

@@ -1,5 +1,6 @@
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
-import { describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp, effectScope } from 'vue'
 
 vi.hoisted(() => {
@@ -27,13 +28,34 @@ import type {
   RemoveCustomerApi,
 } from '../../services/api/customers/types'
 import type { GetLinkableIndicationOriginsApi } from '../../services/api/indications/types'
+import { useAuthStore } from '../../stores/auth'
+import type { ActorRole } from '../../types/actor'
 import type { Customer } from '../../types/customer'
 import type { Indication } from '../../types/indication'
+import { useToast } from '../useToast'
 import { useCustomersScreen } from './useCustomersScreen'
 
 type ScreenApi = GetCustomersApi &
   Partial<GetCustomerApi & RemoveCustomerApi> &
   CreateCustomerApi
+
+const { toasts, dismiss } = useToast()
+
+function dismissAllToasts() {
+  for (const toast of [...toasts.value]) {
+    dismiss(toast.id)
+  }
+}
+
+function jwt(payload: Record<string, unknown>): string {
+  const segment = (value: object) => {
+    const bytes = new TextEncoder().encode(JSON.stringify(value))
+    let binary = ''
+    for (const byte of bytes) binary += String.fromCharCode(byte)
+    return btoa(binary).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+  }
+  return `${segment({ alg: 'none', typ: 'JWT' })}.${segment(payload)}.sig`
+}
 
 function listItem(overrides: Partial<Customer.ListItem> = {}): Customer.ListItem {
   return {
@@ -70,15 +92,32 @@ function stubApi(item = listItem()) {
 function withScreen<T extends ScreenApi>(
   api: T,
   linkableOrigins: GetLinkableIndicationOriginsApi = { getLinkableOrigins: vi.fn() },
+  role: ActorRole | null = 'ADMIN',
 ) {
+  localStorage.clear()
   const queryClient = new QueryClient({
     defaultOptions: {
       mutations: { retry: 0 },
       queries: { retry: false },
     },
   })
+  const pinia = createPinia()
+  setActivePinia(pinia)
   const app = createApp({})
+  app.use(pinia)
   app.use(VueQueryPlugin, { queryClient })
+  const authStore = app.runWithContext(() => useAuthStore())
+  if (role) {
+    authStore.setSession({
+      token: jwt({
+        id: 'actor-1',
+        name: 'Operador',
+        email: 'op@grau.pt',
+        role,
+        status: 'ACTIVE',
+      }),
+    })
+  }
   const scope = effectScope()
   const composable = app.runWithContext(() =>
     scope.run(() => useCustomersScreen(api, api, linkableOrigins)),
@@ -89,6 +128,7 @@ function withScreen<T extends ScreenApi>(
   return {
     composable,
     api,
+    authStore,
     linkableOrigins,
     dispose: () => {
       scope.stop()
@@ -98,6 +138,8 @@ function withScreen<T extends ScreenApi>(
 }
 
 describe('useCustomersScreen', () => {
+  afterEach(dismissAllToasts)
+
   it('uses the injected adapter list as ListItem', async () => {
     const { composable, api, dispose } = withScreen(stubApi())
 
@@ -126,6 +168,26 @@ describe('useCustomersScreen', () => {
     dispose()
   })
 
+  it('offers remove to ADMIN and MANAGER and hides it from EMPLOYEE and unauthenticated sessions', () => {
+    const admin = withScreen(stubApi(), undefined, 'ADMIN')
+    expect(admin.composable.canRemove.value).toBe(true)
+    admin.dispose()
+
+    const manager = withScreen(stubApi(), undefined, 'MANAGER')
+    expect(manager.composable.canRemove.value).toBe(true)
+    manager.dispose()
+
+    const employee = withScreen(stubApi(), undefined, 'EMPLOYEE')
+    expect(employee.composable.canRemove.value).toBe(false)
+    employee.composable.openRemoveModal('cust-1')
+    expect(employee.composable.isRemoveModalOpen.value).toBe(false)
+    employee.dispose()
+
+    const anonymous = withScreen(stubApi(), undefined, null)
+    expect(anonymous.composable.canRemove.value).toBe(false)
+    anonymous.dispose()
+  })
+
   it('tracks the target name when opening the remove modal', async () => {
     const { composable, dispose } = withScreen(stubApi())
 
@@ -145,7 +207,7 @@ describe('useCustomersScreen', () => {
   })
 
   it('opens the remove modal from the overflow menu action', async () => {
-    const { composable, dispose } = withScreen(stubApi())
+    const { composable, dispose } = withScreen(stubApi(), undefined, 'MANAGER')
 
     await vi.waitFor(() => {
       expect(composable.filteredCustomers.value).toHaveLength(1)
@@ -157,6 +219,59 @@ describe('useCustomersScreen', () => {
     expect(composable.openActionsId.value).toBeNull()
     expect(composable.isRemoveModalOpen.value).toBe(true)
     expect(composable.removeCustomerName.value).toBe('Marina Albuquerque')
+
+    dispose()
+  })
+
+  it('submits remove with the actor password and closes both modal and detail drawer on 200', async () => {
+    const { composable, api, dispose } = withScreen(stubApi(), undefined, 'MANAGER')
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+
+    composable.openCustomer('cust-1')
+    await vi.waitFor(() => {
+      expect(composable.detailCustomerId.value).toBe('cust-1')
+    })
+
+    composable.openRemoveModal('cust-1')
+    composable.handleRemoveCustomer('manager-password')
+
+    await vi.waitFor(() => {
+      expect(api.remove).toHaveBeenCalledWith({
+        id: 'cust-1',
+        password: 'manager-password',
+      })
+      expect(composable.isRemoveModalOpen.value).toBe(false)
+      expect(composable.detailCustomerId.value).toBeNull()
+    })
+
+    dispose()
+  })
+
+  it('keeps the remove modal and detail drawer open when password confirmation fails (401)', async () => {
+    const api = stubApi()
+    api.remove.mockRejectedValue({
+      response: { status: 401, data: { error: 'Authentication failed' } },
+    })
+    const { composable, dispose } = withScreen(api, undefined, 'ADMIN')
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+
+    composable.openCustomer('cust-1')
+    composable.openRemoveModal('cust-1')
+    composable.handleRemoveCustomer('wrong-password')
+
+    await vi.waitFor(() => {
+      expect(composable.removeError.value).toBe(
+        'Não foi possível confirmar a sua identidade. Verifique a palavra-passe.',
+      )
+    })
+    expect(composable.isRemoveModalOpen.value).toBe(true)
+    expect(composable.detailCustomerId.value).toBe('cust-1')
 
     dispose()
   })

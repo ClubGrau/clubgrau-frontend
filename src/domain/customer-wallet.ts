@@ -64,6 +64,7 @@ export type Customer = {
   name: string
   referral: string
   referralCustomerId?: string | null
+  referrerRemoved?: boolean
 }
 
 const RANK_WEIGHT: Record<CustomerRank, number> = {
@@ -160,6 +161,10 @@ export function referralLinks(
   const referralCustomerId = new Map<string, string | null>()
 
   for (const customer of customers) {
+    if (customer.referrerRemoved) {
+      referralCustomerId.set(customer.id, null)
+      continue
+    }
     const storedId = customer.referralCustomerId?.trim() || null
     const referral = customer.referral.trim().toLowerCase()
     const referrerId = storedId ?? (referral ? (idByName.get(referral) ?? null) : null)
