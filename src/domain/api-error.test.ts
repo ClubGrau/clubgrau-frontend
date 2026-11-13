@@ -75,6 +75,10 @@ describe('toApiError', () => {
       code: 'ALREADY_REMOVED',
       message: 'Employee is already removed',
     })
+    expect(makeApiError(409, 'Customer is already removed')).toEqual({
+      code: 'ALREADY_REMOVED',
+      message: 'Customer is already removed',
+    })
   })
 
   it('maps an unrecognised 409 to CONFLICT', () => {
