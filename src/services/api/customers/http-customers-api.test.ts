@@ -122,4 +122,22 @@ describe('HttpCustomersApi', () => {
     }
     expect(Object.keys(body.indication)).toEqual(['categoryId', 'originId'])
   })
+
+  it('posts remove with id and password and no actorId', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: { id: '507f1f77bcf86cd799439011' } })
+
+    const result = await httpCustomersApi.remove({
+      id: '507f1f77bcf86cd799439011',
+      password: 'actor-secret-password',
+    })
+
+    expect(api.post).toHaveBeenCalledWith('/api/customer/remove', {
+      id: '507f1f77bcf86cd799439011',
+      password: 'actor-secret-password',
+    })
+    const body = vi.mocked(api.post).mock.calls[0]?.[1] as Record<string, unknown>
+    expect(Object.keys(body)).toEqual(['id', 'password'])
+    expect(body).not.toHaveProperty('actorId')
+    expect(result).toEqual({ id: '507f1f77bcf86cd799439011' })
+  })
 })

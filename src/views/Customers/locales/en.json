@@ -27,28 +27,6 @@
     "customer": "customer",
     "customers": "customers"
   },
-  "stats": {
-    "total": {
-      "label": "Platform total",
-      "description": "Registered customers"
-    },
-    "joinedThisMonth": {
-      "label": "New this month",
-      "lastMonthTotal": "Total last month: {count}",
-      "grewShare": "Your base grew {share}% of the total"
-    },
-    "indication": {
-      "label": "How they arrived",
-      "canal": "Channel",
-      "campanha": "Campaign",
-      "amigo": "Friend",
-      "none": "No indication"
-    },
-    "listed": {
-      "label": "Customers",
-      "description": "In this list"
-    }
-  },
   "pagination": {
     "previous": "Previous",
     "next": "Next",
@@ -59,7 +37,8 @@
   },
   "referral": {
     "open": "Open {name}",
-    "referred": "Referred {count}"
+    "referred": "Referred {count}",
+    "removed": "Removed"
   },
   "table": {
     "customer": "Customer",
@@ -85,12 +64,15 @@
   },
   "toast": {
     "created": "Customer created.",
-    "removed": "Customer removed from the wallet.",
+    "removed": "Customer removed from the wallet. The original email is free for a new registration.",
     "nifCopied": "Tax ID copied.",
     "unexpected": "Could not complete the action. Try again.",
     "emailInUse": "This email is already in use.",
     "createValidation": "Could not create the customer. Check the data.",
-    "forbidden": "You cannot create customers."
+    "forbidden": "You cannot create customers.",
+    "removeForbidden": "Action not allowed.",
+    "alreadyRemoved": "This customer has already been removed.",
+    "removeUnauthorized": "Could not confirm your identity. Check your password."
   },
   "form": {
     "createTitle": "New customer",
@@ -128,7 +110,11 @@
   },
   "modal": {
     "removeTitle": "Remove customer",
-    "removeBodyNamed": "This action removes {name} from the wallet. They will no longer appear in the list.",
-    "removeBodyAnonymous": "This action removes the customer from the wallet. They will no longer appear in the list."
+    "removeBodyNamed": "This action is irreversible. {name} leaves the wallet, contact details and tax ID are erased, and the original email is freed. Their name stays only in indication history.",
+    "removeBodyAnonymous": "This action is irreversible. The customer leaves the wallet, contact details and tax ID are erased, and the original email is freed. Their name stays only in indication history.",
+    "actorPassword": "Your password",
+    "passwordPlaceholder": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   }
 }

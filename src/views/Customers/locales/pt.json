@@ -27,28 +27,6 @@
     "customer": "cliente",
     "customers": "clientes"
   },
-  "stats": {
-    "total": {
-      "label": "Total na plataforma",
-      "description": "Clientes cadastrados"
-    },
-    "joinedThisMonth": {
-      "label": "Novos este mês",
-      "lastMonthTotal": "Total no mês passado: {count}",
-      "grewShare": "Sua base cresceu {share}% do total"
-    },
-    "indication": {
-      "label": "Origem da entrada",
-      "canal": "Canal",
-      "campanha": "Campanha",
-      "amigo": "Amigo",
-      "none": "Sem indicação"
-    },
-    "listed": {
-      "label": "Clientes",
-      "description": "Nesta lista"
-    }
-  },
   "pagination": {
     "previous": "Anterior",
     "next": "Próximo",
@@ -59,7 +37,8 @@
   },
   "referral": {
     "open": "Abrir {name}",
-    "referred": "Indicou {count}"
+    "referred": "Indicou {count}",
+    "removed": "Removido"
   },
   "table": {
     "customer": "Cliente",
@@ -85,12 +64,15 @@
   },
   "toast": {
     "created": "Cliente criado.",
-    "removed": "Cliente removido da carteira.",
+    "removed": "Cliente removido da carteira. O e-mail original está livre para um novo cadastro.",
     "nifCopied": "NIF copiado.",
     "unexpected": "Não foi possível concluir a ação. Tente novamente.",
     "emailInUse": "Este e-mail já está em uso.",
     "createValidation": "Não foi possível criar o cliente. Verifique os dados.",
-    "forbidden": "Não tem permissão para criar clientes."
+    "forbidden": "Não tem permissão para criar clientes.",
+    "removeForbidden": "Ação não permitida.",
+    "alreadyRemoved": "Este cliente já foi removido.",
+    "removeUnauthorized": "Não foi possível confirmar a sua identidade. Verifique a palavra-passe."
   },
   "form": {
     "createTitle": "Novo cliente",
@@ -128,7 +110,11 @@
   },
   "modal": {
     "removeTitle": "Remover cliente",
-    "removeBodyNamed": "Esta ação remove {name} da carteira. Os dados deixam de aparecer na lista.",
-    "removeBodyAnonymous": "Esta ação remove o cliente da carteira. Os dados deixam de aparecer na lista."
+    "removeBodyNamed": "Esta ação é irreversível. {name} sai da carteira, os dados de contato e o NIF são apagados e o e-mail original fica livre. O nome permanece apenas no histórico de indicações.",
+    "removeBodyAnonymous": "Esta ação é irreversível. O cliente sai da carteira, os dados de contato e o NIF são apagados e o e-mail original fica livre. O nome permanece apenas no histórico de indicações.",
+    "actorPassword": "A sua palavra-passe",
+    "passwordPlaceholder": "Palavra-passe",
+    "showPassword": "Revelar palavra-passe",
+    "hidePassword": "Ocultar palavra-passe"
   }
 }

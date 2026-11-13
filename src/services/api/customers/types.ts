@@ -46,6 +46,7 @@ export interface CreateCustomerApi {
 
 export interface RemoveCustomerParams {
   id: string
+  password: string
 }
 
 export type RemoveCustomerResult = { id: string }
