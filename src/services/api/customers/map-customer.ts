@@ -24,6 +24,7 @@ export type CustomerListApiIndication =
       categoryId: 'amigo'
       referrerCustomerId: string
       name: string | null
+      referrerRemoved?: boolean
     }
 
 function buildInitials(name: string): string {
@@ -58,6 +59,7 @@ function indicationFields(indication: CustomerListApiIndication | null): {
   indicationCategoryId: IndicationCategoryId | null
   indicationOriginId: string | null
   referralCustomerId: string | null
+  referrerRemoved: boolean
 } {
   if (!indication) {
     return {
@@ -65,15 +67,18 @@ function indicationFields(indication: CustomerListApiIndication | null): {
       indicationCategoryId: null,
       indicationOriginId: null,
       referralCustomerId: null,
+      referrerRemoved: false,
     }
   }
 
   if (indication.categoryId === 'amigo') {
+    const referrerRemoved = Boolean(indication.referrerRemoved)
     return {
       referral: displayText(indication.name),
       indicationCategoryId: 'amigo',
       indicationOriginId: null,
-      referralCustomerId: indication.referrerCustomerId,
+      referralCustomerId: referrerRemoved ? null : indication.referrerCustomerId,
+      referrerRemoved,
     }
   }
 
@@ -82,6 +87,7 @@ function indicationFields(indication: CustomerListApiIndication | null): {
     indicationCategoryId: indication.categoryId,
     indicationOriginId: indication.originId,
     referralCustomerId: null,
+    referrerRemoved: false,
   }
 }
 
@@ -100,6 +106,7 @@ export function mapApiCustomerToListItem(item: CustomerListApiItem): Customer.Li
     createdAt: item.createdAt,
     indicationCategoryId: indication.indicationCategoryId,
     indicationOriginId: indication.indicationOriginId,
+    referrerRemoved: indication.referrerRemoved,
     initials: buildInitials(item.name),
     referralCustomerId: indication.referralCustomerId,
     referredCount: 0,
