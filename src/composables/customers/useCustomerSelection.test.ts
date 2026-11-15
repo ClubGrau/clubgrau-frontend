@@ -21,7 +21,20 @@ function withSelection(options: Parameters<typeof useCustomerSelection>[0] = {})
 }
 
 describe('useCustomerSelection', () => {
-  it('closes the overflow menu after an action', () => {
+  it('closes the overflow menu after an edit action', () => {
+    const onEdit = vi.fn()
+    const { composable, dispose } = withSelection({ onEdit })
+
+    composable.openActionsId.value = 'cust-1'
+    composable.onEditAction('cust-1')
+
+    expect(onEdit).toHaveBeenCalledWith('cust-1')
+    expect(composable.openActionsId.value).toBeNull()
+
+    dispose()
+  })
+
+  it('closes the overflow menu after a remove action', () => {
     const onRemove = vi.fn()
     const { composable, dispose } = withSelection({ onRemove })
 

@@ -44,6 +44,21 @@ export interface CreateCustomerApi {
   create(params: CreateCustomerParams): Promise<CreateCustomerResult>
 }
 
+/** Sparse body of PATCH /api/customer/:id. `:id` travels in the URL; `null` clears optional fields. */
+export interface UpdateCustomerParams {
+  id: string
+  name?: string
+  email?: string
+  phone?: string | null
+  nif?: string | null
+}
+
+export type UpdateCustomerResult = { id: string }
+
+export interface UpdateCustomerApi {
+  update(params: UpdateCustomerParams): Promise<UpdateCustomerResult>
+}
+
 export interface RemoveCustomerParams {
   id: string
   password: string

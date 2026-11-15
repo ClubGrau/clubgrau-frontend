@@ -26,6 +26,7 @@ import type {
   GetCustomerApi,
   GetCustomersApi,
   RemoveCustomerApi,
+  UpdateCustomerApi,
 } from '../../services/api/customers/types'
 import type { GetLinkableIndicationOriginsApi } from '../../services/api/indications/types'
 import { useAuthStore } from '../../stores/auth'
@@ -36,7 +37,7 @@ import { useToast } from '../useToast'
 import { useCustomersScreen } from './useCustomersScreen'
 
 type ScreenApi = GetCustomersApi &
-  Partial<GetCustomerApi & RemoveCustomerApi> &
+  Partial<GetCustomerApi & UpdateCustomerApi & RemoveCustomerApi> &
   CreateCustomerApi
 
 const { toasts, dismiss } = useToast()
@@ -84,6 +85,7 @@ function stubApi(item = listItem()) {
       totalPages: 1,
     }),
     create: vi.fn().mockResolvedValue({ id: 'cust-new' }),
+    update: vi.fn().mockResolvedValue({ id: item.id }),
     remove: vi.fn().mockResolvedValue({ id: item.id }),
     getCustomer: vi.fn().mockResolvedValue(item),
   }
@@ -168,6 +170,22 @@ describe('useCustomersScreen', () => {
     dispose()
   })
 
+  it('offers update to ADMIN, MANAGER, and EMPLOYEE, and hides it from unauthenticated sessions', () => {
+    for (const role of ['ADMIN', 'MANAGER', 'EMPLOYEE'] as const) {
+      const session = withScreen(stubApi(), undefined, role)
+      expect(session.composable.canUpdate.value).toBe(true)
+      expect(session.composable.hasRowActions.value).toBe(true)
+      session.dispose()
+    }
+
+    const anonymous = withScreen(stubApi(), undefined, null)
+    expect(anonymous.composable.canUpdate.value).toBe(false)
+    expect(anonymous.composable.hasRowActions.value).toBe(false)
+    anonymous.composable.openEditDrawer('cust-1')
+    expect(anonymous.composable.isEditDrawerOpen.value).toBe(false)
+    anonymous.dispose()
+  })
+
   it('offers remove to ADMIN and MANAGER and hides it from EMPLOYEE and unauthenticated sessions', () => {
     const admin = withScreen(stubApi(), undefined, 'ADMIN')
     expect(admin.composable.canRemove.value).toBe(true)
@@ -186,6 +204,132 @@ describe('useCustomersScreen', () => {
     const anonymous = withScreen(stubApi(), undefined, null)
     expect(anonymous.composable.canRemove.value).toBe(false)
     anonymous.dispose()
+  })
+
+  it('opens the edit drawer from the overflow menu and closes back to the table after saving', async () => {
+    const { composable, api, dispose } = withScreen(stubApi(), undefined, 'EMPLOYEE')
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+
+    composable.openActionsId.value = 'cust-1'
+    composable.onEditAction('cust-1')
+
+    expect(composable.openActionsId.value).toBeNull()
+    expect(composable.isEditDrawerOpen.value).toBe(true)
+    expect(composable.editCustomer.value?.name).toBe('Marina Albuquerque')
+
+    composable.handleUpdateCustomer({
+      id: 'cust-1',
+      name: 'Marina Santos',
+      email: 'marina@nordeng.com.br',
+      phone: '(85) 98812-4410',
+      nif: '251847963',
+    })
+
+    await vi.waitFor(() => {
+      expect(api.update).toHaveBeenCalledWith({
+        id: 'cust-1',
+        name: 'Marina Santos',
+      })
+      expect(composable.isEditDrawerOpen.value).toBe(false)
+      expect(composable.detailCustomerId.value).toBeNull()
+    })
+
+    dispose()
+  })
+
+  it('returns to the detail drawer after editing from the customer detail panel', async () => {
+    const { composable, api, dispose } = withScreen(stubApi(), undefined, 'MANAGER')
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+
+    composable.openCustomer('cust-1')
+    await vi.waitFor(() => {
+      expect(composable.detailCustomer.value?.id).toBe('cust-1')
+    })
+
+    composable.openEditDrawer('cust-1')
+    expect(composable.isEditDrawerOpen.value).toBe(true)
+    expect(composable.detailCustomerId.value).toBeNull()
+
+    composable.handleUpdateCustomer({
+      id: 'cust-1',
+      name: 'Marina Albuquerque',
+      email: 'marina.nova@nordeng.com.br',
+      phone: '',
+      nif: '251847963',
+    })
+
+    await vi.waitFor(() => {
+      expect(api.update).toHaveBeenCalledWith({
+        id: 'cust-1',
+        email: 'marina.nova@nordeng.com.br',
+        phone: null,
+      })
+      expect(composable.isEditDrawerOpen.value).toBe(false)
+      expect(composable.detailCustomerId.value).toBe('cust-1')
+    })
+
+    dispose()
+  })
+
+  it('closes edit drawer without calling update when nothing changed', async () => {
+    const { composable, api, dispose } = withScreen(stubApi(), undefined, 'ADMIN')
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+
+    composable.openEditDrawer('cust-1')
+    composable.handleUpdateCustomer({
+      id: 'cust-1',
+      name: 'Marina Albuquerque',
+      email: 'marina@nordeng.com.br',
+      phone: '(85) 98812-4410',
+      nif: '251847963',
+    })
+
+    expect(api.update).not.toHaveBeenCalled()
+    expect(composable.isEditDrawerOpen.value).toBe(false)
+
+    dispose()
+  })
+
+  it('closes edit state and does not reopen detail when the customer was already removed (409)', async () => {
+    const api = stubApi()
+    api.update.mockRejectedValue({
+      response: { status: 409, data: { error: 'Customer is already removed' } },
+    })
+    const { composable, dispose } = withScreen(api, undefined, 'ADMIN')
+
+    await vi.waitFor(() => {
+      expect(composable.filteredCustomers.value).toHaveLength(1)
+    })
+
+    composable.openCustomer('cust-1')
+    await vi.waitFor(() => {
+      expect(composable.detailCustomer.value?.id).toBe('cust-1')
+    })
+
+    composable.openEditDrawer('cust-1')
+    composable.handleUpdateCustomer({
+      id: 'cust-1',
+      name: 'Marina Santos',
+      email: 'marina@nordeng.com.br',
+      phone: '(85) 98812-4410',
+      nif: '251847963',
+    })
+
+    await vi.waitFor(() => {
+      expect(composable.isEditDrawerOpen.value).toBe(false)
+      expect(composable.detailCustomerId.value).toBeNull()
+    })
+
+    dispose()
   })
 
   it('tracks the target name when opening the remove modal', async () => {
@@ -323,6 +467,7 @@ describe('useCustomersScreen', () => {
     await vi.waitFor(() => {
       expect(composable.detailCustomer.value?.name).toBe('Marina Albuquerque')
     })
+    expect(composable.canUpdate.value).toBe(false)
     expect(composable.canRemove.value).toBe(false)
 
     composable.openCustomer('missing')

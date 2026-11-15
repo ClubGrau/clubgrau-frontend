@@ -6,6 +6,7 @@ vi.mock('../config', () => ({
   api: {
     get: vi.fn(),
     post: vi.fn(),
+    patch: vi.fn(),
   },
 }))
 
@@ -13,6 +14,7 @@ describe('HttpCustomersApi', () => {
   beforeEach(() => {
     vi.mocked(api.get).mockReset()
     vi.mocked(api.post).mockReset()
+    vi.mocked(api.patch).mockReset()
   })
 
   it('gets a page with search and rank and maps rows to ListItem', async () => {
@@ -80,7 +82,6 @@ describe('HttpCustomersApi', () => {
     })
   })
 
-
   it('posts create with name, email, optional fields and no rank', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: { id: '507f1f77bcf86cd799439011' } })
 
@@ -121,6 +122,30 @@ describe('HttpCustomersApi', () => {
       indication: Record<string, unknown>
     }
     expect(Object.keys(body.indication)).toEqual(['categoryId', 'originId'])
+  })
+
+  it('patches /api/customer/:id with only defined sparse fields and no id or actorId in the body', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: { id: '507f1f77bcf86cd799439011' } })
+
+    const result = await httpCustomersApi.update({
+      id: '507f1f77bcf86cd799439011',
+      name: 'Maria Santos',
+      email: undefined,
+      phone: null,
+      nif: undefined,
+    })
+
+    expect(api.patch).toHaveBeenCalledWith('/api/customer/507f1f77bcf86cd799439011', {
+      name: 'Maria Santos',
+      phone: null,
+    })
+    const body = vi.mocked(api.patch).mock.calls[0]?.[1] as Record<string, unknown>
+    expect(Object.keys(body)).toEqual(['name', 'phone'])
+    expect(body).not.toHaveProperty('id')
+    expect(body).not.toHaveProperty('actorId')
+    expect(body).not.toHaveProperty('rank')
+    expect(body).not.toHaveProperty('indication')
+    expect(result).toEqual({ id: '507f1f77bcf86cd799439011' })
   })
 
   it('posts remove with id and password and no actorId', async () => {
