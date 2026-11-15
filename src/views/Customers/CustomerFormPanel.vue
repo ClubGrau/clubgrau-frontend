@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Icon } from '@iconify/vue';
 import PhoneInput from '../../components/PhoneInput/PhoneInput.vue';
@@ -8,6 +8,7 @@ import type { Customer } from '../../types/customer';
 import type { Indication, IndicationCategoryId } from '../../types/indication';
 import { FRIEND_CATEGORY_ID } from '../../types/indication';
 import { toCustomerIndication } from '../../domain/customer-indication';
+import { isValidEmail } from '../../domain/email-value';
 import { hasPhoneNumber, isValidPhone } from '../../domain/phone-value';
 
 const indicationTypes = ['canal', 'campanha', FRIEND_CATEGORY_ID] as const satisfies readonly IndicationCategoryId[];
@@ -15,19 +16,32 @@ const indicationTypes = ['canal', 'campanha', FRIEND_CATEGORY_ID] as const satis
 const emit = defineEmits<{
   close: [];
   create: [payload: Customer.CreateCommand];
+  update: [payload: Customer.UpdateCommand];
   wasReferredChange: [value: boolean];
   categoryChange: [categoryId: IndicationCategoryId | null];
 }>();
 
-const props = defineProps<{
-  submitting?: boolean;
-  customers: { id: string; name: string }[];
-  origins: Indication.LinkableOrigin[];
-  originsLoading?: boolean;
-  originsErrorKey?: string | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    customer?: Customer.ListItem;
+    submitting?: boolean;
+    customers?: { id: string; name: string }[];
+    origins?: Indication.LinkableOrigin[];
+    originsLoading?: boolean;
+    originsErrorKey?: string | null;
+  }>(),
+  {
+    submitting: false,
+    customers: () => [],
+    origins: () => [],
+    originsLoading: false,
+    originsErrorKey: null,
+  },
+);
 
 const { t } = useI18n();
+
+const isEditMode = computed(() => Boolean(props.customer));
 
 const form = reactive({
   name: '',
@@ -42,6 +56,22 @@ const originId = ref('');
 
 const submitted = ref(false);
 
+const fillForm = (customer: Customer.ListItem) => {
+  form.name = customer.name ?? '';
+  form.email = customer.email ?? '';
+  form.phone = customer.phone ?? '';
+  form.nif = customer.nif ?? '';
+  submitted.value = false;
+};
+
+watch(
+  () => props.customer?.id,
+  () => {
+    if (props.customer) fillForm(props.customer);
+  },
+  { immediate: true },
+);
+
 const isFriend = computed(() => categoryId.value === FRIEND_CATEGORY_ID);
 
 const selectedOrigin = computed(
@@ -52,32 +82,47 @@ const selectedFriend = computed(
   () => props.customers.find((customer) => customer.id === originId.value) ?? null,
 );
 
-const emailInvalid = computed(() => {
-  const email = form.email.trim();
-  return email.length > 0 && !email.includes('@');
-});
+const emailInvalid = computed(() => !isValidEmail(form.email));
 
 const phoneInvalid = computed(() => hasPhoneNumber(form.phone) && !isValidPhone(form.phone));
 
 const nifInvalid = computed(() => {
-  const nif = form.nif.trim();
-  return nif.length > 0 && !/^\d+$/.test(nif);
+  const nif = form.nif.replace(/\s+/g, '');
+  return nif.length > 0 && !/^\d{9}$/.test(nif);
 });
 
 const missingRequired = computed(() => {
   const missing: string[] = [];
-  if (form.name.trim().length <= 1) missing.push(t('Customers.form.nameRequired').replace(' *', ''));
+  if (form.name.trim().length <= 1) missing.push(t('Customers.form.name'));
   if (emailInvalid.value) missing.push(t('Customers.form.email'));
   if (phoneInvalid.value) missing.push(t('Customers.form.phone'));
   if (nifInvalid.value) missing.push(t('Customers.form.nif'));
-  if (wasReferred.value && !categoryId.value) {
+  if (!isEditMode.value && wasReferred.value && !categoryId.value) {
     missing.push(t('Customers.form.indication.category'));
   }
-  if (wasReferred.value && categoryId.value && !selectedOrigin.value && !selectedFriend.value) {
+  if (
+    !isEditMode.value &&
+    wasReferred.value &&
+    categoryId.value &&
+    !selectedOrigin.value &&
+    !selectedFriend.value
+  ) {
     missing.push(t('Customers.form.indication.origin'));
   }
   return missing;
 });
+
+const title = computed(() =>
+  t(isEditMode.value ? 'Customers.form.editTitle' : 'Customers.form.createTitle'),
+);
+
+const subtitle = computed(() =>
+  t(isEditMode.value ? 'Customers.form.editSubtitle' : 'Customers.form.createSubtitle'),
+);
+
+const submitLabel = computed(() =>
+  t(isEditMode.value ? 'Customers.form.editSubmit' : 'Customers.form.createSubmit'),
+);
 
 const originOptions = computed(() =>
   props.origins.map((origin) => ({
@@ -118,8 +163,21 @@ const fieldError = (value: string, minLength = 1) =>
   submitted.value && value.trim().length < minLength;
 
 const onSubmit = () => {
+  if (props.submitting) return;
   submitted.value = true;
   if (missingRequired.value.length > 0) return;
+
+  if (isEditMode.value) {
+    if (!props.customer) return;
+    emit('update', {
+      id: props.customer.id,
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: hasPhoneNumber(form.phone) ? form.phone.trim() : '',
+      nif: form.nif.replace(/\s+/g, ''),
+    });
+    return;
+  }
 
   const draft = toCustomerIndication({
     wasReferred: wasReferred.value,
@@ -133,7 +191,7 @@ const onSubmit = () => {
     name: form.name.trim(),
     email: form.email.trim(),
     phone: hasPhoneNumber(form.phone) ? form.phone.trim() : '',
-    nif: form.nif.trim(),
+    nif: form.nif.replace(/\s+/g, ''),
     indication: draft.indication,
   });
 };
@@ -145,10 +203,10 @@ const onSubmit = () => {
       <div class="flex items-center justify-between gap-3">
         <div>
           <h2 class="text-lg font-semibold text-gray-900">
-            {{ t('Customers.form.createTitle') }}
+            {{ title }}
           </h2>
           <p class="mt-0.5 text-sm text-gray-400">
-            {{ t('Customers.form.createSubtitle') }}
+            {{ subtitle }}
           </p>
         </div>
         <button
@@ -178,6 +236,7 @@ const onSubmit = () => {
                 id="customer-name"
                 v-model="form.name"
                 type="text"
+                autocomplete="name"
                 :placeholder="t('Customers.form.namePlaceholder')"
                 class="form-input"
                 :class="{ 'form-input-error': fieldError(form.name, 2) }"
@@ -186,12 +245,13 @@ const onSubmit = () => {
 
             <div class="flex flex-col gap-1.5">
               <label for="customer-email" class="text-xs text-gray-400">
-                {{ t('Customers.form.email') }}
+                {{ t('Customers.form.emailRequired') }}
               </label>
               <input
                 id="customer-email"
                 v-model="form.email"
                 type="email"
+                autocomplete="email"
                 :placeholder="t('Customers.form.emailPlaceholder')"
                 class="form-input"
                 :class="{ 'form-input-error': submitted && emailInvalid }"
@@ -218,6 +278,7 @@ const onSubmit = () => {
                 id="customer-nif"
                 v-model="form.nif"
                 type="text"
+                inputmode="numeric"
                 :placeholder="t('Customers.form.nifPlaceholder')"
                 class="form-input"
                 :class="{ 'form-input-error': submitted && nifInvalid }"
@@ -226,7 +287,10 @@ const onSubmit = () => {
           </div>
         </section>
 
-        <section class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <section
+          v-if="!isEditMode"
+          class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
+        >
           <h3 class="mb-4 text-base font-semibold text-gray-900">
             {{ t('Customers.form.indication.title') }}
           </h3>
@@ -350,7 +414,7 @@ const onSubmit = () => {
             icon="carbon:circle-dash"
             class="size-4 animate-spin"
           />
-          {{ t('Customers.form.createSubmit') }}
+          {{ submitLabel }}
         </button>
       </footer>
     </form>

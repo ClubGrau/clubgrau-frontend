@@ -55,33 +55,43 @@
     "unavailable": "Este cliente não está nesta página."
   },
   "menu": {
+    "edit": "Editar",
     "remove": "Remover"
   },
   "actions": {
     "cancel": "Cancelar",
+    "edit": "Editar",
     "remove": "Remover",
     "close": "Fechar"
   },
   "toast": {
     "created": "Cliente criado.",
+    "updated": "Dados do cliente atualizados.",
     "removed": "Cliente removido da carteira. O e-mail original está livre para um novo cadastro.",
     "nifCopied": "NIF copiado.",
     "unexpected": "Não foi possível concluir a ação. Tente novamente.",
     "emailInUse": "Este e-mail já está em uso.",
     "createValidation": "Não foi possível criar o cliente. Verifique os dados.",
+    "updateValidation": "Não foi possível atualizar o cliente. Verifique os dados.",
     "forbidden": "Não tem permissão para criar clientes.",
+    "updateForbidden": "Ação não permitida.",
     "removeForbidden": "Ação não permitida.",
     "alreadyRemoved": "Este cliente já foi removido.",
     "removeUnauthorized": "Não foi possível confirmar a sua identidade. Verifique a palavra-passe."
   },
   "form": {
     "createTitle": "Novo cliente",
+    "editTitle": "Editar cliente",
     "createSubtitle": "Preencha os dados para cadastrar um novo cliente",
+    "editSubtitle": "Atualize os dados cadastrais do cliente",
     "createSubmit": "Criar cliente",
+    "editSubmit": "Salvar alterações",
     "sectionMain": "Dados principais",
+    "name": "Nome completo",
     "nameRequired": "Nome completo *",
     "namePlaceholder": "Ex: Marina Albuquerque",
     "email": "E-mail",
+    "emailRequired": "E-mail *",
     "emailPlaceholder": "nome{'@'}empresa.com",
     "phone": "Telefone",
     "phonePlaceholder": "912 345 678",

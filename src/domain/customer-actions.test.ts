@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Actor } from '../types/actor'
-import { canRemoveCustomer } from './customer-actions'
+import { canRemoveCustomer, canUpdateCustomer } from './customer-actions'
 
 function actor(role: Actor['role']): Actor {
   return {
@@ -11,6 +11,19 @@ function actor(role: Actor['role']): Actor {
     status: 'ACTIVE',
   }
 }
+
+describe('canUpdateCustomer', () => {
+  it('allows ADMIN, MANAGER, and EMPLOYEE to update customers', () => {
+    expect(canUpdateCustomer(actor('ADMIN'))).toBe(true)
+    expect(canUpdateCustomer(actor('MANAGER'))).toBe(true)
+    expect(canUpdateCustomer(actor('EMPLOYEE'))).toBe(true)
+  })
+
+  it('refuses unknown role and unauthenticated sessions', () => {
+    expect(canUpdateCustomer(actor(null))).toBe(false)
+    expect(canUpdateCustomer(null)).toBe(false)
+  })
+})
 
 describe('canRemoveCustomer', () => {
   it('allows ADMIN and MANAGER to remove customers', () => {

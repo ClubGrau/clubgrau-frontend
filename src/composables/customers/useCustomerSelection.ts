@@ -1,10 +1,12 @@
 import { onMounted, onUnmounted, ref, type CSSProperties } from 'vue'
 
 type UseCustomerSelectionOptions = {
+  onEdit?: (customerId: string) => void
   onRemove?: (customerId: string) => void
+  getMenuHeight?: () => number
 }
 
-const ACTIONS_MENU_HEIGHT = 48
+const DEFAULT_ACTIONS_MENU_HEIGHT = 48
 const ACTIONS_MENU_GAP = 4
 
 export function useCustomerSelection(options: UseCustomerSelectionOptions = {}) {
@@ -17,14 +19,15 @@ export function useCustomerSelection(options: UseCustomerSelectionOptions = {}) 
 
   const positionActionsMenu = (trigger: HTMLElement) => {
     const rect = trigger.getBoundingClientRect()
+    const menuHeight = options.getMenuHeight?.() ?? DEFAULT_ACTIONS_MENU_HEIGHT
     const openUpward =
-      rect.bottom + ACTIONS_MENU_HEIGHT + ACTIONS_MENU_GAP > window.innerHeight &&
-      rect.top > ACTIONS_MENU_HEIGHT + ACTIONS_MENU_GAP
+      rect.bottom + menuHeight + ACTIONS_MENU_GAP > window.innerHeight &&
+      rect.top > menuHeight + ACTIONS_MENU_GAP
 
     actionsMenuStyle.value = {
       right: `${Math.max(window.innerWidth - rect.right, 8)}px`,
       top: openUpward
-        ? `${rect.top - ACTIONS_MENU_HEIGHT - ACTIONS_MENU_GAP}px`
+        ? `${rect.top - menuHeight - ACTIONS_MENU_GAP}px`
         : `${rect.bottom + ACTIONS_MENU_GAP}px`,
     }
   }
@@ -39,6 +42,11 @@ export function useCustomerSelection(options: UseCustomerSelectionOptions = {}) 
     if (trigger instanceof HTMLElement) {
       positionActionsMenu(trigger)
     }
+  }
+
+  const onEditAction = (customerId: string) => {
+    closeActionsMenu()
+    options.onEdit?.(customerId)
   }
 
   const onRemoveAction = (customerId: string) => {
@@ -74,6 +82,7 @@ export function useCustomerSelection(options: UseCustomerSelectionOptions = {}) 
     actionsMenuStyle,
     closeActionsMenu,
     toggleActionsMenu,
+    onEditAction,
     onRemoveAction,
   }
 }

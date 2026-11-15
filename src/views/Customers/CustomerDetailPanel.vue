@@ -10,9 +10,11 @@ import RankPatch from './RankPatch.vue';
 const props = withDefaults(
   defineProps<{
     customer: Customer.ListItem;
+    editable?: boolean;
     removable?: boolean;
   }>(),
   {
+    editable: true,
     removable: true,
   },
 );
@@ -20,6 +22,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   close: [];
   openCustomer: [id: string];
+  edit: [];
   remove: [];
 }>();
 
@@ -141,16 +144,26 @@ const copyNif = async () => {
     </div>
 
     <footer
-      v-if="removable"
-      class="shrink-0 border-t border-gray-100 bg-white px-5 py-4"
+      v-if="editable || removable"
+      class="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white px-5 py-4"
     >
       <button
+        v-if="removable"
         type="button"
         class="inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
         @click="emit('remove')"
       >
         <Icon icon="carbon:trash-can" class="size-4" />
         {{ t('Customers.actions.remove') }}
+      </button>
+      <button
+        v-if="editable"
+        type="button"
+        class="ml-auto inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e69138] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#d4822f]"
+        @click="emit('edit')"
+      >
+        <Icon icon="carbon:edit" class="size-4" />
+        {{ t('Customers.actions.edit') }}
       </button>
     </footer>
   </div>

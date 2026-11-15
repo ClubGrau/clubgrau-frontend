@@ -40,11 +40,16 @@ const {
   isListLoading,
   isListFetching,
   isListError,
+  canUpdate,
   canRemove,
+  hasRowActions,
   isCreateDrawerOpen,
+  isEditDrawerOpen,
+  editCustomer,
   isRemoveModalOpen,
   removeCustomerName,
   isCreating,
+  isUpdating,
   isRemoving,
   removeError,
   indicationOrigins,
@@ -54,12 +59,16 @@ const {
   setCustomerIndicationCategory,
   openCreateDrawer,
   closeCreateDrawer,
+  openEditDrawer,
+  closeEditDrawer,
   closeRemoveModal,
   handleCreateCustomer,
+  handleUpdateCustomer,
   handleRemoveCustomer,
   openActionsId,
   actionsMenuStyle,
   toggleActionsMenu,
+  onEditAction,
   onRemoveAction,
   detailCustomerId,
   detailCustomer,
@@ -69,6 +78,25 @@ const {
   onCustomerRowClick,
   openRemoveModal,
 } = useCustomersScreen();
+
+const isDrawerOpen = computed(
+  () =>
+    (detailCustomerId.value !== null && !isRemoveModalOpen.value) ||
+    isCreateDrawerOpen.value ||
+    isEditDrawerOpen.value,
+);
+
+const closeActiveDrawer = () => {
+  if (isEditDrawerOpen.value) {
+    closeEditDrawer();
+    return;
+  }
+  if (isCreateDrawerOpen.value) {
+    closeCreateDrawer();
+    return;
+  }
+  closeCustomer();
+};
 
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => [
   { id: 'dashboard', label: t('Customers.breadcrumb.dashboard'), to: '/app/dashboard' },
@@ -90,7 +118,7 @@ const columns = computed<DataTableColumn[]>(() => {
     { key: 'createdAt', label: t('Customers.table.registeredAt') },
   ];
 
-  if (!canRemove.value) return base;
+  if (!hasRowActions.value) return base;
 
   return [
     ...base,
@@ -276,7 +304,7 @@ const copyNif = async (nif: string) => {
             <td class="py-4 pr-4 align-middle">
               <div class="h-3.5 w-20 animate-pulse rounded bg-gray-100" />
             </td>
-            <td v-if="canRemove" class="py-4 pl-2 text-right align-middle">
+            <td v-if="hasRowActions" class="py-4 pl-2 text-right align-middle">
               <div class="ml-auto size-5 animate-pulse rounded bg-gray-100" />
             </td>
           </tr>
@@ -368,7 +396,7 @@ const copyNif = async (nif: string) => {
           <span class="text-sm text-gray-700">{{ formatRegistrationDate(row.createdAt) }}</span>
         </template>
 
-        <template v-if="canRemove" #cell-actions="{ row }">
+        <template v-if="hasRowActions" #cell-actions="{ row }">
           <button
             type="button"
             class="inline-flex cursor-pointer items-center justify-center rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
@@ -387,46 +415,47 @@ const copyNif = async (nif: string) => {
       </DataTable>
     </section>
 
-    <ActionsMenu v-if="canRemove" :open="openActionsId !== null" :menu-style="actionsMenuStyle">
-      <button
-        v-if="openActionsId"
-        type="button"
-        role="menuitem"
-        class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
-        @click.stop="onRemoveAction(openActionsId)"
-      >
-        <Icon icon="carbon:trash-can" class="size-4" />
-        {{ t('Customers.menu.remove') }}
-      </button>
+    <ActionsMenu v-if="hasRowActions" :open="openActionsId !== null" :menu-style="actionsMenuStyle">
+      <template v-if="openActionsId">
+        <button
+          v-if="canUpdate"
+          type="button"
+          role="menuitem"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-[#f3f3f5]"
+          @click.stop="onEditAction(openActionsId)"
+        >
+          <Icon icon="carbon:edit" class="size-4 text-gray-400" />
+          {{ t('Customers.menu.edit') }}
+        </button>
+        <button
+          v-if="canRemove"
+          type="button"
+          role="menuitem"
+          class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+          @click.stop="onRemoveAction(openActionsId)"
+        >
+          <Icon icon="carbon:trash-can" class="size-4" />
+          {{ t('Customers.menu.remove') }}
+        </button>
+      </template>
     </ActionsMenu>
 
     <Drawer
-      :open="detailCustomerId !== null && !isRemoveModalOpen"
+      :open="isDrawerOpen"
       width-class="w-full max-w-3xl"
-      @close="closeCustomer"
-    >
-      <CustomerDetailPanel
-        v-if="detailCustomer"
-        :customer="detailCustomer"
-        :removable="canRemove"
-        @close="closeCustomer"
-        @open-customer="openCustomer"
-        @remove="openRemoveModal(detailCustomer.id)"
-      />
-      <p v-else-if="isDetailLoading" class="p-6 text-sm text-gray-400">
-        {{ t('Customers.detail.loading') }}
-      </p>
-      <p v-else class="p-6 text-sm text-gray-400">
-        {{ t('Customers.detail.unavailable') }}
-      </p>
-    </Drawer>
-
-    <Drawer
-      :open="isCreateDrawerOpen"
-      width-class="w-full max-w-3xl"
-      @close="closeCreateDrawer"
+      @close="closeActiveDrawer"
     >
       <CustomerFormPanel
+        v-if="isEditDrawerOpen && editCustomer"
+        :key="`edit-${editCustomer.id}`"
+        :customer="editCustomer"
+        :submitting="isUpdating"
+        @close="closeEditDrawer"
+        @update="handleUpdateCustomer"
+      />
+      <CustomerFormPanel
+        v-else-if="isCreateDrawerOpen"
+        key="create"
         :submitting="isCreating"
         :customers="filteredCustomers"
         :origins="indicationOrigins"
@@ -437,6 +466,22 @@ const copyNif = async (nif: string) => {
         @was-referred-change="setCustomerWasReferred"
         @category-change="setCustomerIndicationCategory"
       />
+      <CustomerDetailPanel
+        v-else-if="detailCustomer"
+        :customer="detailCustomer"
+        :editable="canUpdate"
+        :removable="canRemove"
+        @close="closeCustomer"
+        @open-customer="openCustomer"
+        @edit="openEditDrawer(detailCustomer.id)"
+        @remove="openRemoveModal(detailCustomer.id)"
+      />
+      <p v-else-if="isDetailLoading" class="p-6 text-sm text-gray-400">
+        {{ t('Customers.detail.loading') }}
+      </p>
+      <p v-else class="p-6 text-sm text-gray-400">
+        {{ t('Customers.detail.unavailable') }}
+      </p>
     </Drawer>
 
     <ModalLayout

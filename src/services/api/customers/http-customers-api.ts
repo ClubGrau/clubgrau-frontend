@@ -10,6 +10,9 @@ import type {
   RemoveCustomerApi,
   RemoveCustomerParams,
   RemoveCustomerResult,
+  UpdateCustomerApi,
+  UpdateCustomerParams,
+  UpdateCustomerResult,
 } from './types'
 
 type CustomersListPayload = {
@@ -21,7 +24,7 @@ type CustomersListPayload = {
 }
 
 export class HttpCustomersApi
-  implements GetCustomersApi, CreateCustomerApi, RemoveCustomerApi
+  implements GetCustomersApi, CreateCustomerApi, UpdateCustomerApi, RemoveCustomerApi
 {
   async getCustomers(params: GetCustomersParams): Promise<GetCustomersResult> {
     const query: Record<string, string | number> = {
@@ -48,6 +51,15 @@ export class HttpCustomersApi
 
   async create(params: CreateCustomerParams): Promise<CreateCustomerResult> {
     const { data } = await api.post<CreateCustomerResult>('/api/customer', params)
+    return data
+  }
+
+  async update(params: UpdateCustomerParams): Promise<UpdateCustomerResult> {
+    const { id, ...fields } = params
+    const body = Object.fromEntries(
+      Object.entries(fields).filter(([, value]) => value !== undefined),
+    )
+    const { data } = await api.patch<UpdateCustomerResult>(`/api/customer/${id}`, body)
     return data
   }
 

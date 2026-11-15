@@ -44,4 +44,13 @@ export namespace Customer {
     nif: string;
     indication: CustomerIndication | null;
   }
+
+  /** What the edit form submits. Rank and indication are fixed at creation. */
+  export interface UpdateCommand {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    nif: string;
+  }
 }
